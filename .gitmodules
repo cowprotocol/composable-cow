@@ -19,3 +19,6 @@
 [submodule "lib/balancer"]
 	path = lib/balancer
 	url = https://github.com/rndlabs/balancer
+[submodule "lib/canonical-weth"]
+	path = lib/canonical-weth
+	url = https://github.com/rndlabs/canonical-weth
