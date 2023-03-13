@@ -9,3 +9,7 @@
 [submodule "lib/handler"]
 	path = lib/handler
 	url = https://github.com/rndlabs/safe-extensible-fallback-handler
+[submodule "lib/safe"]
+	path = lib/safe
+	url = https://github.com/safe-global/safe-contracts
+	branch = main
