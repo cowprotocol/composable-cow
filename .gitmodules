@@ -13,3 +13,6 @@
 	path = lib/safe
 	url = https://github.com/safe-global/safe-contracts
 	branch = main
+[submodule "lib/cowprotocol"]
+	path = lib/cowprotocol
+	url = https://github.com/rndlabs/cowswap-contracts
