@@ -9,7 +9,7 @@ import {ISafeSignatureVerifier, ERC1271} from "handler/SignatureVerifierMuxer.so
 
 import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
 
-contract ComposableCow is ISafeSignatureVerifier {
+contract ComposableCoW is ISafeSignatureVerifier {
     // A mapping of user's merkle roots
     mapping (Safe => bytes32) public roots;
     bytes32 public immutable settlementDomainSeparator;
@@ -50,15 +50,15 @@ contract ComposableCow is ISafeSignatureVerifier {
         bytes calldata signature
     ) external view override returns (bytes4 magic) {
         // The signature is an abi.encode(bytes32[] proof, address orderHandler, bytes orderData, bytes32 salt)
-        (bytes32[] memory proof, ConditionalOrder handler, bytes memory data, bytes32 salt) = abi.decode(
+        (bytes32[] memory proof, ConditionalOrder handler, bytes32 salt, bytes memory data) = abi.decode(
             signature,
-            (bytes32[], ConditionalOrder, bytes, bytes32)
+            (bytes32[], ConditionalOrder, bytes32, bytes)
         );
 
         // Computing proof using leaf double hashing
         // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
         bytes32 root = roots[safe];
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(handler, data, salt))));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(handler, salt, data))));
 
         // Verify the proof
         require(
