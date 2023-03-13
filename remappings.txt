@@ -1,2 +1,9 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
+handler/=lib/handler/src/
+safe/=lib/safe/contracts/
+balancer/=lib/balancer/src/
+@openzeppelin/=lib/@openzeppelin/contracts/
+@openzeppelin/contracts/=lib/@openzeppelin/contracts/
+canonical-weth/=lib/canonical-weth/src/
+cowprotocol/=lib/cowprotocol/src/contracts/
