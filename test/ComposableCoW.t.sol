@@ -36,7 +36,7 @@ contract ComposableCoWTest is Base, Merkle {
         bytes payload;
     }
 
-    mapping (bytes32 => ConditionalOrderLeaf) public leaves;
+    mapping(bytes32 => ConditionalOrderLeaf) public leaves;
 
     function setUp() public virtual override(Base) {
         // setup Base
@@ -48,9 +48,7 @@ contract ComposableCoWTest is Base, Merkle {
             address(svmSingleton),
             0,
             abi.encodeWithSelector(
-                svmSingleton.setDomainVerifier.selector,
-                settlement.domainSeparator(),
-                address(composableCow)
+                svmSingleton.setDomainVerifier.selector, settlement.domainSeparator(), address(composableCow)
             ),
             Enum.Operation.Call,
             signers()
@@ -67,9 +65,7 @@ contract ComposableCoWTest is Base, Merkle {
             address(svmSingleton),
             0,
             abi.encodeWithSelector(
-                svmSingleton.setDomainVerifier.selector,
-                settlement.domainSeparator(),
-                address(composableCow)
+                svmSingleton.setDomainVerifier.selector, settlement.domainSeparator(), address(composableCow)
             ),
             Enum.Operation.Call,
             signers()
@@ -78,10 +74,7 @@ contract ComposableCoWTest is Base, Merkle {
 
     function test_setUp() public {
         // check that the ComposableCoW is the custom verifier for safe1
-        assertEq(
-            address(svmSingleton.domainVerifiers(safe1, settlement.domainSeparator())),
-            address(composableCow)
-        );
+        assertEq(address(svmSingleton.domainVerifiers(safe1, settlement.domainSeparator())), address(composableCow));
     }
 
     function test_TWAP() public {
@@ -101,11 +94,7 @@ contract ComposableCoWTest is Base, Merkle {
         // 2. Create four conditional orders as leaves of the ComposableCoW
         ConditionalOrderLeaf[] memory _leaves = new ConditionalOrderLeaf[](4);
         for (uint256 i = 0; i < _leaves.length; i++) {
-            _leaves[i] = ConditionalOrderLeaf({
-                handler: address(twap),
-                salt: bytes32(i),
-                payload: abi.encode(twapData)
-            });
+            _leaves[i] = ConditionalOrderLeaf({handler: address(twap), salt: bytes32(i), payload: abi.encode(twapData)});
 
             leaves[hashLeaf(_leaves[i])] = _leaves[i];
         }
@@ -135,10 +124,7 @@ contract ComposableCoWTest is Base, Merkle {
             abi.encodeWithSelector(
                 composableCow.setRoot.selector,
                 root,
-                ComposableCoW.Proof({
-                    storageType: ComposableCoW.ProofStorage.None,
-                    payload: ""
-                })
+                ComposableCoW.Proof({storageType: ComposableCoW.ProofStorage.None, payload: ""})
             ),
             Enum.Operation.Call,
             signers()
@@ -149,13 +135,10 @@ contract ComposableCoWTest is Base, Merkle {
             abi.encodeCall(
                 ERC1271.isValidSignature,
                 (
-                    GPv2Order.hash(twap.getTradeableOrder(address(safe1), address(0), leaf.payload), settlement.domainSeparator()),
-                    abi.encode(
-                        proof,
-                        leaf.handler,
-                        leaf.salt,
-                        leaf.payload
-                    )
+                    GPv2Order.hash(
+                        twap.getTradeableOrder(address(safe1), address(0), leaf.payload), settlement.domainSeparator()
+                        ),
+                    abi.encode(proof, leaf.handler, leaf.salt, leaf.payload)
                 )
             ),
             settlement.domainSeparator()
@@ -181,5 +164,4 @@ contract ComposableCoWTest is Base, Merkle {
         }
         return array;
     }
-
 }

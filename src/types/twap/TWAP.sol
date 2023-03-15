@@ -10,8 +10,12 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 /// @author mfw78 <mfw78@rndlabs.xyz>
 /// @dev A fallback handler to enable TWAP conditional orders on Safe, settling via CoW Protocol.
 contract TWAP is ConditionalOrder {
-
-    function getTradeableOrder(address owner, address sender, bytes calldata payload) external view override returns (GPv2Order.Data memory order) {
+    function getTradeableOrder(address owner, address sender, bytes calldata payload)
+        external
+        view
+        override
+        returns (GPv2Order.Data memory order)
+    {
         owner;
         sender;
 
@@ -25,5 +29,4 @@ contract TWAP is ConditionalOrder {
         /// @dev Revert if the order is outside the TWAP bundle's span.
         if (!(block.timestamp <= order.validTo)) revert ConditionalOrder.OrderNotValid();
     }
-
 }
