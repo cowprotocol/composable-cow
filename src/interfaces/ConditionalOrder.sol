@@ -52,5 +52,8 @@ interface ConditionalOrder {
     /// @param payload The implementation-specific payload used to create the order, as emitted by the
     ///        ConditionalOrderCreated event
     /// @return order to be posted to the CoW Protocol API
-    function getTradeableOrder(address owner, address sender, bytes calldata payload) external view returns (GPv2Order.Data memory);
+    function getTradeableOrder(address owner, address sender, bytes calldata payload)
+        external
+        view
+        returns (GPv2Order.Data memory);
 }
