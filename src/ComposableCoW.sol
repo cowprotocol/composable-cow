@@ -5,10 +5,9 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {Safe} from "safe/Safe.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
-import {ISafeSignatureVerifier, ERC1271} from "handler/SignatureVerifierMuxer.sol";
+import {ISafeSignatureVerifier, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
 
 import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
-import {IPriceChecker} from "./vendored/IPriceChecker.sol";
 
 contract ComposableCoW is ISafeSignatureVerifier {
     // A mapping of user's merkle roots
