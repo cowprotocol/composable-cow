@@ -56,10 +56,8 @@ contract ComposableCoW is ISafeSignatureVerifier {
         returns (bytes4 magic)
     {
         // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams)
-        (
-            bytes32[] memory proof,
-            ConditionalOrderParams memory orderParams
-        ) = abi.decode(signature, (bytes32[], ConditionalOrderParams));
+        (bytes32[] memory proof, ConditionalOrderParams memory orderParams) =
+            abi.decode(signature, (bytes32[], ConditionalOrderParams));
 
         // Computing proof using leaf double hashing
         // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/

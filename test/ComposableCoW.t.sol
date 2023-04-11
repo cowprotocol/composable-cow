@@ -88,7 +88,8 @@ contract ComposableCoWTest is Base, Merkle {
         // 2. Create four conditional orders as leaves of the ComposableCoW
         ComposableCoW.ConditionalOrderParams[] memory _leaves = new ComposableCoW.ConditionalOrderParams[](4);
         for (uint256 i = 0; i < _leaves.length; i++) {
-            _leaves[i] = ComposableCoW.ConditionalOrderParams({handler: twap, salt: bytes32(i), data: abi.encode(twapData)});
+            _leaves[i] =
+                ComposableCoW.ConditionalOrderParams({handler: twap, salt: bytes32(i), data: abi.encode(twapData)});
 
             leaves[hashLeaf(_leaves[i])] = _leaves[i];
         }

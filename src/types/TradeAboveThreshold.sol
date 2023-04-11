@@ -48,5 +48,4 @@ contract TradeAboveThreshold is ConditionalOrder {
             GPv2Order.BALANCE_ERC20
         );
     }
-
 }

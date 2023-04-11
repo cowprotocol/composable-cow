@@ -57,16 +57,12 @@ contract PerpetualStableSwap is ConditionalOrder {
                 sellToken = tokenA;
                 buyToken = tokenB;
                 sellAmount = balanceA;
-                buyAmount = convertAmount(tokenA, balanceA, tokenB)
-                    .mul(BPS.add(data.halfSpreadBps))
-                    .div(BPS);
+                buyAmount = convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS);
             } else {
                 sellToken = tokenB;
                 buyToken = tokenA;
                 sellAmount = balanceB;
-                buyAmount = convertAmount(tokenB, balanceB, tokenA)
-                    .mul(BPS.add(data.halfSpreadBps))
-                    .div(BPS);
+                buyAmount = convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS);
             }
         }
         require(sellAmount > 0, "not funded");
@@ -77,8 +73,7 @@ contract PerpetualStableSwap is ConditionalOrder {
         // does not change between the time it is queried and the time it is settled. Validity will be between 1 & 2 weeks.
         // uint32 validity = 1 weeks;
         // solhint-disable-next-line not-rely-on-time
-        uint32 currentTimeBucket = ((uint32(block.timestamp) / data.validity) + 1) *
-            data.validity;
+        uint32 currentTimeBucket = ((uint32(block.timestamp) / data.validity) + 1) * data.validity;
         order = GPv2Order.Data(
             sellToken,
             buyToken,
@@ -95,11 +90,11 @@ contract PerpetualStableSwap is ConditionalOrder {
         );
     }
 
-    function convertAmount(
-        IERC20Metadata srcToken,
-        uint256 srcAmount,
-        IERC20Metadata destToken
-    ) public view returns (uint256 destAmount) {
+    function convertAmount(IERC20Metadata srcToken, uint256 srcAmount, IERC20Metadata destToken)
+        public
+        view
+        returns (uint256 destAmount)
+    {
         uint8 srcDecimals = srcToken.decimals();
         uint8 destDecimals = destToken.decimals();
 
@@ -109,5 +104,4 @@ contract PerpetualStableSwap is ConditionalOrder {
             destAmount = srcAmount.mul(10 ** (destDecimals.sub(srcDecimals)));
         }
     }
-
 }
