@@ -3,13 +3,12 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "forge-std/Test.sol";
 
-import {Enum} from "safe/common/Enum.sol";
-import {Safe} from "safe/Safe.sol";
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
+import {Merkle} from "murky/Merkle.sol";
 
+import "safe/Safe.sol";
 import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
-
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {Base} from "./Base.t.sol";
@@ -17,10 +16,8 @@ import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
-
 import {ComposableCoW} from "../src/ComposableCoW.sol";
 
-import {Merkle} from "murky/Merkle.sol";
 
 contract ComposableCoWTest is Base, Merkle {
     using TestAccountLib for TestAccount[];
@@ -49,10 +46,10 @@ contract ComposableCoWTest is Base, Merkle {
         );
 
         // deploy composable cow
-        composableCow = new ComposableCoW(settlement.domainSeparator());
+        composableCow = new ComposableCoW();
 
         // deploy order types
-        twap = new TWAP();
+        twap = new TWAP(settlement.domainSeparator());
 
         // set custom verifier for safe1
         safe1.execute(
@@ -125,15 +122,17 @@ contract ComposableCoWTest is Base, Merkle {
             signers()
         );
 
+        GPv2Order.Data memory blankOrder;
+
         // 9. Construct the signature payload
         bytes memory data = abi.encodePacked(
             abi.encodeCall(
                 ERC1271.isValidSignature,
                 (
                     GPv2Order.hash(
-                        twap.getTradeableOrder(address(safe1), address(0), leaf.data), settlement.domainSeparator()
+                        twap.getTradeableOrder(address(safe1), address(0), leaf.data).order, settlement.domainSeparator()
                         ),
-                    abi.encode(proof, leaf)
+                    abi.encode(proof, leaf, blankOrder)
                 )
             ),
             settlement.domainSeparator()
