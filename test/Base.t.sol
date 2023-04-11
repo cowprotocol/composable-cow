@@ -16,8 +16,8 @@ import {GPv2Signing} from "cowprotocol/mixins/GPv2Signing.sol";
 import {GPv2Settlement} from "cowprotocol/GPv2Settlement.sol";
 import {GPv2VaultRelayer} from "cowprotocol/GPv2VaultRelayer.sol";
 
-import {ExtensibleFallbackHandler} from "handler/ExtensibleFallbackHandler.sol";
-import {SignatureVerifierMuxer, ERC1271} from "handler/SignatureVerifierMuxer.sol";
+import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
+import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
 
 import {ConditionalOrderLib} from "../src/libraries/ConditionalOrderLib.sol";
 import {GPv2TradeEncoder} from "./vendored/GPv2TradeEncoder.sol";

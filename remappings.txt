@@ -1,6 +1,5 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
-handler/=lib/handler/src/
 safe/=lib/safe/contracts/
 balancer/=lib/balancer/src/
 @openzeppelin/=lib/@openzeppelin/contracts/
@@ -8,4 +7,3 @@ balancer/=lib/balancer/src/
 canonical-weth/=lib/canonical-weth/src/
 cowprotocol/=lib/cowprotocol/src/contracts/
 murky/=lib/murky/src/
-milkman/=lib/milkman/

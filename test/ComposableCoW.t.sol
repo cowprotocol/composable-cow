@@ -7,8 +7,8 @@ import {Enum} from "safe/common/Enum.sol";
 import {Safe} from "safe/Safe.sol";
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 
-import {ExtensibleFallbackHandler} from "handler/ExtensibleFallbackHandler.sol";
-import {SignatureVerifierMuxer, ERC1271} from "handler/SignatureVerifierMuxer.sol";
+import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
+import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
