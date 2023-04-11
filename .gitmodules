@@ -6,13 +6,6 @@
 	path = lib/@openzeppelin
 	url = https://github.com/openzeppelin/openzeppelin-contracts
 	branch = v4.8.2
-[submodule "lib/handler"]
-	path = lib/handler
-	url = https://github.com/rndlabs/safe-extensible-fallback-handler
-[submodule "lib/safe"]
-	path = lib/safe
-	url = https://github.com/safe-global/safe-contracts
-	branch = main
 [submodule "lib/cowprotocol"]
 	path = lib/cowprotocol
 	url = https://github.com/rndlabs/cowswap-contracts
