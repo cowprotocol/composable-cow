@@ -35,12 +35,6 @@ contract ComposableCoW is ISafeSignatureVerifier {
         bytes data;
     }
 
-    // A struct representing how to check the price
-    struct PriceCheckParams {
-        IPriceChecker checker;
-        bytes data;
-    }
-
     // An event emitted when a user sets their merkle root
     event RootSet(address indexed usr, bytes32 root, Proof proof);
 
@@ -62,41 +56,22 @@ contract ComposableCoW is ISafeSignatureVerifier {
         override
         returns (bytes4 magic)
     {
-        // The signature is an abi.encode(bytes32[] proof, address orderHandler, bytes32 salt, bytes orderData)
+        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams)
         (
             bytes32[] memory proof,
-            ConditionalOrderParams memory orderParams,
-            PriceCheckParams memory checkerParams
-        ) = abi.decode(signature, (bytes32[], ConditionalOrderParams, PriceCheckParams));
+            ConditionalOrderParams memory orderParams
+        ) = abi.decode(signature, (bytes32[], ConditionalOrderParams));
 
         // Computing proof using leaf double hashing
         // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
         bytes32 root = roots[safe];
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(orderParams, checkerParams))));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(orderParams))));
 
         // Verify the proof
         require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
 
         // The order is valid, so we can get the tradeable order
         GPv2Order.Data memory order = orderParams.handler.getTradeableOrder(address(safe), sender, orderParams.data);
-
-        if (address(checkerParams.checker) != address(0)) {
-            require(order.kind == GPv2Order.KIND_SELL, "ComposableCow: only sell orders can be price checked");
-            require(order.partiallyFillable == false, "ComposableCow: only fully fillable orders can be price checked");
-
-            // Check the price
-            require(
-                checkerParams.checker.checkPrice(
-                    order.sellAmount + order.feeAmount,
-                    address(order.sellToken),
-                    address(order.buyToken),
-                    order.feeAmount,
-                    order.buyAmount,
-                    checkerParams.data
-                ),
-                "ComposableCow: price check failed"
-            );
-        }
 
         if (hash == GPv2Order.hash(order, settlementDomainSeparator)) {
             magic = ERC1271.isValidSignature.selector;
