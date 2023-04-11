@@ -18,6 +18,7 @@ import {GPv2VaultRelayer} from "cowprotocol/GPv2VaultRelayer.sol";
 
 import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
+import {ExtensibleDefaultFallbackHandler} from "safe/handler/vendored/ExtensibleDefaultFallbackHandler.sol";
 
 import {ConditionalOrderLib} from "../src/libraries/ConditionalOrderLib.sol";
 import {GPv2TradeEncoder} from "./vendored/GPv2TradeEncoder.sol";
@@ -66,7 +67,7 @@ abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
         owners[2] = carol.addr;
 
         // deploy the extensible fallback handler and signature verifier muxer
-        efhSingleton = new ExtensibleFallbackHandler();
+        efhSingleton = new ExtensibleFallbackHandler(address(new ExtensibleDefaultFallbackHandler()));
         svmSingleton = new SignatureVerifierMuxer();
 
         safe1 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(efhSingleton), 0)));
