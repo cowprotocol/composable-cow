@@ -11,7 +11,6 @@ import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
 contract ComposableCoW is ISafeSignatureVerifier {
     // A mapping of user's merkle roots
     mapping(Safe => bytes32) public roots;
-    bytes32 public immutable settlementDomainSeparator;
 
     // An enum representing different ways to store proofs
     enum ProofStorage {
@@ -37,10 +36,6 @@ contract ComposableCoW is ISafeSignatureVerifier {
     // An event emitted when a user sets their merkle root
     event RootSet(address indexed usr, bytes32 root, Proof proof);
 
-    constructor(bytes32 _settlementDomainSeparator) {
-        settlementDomainSeparator = _settlementDomainSeparator;
-    }
-
     /// @notice Set the merkle root of the user's conditional orders
     /// @param root The merkle root of the user's conditional orders
     /// @param proof Where to find the proofs
@@ -55,22 +50,20 @@ contract ComposableCoW is ISafeSignatureVerifier {
         override
         returns (bytes4 magic)
     {
-        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams)
-        (bytes32[] memory proof, ConditionalOrderParams memory orderParams) =
-            abi.decode(signature, (bytes32[], ConditionalOrderParams));
+        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams, GPV2Order.Data)
+        (bytes32[] memory proof, ConditionalOrderParams memory params, GPv2Order.Data memory order) =
+            abi.decode(signature, (bytes32[], ConditionalOrderParams, GPv2Order.Data));
 
         // Computing proof using leaf double hashing
         // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
         bytes32 root = roots[safe];
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(orderParams))));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
 
         // Verify the proof
         require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
 
-        // The order is valid, so we can get the tradeable order
-        GPv2Order.Data memory order = orderParams.handler.getTradeableOrder(address(safe), sender, orderParams.data);
-
-        if (hash == GPv2Order.hash(order, settlementDomainSeparator)) {
+        // The proof is valid, so now check if the order is valid
+        if (params.handler.verify(address(safe), sender, hash, ConditionalOrder.PayloadStruct({order: order, data: params.data}))) {
             magic = ERC1271.isValidSignature.selector;
         }
     }
