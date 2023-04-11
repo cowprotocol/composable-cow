@@ -21,3 +21,7 @@
 [submodule "lib/milkman"]
 	path = lib/milkman
 	url = https://github.com/charlesndalton/milkman
+[submodule "lib/safe"]
+	path = lib/safe
+	url = https://github.com/rndlabs/safe-contracts
+	branch = extensible-fallback-handler
