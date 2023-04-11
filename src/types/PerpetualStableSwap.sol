@@ -3,8 +3,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {SafeMath} from "@openzeppelin/utils/math/SafeMath.sol";
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
-import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
 import {GPv2Settlement, GPv2Order} from "cowprotocol/GPv2Settlement.sol";
+
+import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
 
 // @title A smart contract that is always willing to trade between tokenA and tokenB 1:1,
 // taking decimals into account (and adding specifiable spread)

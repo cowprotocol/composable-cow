@@ -2,8 +2,9 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
 import {GPv2Settlement, GPv2Order} from "cowprotocol/GPv2Settlement.sol";
+
+import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
 
 // @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
 contract TradeAboveThreshold is ConditionalOrder {

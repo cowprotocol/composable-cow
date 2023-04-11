@@ -3,9 +3,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Safe} from "safe/Safe.sol";
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-
 import {ISafeSignatureVerifier, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
+import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
 

@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
-
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {TWAPOrderMathLib} from "./TWAPOrderMathLib.sol";
