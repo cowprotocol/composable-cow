@@ -30,13 +30,7 @@ contract ComposableCoWTest is Base, Merkle {
     ComposableCoW composableCow;
     TWAP twap;
 
-    struct ConditionalOrderLeaf {
-        address handler;
-        bytes32 salt;
-        bytes payload;
-    }
-
-    mapping(bytes32 => ConditionalOrderLeaf) public leaves;
+    mapping(bytes32 => ComposableCoW.ConditionalOrderParams) public leaves;
 
     function setUp() public virtual override(Base) {
         // setup Base
@@ -92,9 +86,9 @@ contract ComposableCoWTest is Base, Merkle {
         });
 
         // 2. Create four conditional orders as leaves of the ComposableCoW
-        ConditionalOrderLeaf[] memory _leaves = new ConditionalOrderLeaf[](4);
+        ComposableCoW.ConditionalOrderParams[] memory _leaves = new ComposableCoW.ConditionalOrderParams[](4);
         for (uint256 i = 0; i < _leaves.length; i++) {
-            _leaves[i] = ConditionalOrderLeaf({handler: address(twap), salt: bytes32(i), payload: abi.encode(twapData)});
+            _leaves[i] = ComposableCoW.ConditionalOrderParams({handler: twap, salt: bytes32(i), data: abi.encode(twapData)});
 
             leaves[hashLeaf(_leaves[i])] = _leaves[i];
         }
@@ -115,7 +109,7 @@ contract ComposableCoWTest is Base, Merkle {
         bytes32[] memory proof = getProof(sortedHashes, 0);
 
         // 7. Get the leaf that was used to create the proof
-        ConditionalOrderLeaf memory leaf = leaves[sortedHashes[0]];
+        ComposableCoW.ConditionalOrderParams memory leaf = leaves[sortedHashes[0]];
 
         // 8. Set the Merkle root
         safe1.execute(
@@ -136,9 +130,9 @@ contract ComposableCoWTest is Base, Merkle {
                 ERC1271.isValidSignature,
                 (
                     GPv2Order.hash(
-                        twap.getTradeableOrder(address(safe1), address(0), leaf.payload), settlement.domainSeparator()
+                        twap.getTradeableOrder(address(safe1), address(0), leaf.data), settlement.domainSeparator()
                         ),
-                    abi.encode(proof, leaf.handler, leaf.salt, leaf.payload)
+                    abi.encode(proof, leaf)
                 )
             ),
             settlement.domainSeparator()
@@ -148,8 +142,8 @@ contract ComposableCoWTest is Base, Merkle {
         require(success, "failed to call isValidSignature");
     }
 
-    function hashLeaf(ConditionalOrderLeaf memory leaf) public pure returns (bytes32) {
-        return keccak256(bytes.concat(keccak256(abi.encode(leaf.handler, leaf.salt, leaf.payload))));
+    function hashLeaf(ComposableCoW.ConditionalOrderParams memory leaf) public pure returns (bytes32) {
+        return keccak256(bytes.concat(keccak256(abi.encode(leaf))));
     }
 
     function sortBytes32Array(bytes32[] memory array) public pure returns (bytes32[] memory) {
