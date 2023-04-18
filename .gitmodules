@@ -1,11 +1,7 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-	branch = v1.5.1
-[submodule "lib/@openzeppelin"]
-	path = lib/@openzeppelin
-	url = https://github.com/openzeppelin/openzeppelin-contracts
-	branch = v4.8.2
+	branch = v1.5.3
 [submodule "lib/cowprotocol"]
 	path = lib/cowprotocol
 	url = https://github.com/rndlabs/cowswap-contracts
@@ -21,4 +17,7 @@
 [submodule "lib/safe"]
 	path = lib/safe
 	url = https://github.com/rndlabs/safe-contracts
-	branch = extensible-fallback-handler
+	branch = merged-efh-sigmuxer
+[submodule "lib/@openzeppelin"]
+	path = lib/@openzeppelin
+	url = https://github.com/openzeppelin/openzeppelin-contracts
