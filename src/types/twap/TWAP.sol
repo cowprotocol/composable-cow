@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "safe/Safe.sol";
-import "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import "../../interfaces/IConditionalOrder.sol";
@@ -34,41 +32,20 @@ contract TWAP is IConditionalOrderFactory {
         }
     }
 
-    function _verify(address owner, address sender, bytes32 _hash, bytes32 domainSeparator, bytes calldata data)
-        internal
+    function verify(address owner, address sender, bytes32 _hash, bytes32 domainSeparator, GPv2Order.Data calldata, bytes calldata data)
+        external
         view
+        override
+        returns (bool)
     {
         (GPv2Order.Data memory generatedOrder,) = getTradeableOrder(owner, sender, data);
 
         /// @dev Verify that the order is valid and matches the payload.
         if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
             revert IConditionalOrder.OrderNotValid();
+        } else {
+            return true;
         }
-    }
-
-    function isValidSafeSignature(
-        Safe safe,
-        address sender,
-        bytes32 _hash,
-        bytes32 domainSeparator,
-        bytes32, // typeHash
-        bytes calldata, // encodeData
-        bytes calldata data
-    ) external view override returns (bytes4 magic) {
-        _verify(address(safe), sender, _hash, domainSeparator, data);
-        magic = ERC1271.isValidSignature.selector;
-    }
-
-    function verify(
-        address owner,
-        address sender,
-        bytes32 _hash,
-        bytes32 domainSeparator,
-        GPv2Order.Data calldata, // order
-        bytes calldata data
-    ) external view override returns (bool) {
-        _verify(owner, sender, _hash, domainSeparator, data);
-        return true;
     }
 
     function dispatch(address safe, address sender, bytes calldata payload) external override {}
