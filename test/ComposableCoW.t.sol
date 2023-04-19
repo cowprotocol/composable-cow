@@ -48,7 +48,7 @@ contract ComposableCoWTest is Base, Merkle {
         );
 
         // deploy order types
-        twap = new TWAP(settlement.domainSeparator());
+        twap = new TWAP();
     }
 
     function test_setUp() public {
@@ -111,9 +111,9 @@ contract ComposableCoWTest is Base, Merkle {
         );
 
         // 9. The GPvOrder.Data for the TWAP segment
-        ConditionalOrder.PayloadStruct memory tradeablePayload = twap.getTradeableOrder(address(safe1), address(0), leaf.data);
+        (GPv2Order.Data memory order, ) = twap.getTradeableOrder(address(safe1), address(0), leaf.data);
     
-        bytes memory encodeData = abi.encode(tradeablePayload.order);
+        bytes memory encodeData = abi.encode(order);
 
         // bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData)
         // As this is for a Safe signer, we need to abi.encode the order
@@ -131,7 +131,7 @@ contract ComposableCoWTest is Base, Merkle {
         bytes memory data = abi.encodeCall(
             ERC1271.isValidSignature,
             (
-                GPv2Order.hash(tradeablePayload.order, settlement.domainSeparator()),
+                GPv2Order.hash(order, settlement.domainSeparator()),
                 signature
             )
         );
