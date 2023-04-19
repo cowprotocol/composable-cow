@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Safe} from "safe/Safe.sol";
-import {ISafeSignatureVerifier, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
+import {ISafeSignatureVerifier, ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
@@ -44,27 +44,37 @@ contract ComposableCoW is ISafeSignatureVerifier {
         emit RootSet(msg.sender, root, proof);
     }
 
-    function isValidSafeSignature(Safe safe, address sender, bytes32 hash, bytes calldata signature)
-        external
-        view
-        override
-        returns (bytes4 magic)
-    {
-        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams, GPV2Order.Data)
-        (bytes32[] memory proof, ConditionalOrderParams memory params, GPv2Order.Data memory order) =
-            abi.decode(signature, (bytes32[], ConditionalOrderParams, GPv2Order.Data));
+    function isValidSafeSignature(
+        Safe safe,
+        address sender,
+        bytes32 _hash,
+        bytes32, // domainSeparator
+        bytes32, // typeHash
+        bytes calldata encodeData,
+        bytes calldata payload
+    ) external view override returns (bytes4 magic) {
+        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams)
+        (bytes32[] memory proof, ConditionalOrderParams memory params) =
+            abi.decode(payload, (bytes32[], ConditionalOrderParams));
 
-        // Computing proof using leaf double hashing
-        // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
-        bytes32 root = roots[safe];
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
+        // Scope to avoid stack too deep errors
+        {
+            // Computing proof using leaf double hashing
+            // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
+            bytes32 root = roots[safe];
+            bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
 
-        // Verify the proof
-        require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
+            // Verify the proof
+            require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
+        }
 
-        // The proof is valid, so now check if the order is valid
-        if (params.handler.verify(address(safe), sender, hash, ConditionalOrder.PayloadStruct({order: order, data: params.data}))) {
-            magic = ERC1271.isValidSignature.selector;
+        // Scope to avoid stack too deep errors
+        {
+            GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
+            // The proof is valid, so now check if the order is valid
+            if (params.handler.verify(address(safe), sender, _hash, ConditionalOrder.PayloadStruct({order: order, data: params.data}))) {
+                magic = ERC1271.isValidSignature.selector;
+            }
         }
     }
 }

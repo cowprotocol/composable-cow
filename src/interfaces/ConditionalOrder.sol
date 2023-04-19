@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-import {ISafeSignatureVerifier} from "safe/handler/SignatureVerifierMuxer.sol";
+import {ISafeSignatureVerifier} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
 /**
  * @dev The conditional order EIP-712 `typeHash` for creating an order.
