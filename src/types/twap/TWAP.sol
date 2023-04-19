@@ -15,6 +15,9 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  */
 contract TWAP is IConditionalOrderFactory {
+    /**
+     * @inheritdoc IConditionalOrderFactory
+     */
     function getTradeableOrder(address owner, address sender, bytes memory data)
         public
         view
@@ -39,6 +42,15 @@ contract TWAP is IConditionalOrderFactory {
         }
     }
 
+    /**
+     * @inheritdoc IConditionalOrderFactory
+     */
+    function dispatch(address safe, address sender, bytes calldata payload) external override {}
+
+
+    /**
+     * @inheritdoc IConditionalOrder
+     */
     function verify(
         address owner,
         address sender,
@@ -56,6 +68,4 @@ contract TWAP is IConditionalOrderFactory {
             return true;
         }
     }
-
-    function dispatch(address safe, address sender, bytes calldata payload) external override {}
 }

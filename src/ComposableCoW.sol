@@ -47,6 +47,12 @@ contract ComposableCoW is ISafeSignatureVerifier {
         emit RootSet(msg.sender, root, proof);
     }
 
+    /**
+     * @inheritdoc ISafeSignatureVerifier
+     * @dev This function does not make use of the `typeHash` parameter as CoW Protocol does not
+     *      have more than one type.
+     * @param encodeData Is the abi encoded `GPv2Order.Data`
+     */
     function isValidSafeSignature(
         Safe safe,
         address sender,
