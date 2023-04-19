@@ -54,11 +54,6 @@ interface ConditionalOrder is ISafeSignatureVerifier {
     /// @dev This error is returned by the `getTradeableOrder` function if the order is cancelled.
     error OrderCancelled();
 
-    struct PayloadStruct {
-        GPv2Order.Data order;
-        bytes data;
-    }
-
     /**
      * Verify if a given order is valid. This function is used in combination with the `isValidSafeSignature`
      * function to verify that the order is signed by the Safe.

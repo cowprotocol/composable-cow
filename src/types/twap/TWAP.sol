@@ -33,6 +33,21 @@ contract TWAP is ConditionalOrderFactory {
             revert ConditionalOrder.OrderNotValid();
     }
 
+    function _verify(
+        address owner,
+        address sender,
+        bytes32 _hash,
+        bytes32 domainSeparator,
+        bytes calldata data
+    ) internal view {
+        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(owner, sender, data);
+
+        /// @dev Verify that the order is valid and matches the payload.
+        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
+            revert ConditionalOrder.OrderNotValid();
+        }
+    }
+
     function isValidSafeSignature(
         Safe safe,
         address sender,
@@ -42,12 +57,8 @@ contract TWAP is ConditionalOrderFactory {
         bytes calldata, // encodeData
         bytes calldata data
     ) external view override returns (bytes4 magic) {
-        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(address(safe), sender, data);
-        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
-            revert ConditionalOrder.OrderNotValid();
-        } else {
-            return ERC1271.isValidSignature.selector;
-        }
+        _verify(address(safe), sender, _hash, domainSeparator, data);
+        magic = ERC1271.isValidSignature.selector;
     }
 
     function verify(
@@ -58,14 +69,8 @@ contract TWAP is ConditionalOrderFactory {
         GPv2Order.Data calldata, // order
         bytes calldata data
     ) external view override returns (bool) {
-        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(owner, sender, data);
-
-        /// @dev Verify that the order is valid and matches the payload.
-        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
-            revert ConditionalOrder.OrderNotValid();
-        } else {
-            return true;
-        }
+        _verify(owner, sender, _hash, domainSeparator, data);
+        return true;
     }
 
     function dispatch(
