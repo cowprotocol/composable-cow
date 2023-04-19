@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-import {ISafeSignatureVerifier} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
 /**
  * @dev The conditional order EIP-712 `typeHash` for creating an order.
@@ -44,7 +43,7 @@ bytes32 constant CANCEL_ORDER_TYPE_HASH = hex"e2d395a4176e36febca53784f02b9bf31a
  *      - Function `dispatch` dedicated to emitting the `ConditionalOrderCreated` event.
  *      - Function `getTradeableOrder` takes the `bytes` parameter representing the conditional order as input.
  */
-interface IConditionalOrder is ISafeSignatureVerifier {
+interface IConditionalOrder {
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
     error OrderNotValid();
     /// @dev This error is returned by the `getTradeableOrder` function if the order is not signed.
