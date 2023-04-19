@@ -7,8 +7,7 @@ import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.so
 import {Merkle} from "murky/Merkle.sol";
 
 import "safe/Safe.sol";
-import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
-import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
+import "safe/handler/ExtensibleFallbackHandler.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {Base} from "./Base.t.sol";
@@ -16,7 +15,7 @@ import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
-import {ComposableCoW} from "../src/ComposableCoW.sol";
+import "../src/ComposableCoW.sol";
 
 
 contract ComposableCoWTest is Base, Merkle {
@@ -33,39 +32,28 @@ contract ComposableCoWTest is Base, Merkle {
         // setup Base
         super.setUp();
 
-        // set safe1 to have the ComposableCoW `ISafeSignatureVerifier` custom verifier
-        // we will set the domainSeparator to settlement.domainSeparator()
-        safe1.execute(
-            address(svmSingleton),
-            0,
-            abi.encodeWithSelector(
-                svmSingleton.setDomainVerifier.selector, settlement.domainSeparator(), address(composableCow)
-            ),
-            Enum.Operation.Call,
-            signers()
-        );
-
         // deploy composable cow
         composableCow = new ComposableCoW();
 
-        // deploy order types
-        twap = new TWAP(settlement.domainSeparator());
-
-        // set custom verifier for safe1
+        // set safe1 to have the ComposableCoW `ISafeSignatureVerifier` custom verifier
+        // we will set the domainSeparator to settlement.domainSeparator()
         safe1.execute(
-            address(svmSingleton),
+            address(safe1),
             0,
             abi.encodeWithSelector(
-                svmSingleton.setDomainVerifier.selector, settlement.domainSeparator(), address(composableCow)
+                eHandler.setDomainVerifier.selector, settlement.domainSeparator(), address(composableCow)
             ),
             Enum.Operation.Call,
             signers()
         );
+
+        // deploy order types
+        twap = new TWAP(settlement.domainSeparator());
     }
 
     function test_setUp() public {
         // check that the ComposableCoW is the custom verifier for safe1
-        assertEq(address(svmSingleton.domainVerifiers(safe1, settlement.domainSeparator())), address(composableCow));
+        assertEq(address(eHandler.domainVerifiers(safe1, settlement.domainSeparator())), address(composableCow));
     }
 
     function test_TWAP() public {
@@ -122,20 +110,30 @@ contract ComposableCoWTest is Base, Merkle {
             signers()
         );
 
-        GPv2Order.Data memory blankOrder;
+        // 9. The GPvOrder.Data for the TWAP segment
+        ConditionalOrder.PayloadStruct memory tradeablePayload = twap.getTradeableOrder(address(safe1), address(0), leaf.data);
+    
+        bytes memory encodeData = abi.encode(tradeablePayload.order);
+
+        // bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData)
+        // As this is for a Safe signer, we need to abi.encode the order
+        // into safeSignature(bytes32,bytes32,bytes32,bytes)
+        bytes memory signature = abi.encodeWithSignature(
+            "safeSignature(bytes32,bytes32,bytes,bytes)",
+            settlement.domainSeparator(),
+            GPv2Order.TYPE_HASH,
+            encodeData,
+            abi.encode(proof, leaf)
+        );
+
 
         // 9. Construct the signature payload
-        bytes memory data = abi.encodePacked(
-            abi.encodeCall(
-                ERC1271.isValidSignature,
-                (
-                    GPv2Order.hash(
-                        twap.getTradeableOrder(address(safe1), address(0), leaf.data).order, settlement.domainSeparator()
-                        ),
-                    abi.encode(proof, leaf, blankOrder)
-                )
-            ),
-            settlement.domainSeparator()
+        bytes memory data = abi.encodeCall(
+            ERC1271.isValidSignature,
+            (
+                GPv2Order.hash(tradeablePayload.order, settlement.domainSeparator()),
+                signature
+            )
         );
 
         (bool success, bytes memory result) = address(safe1).staticcall(data);
