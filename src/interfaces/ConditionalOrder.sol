@@ -65,10 +65,12 @@ interface ConditionalOrder is ISafeSignatureVerifier {
      * @param owner the contract who is the owner of the order
      * @param sender the `msg.sender` of the transaction
      * @param hash the hash of the order
-     * @param payload the payload struct containing the order and the implementation-specific payload
+     * @param domainSeparator the domain separator used to sign the order
+     * @param order that is being verified (passed from `encodeData`)
+     * @param payload any additional implementation payload that is needed to verify the order
      * @return true if the order is valid, false otherwise
      */
-    function verify(address owner, address sender, bytes32 hash, PayloadStruct calldata payload)
+    function verify(address owner, address sender, bytes32 hash, bytes32 domainSeparator, GPv2Order.Data calldata order, bytes calldata payload)
         external
         view
         returns (bool);
@@ -96,10 +98,10 @@ interface ConditionalOrderFactory is ConditionalOrder {
      * @param sender the `msg.sender` of the transaction
      * @param payload The implementation-specific payload used to create the order, as emitted by the
      *       ConditionalOrderCreated event
-     * @return a payload struct containing the order and the implementation-specific payload
+     * @return the tradeable order and the implementation-specific payload
      */
     function getTradeableOrder(address owner, address sender, bytes calldata payload)
         external
         view
-        returns (PayloadStruct memory);
+        returns (GPv2Order.Data memory, bytes memory);
 }

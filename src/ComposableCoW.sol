@@ -48,7 +48,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
         Safe safe,
         address sender,
         bytes32 _hash,
-        bytes32, // domainSeparator
+        bytes32 domainSeparator,
         bytes32, // typeHash
         bytes calldata encodeData,
         bytes calldata payload
@@ -64,15 +64,17 @@ contract ComposableCoW is ISafeSignatureVerifier {
             bytes32 root = roots[safe];
             bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
 
-            // Verify the proof
+            // First, verify the proof
             require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
         }
 
         // Scope to avoid stack too deep errors
         {
+            // Decode the order
             GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
-            // The proof is valid, so now check if the order is valid
-            if (params.handler.verify(address(safe), sender, _hash, ConditionalOrder.PayloadStruct({order: order, data: params.data}))) {
+
+            // Proof is valid, guard (if any) is valid, now check the handler
+            if (params.handler.verify(address(safe), sender, _hash, domainSeparator, order, params.data)) {
                 magic = ERC1271.isValidSignature.selector;
             }
         }

@@ -13,16 +13,11 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 /// @dev A fallback handler to enable TWAP conditional orders on Safe, settling via CoW Protocol.
 contract TWAP is ConditionalOrderFactory {
 
-    bytes32 public immutable settlementDomainSeparator;
-    constructor(bytes32 _settlementDomainSeparator) {
-        settlementDomainSeparator = _settlementDomainSeparator;
-    }
-
     function getTradeableOrder(
         address owner,
         address sender,
         bytes memory data
-    ) public view override returns (PayloadStruct memory payload) {
+    ) public view override returns (GPv2Order.Data memory order, bytes memory) {
         owner;
         sender;
 
@@ -31,10 +26,10 @@ contract TWAP is ConditionalOrderFactory {
         /// NOTE: This will return an order even if the part of the TWAP bundle that is currently
         /// valid is filled. This is safe as CoW Protocol ensures that each `orderUid` is only
         /// settled once.
-        payload.order = TWAPOrder.orderFor(abi.decode(data, (TWAPOrder.Data)));
+        order = TWAPOrder.orderFor(abi.decode(data, (TWAPOrder.Data)));
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
-        if (!(block.timestamp <= payload.order.validTo))
+        if (!(block.timestamp <= order.validTo))
             revert ConditionalOrder.OrderNotValid();
     }
 
@@ -43,14 +38,12 @@ contract TWAP is ConditionalOrderFactory {
         address sender,
         bytes32 _hash,
         bytes32 domainSeparator,
-        bytes32 typeHash,
-        bytes calldata encodeData,
-        bytes calldata payload
+        bytes32, // typeHash
+        bytes calldata, // encodeData
+        bytes calldata data
     ) external view override returns (bytes4 magic) {
-        PayloadStruct memory p = abi.decode(payload, (PayloadStruct));
-        GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
-
-        if (_hash != GPv2Order.hash(getTradeableOrder(address(safe), sender, p.data).order, domainSeparator)) {
+        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(address(safe), sender, data);
+        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
             revert ConditionalOrder.OrderNotValid();
         } else {
             return ERC1271.isValidSignature.selector;
@@ -60,14 +53,15 @@ contract TWAP is ConditionalOrderFactory {
     function verify(
         address owner,
         address sender,
-        bytes32 hash,
-        PayloadStruct calldata payload
+        bytes32 _hash,
+        bytes32 domainSeparator,
+        GPv2Order.Data calldata, // order
+        bytes calldata data
     ) external view override returns (bool) {
-        // payload.order is disregarded as it is not used in the verification.
-        PayloadStruct memory generatedOrder = getTradeableOrder(owner, sender, payload.data);
+        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(owner, sender, data);
 
         /// @dev Verify that the order is valid and matches the payload.
-        if (hash != GPv2Order.hash(generatedOrder.order, settlementDomainSeparator)) {
+        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
             revert ConditionalOrder.OrderNotValid();
         } else {
             return true;
