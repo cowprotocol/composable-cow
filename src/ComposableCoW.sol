@@ -79,10 +79,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             // Next check the guard (if any)
             ISwapGuard guard = swapGuards[safe];
             if (address(guard) != address(0)) {
-                require(
-                    guard.verify(order, params.data),
-                    "ComposableCow: swap guard rejected"
-                );
+                require(guard.verify(order, params.data), "ComposableCow: swap guard rejected");
             }
 
             // Proof is valid, guard (if any) is valid, now check the handler

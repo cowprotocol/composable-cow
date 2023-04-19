@@ -14,8 +14,5 @@ interface ISwapGuard {
      * @param data The data to verify.
      * @return True if the order is allowed to be settled via CoW Protocol.
      */
-    function verify(
-        GPv2Order.Data calldata order,
-        bytes calldata data
-    ) external view returns (bool);
+    function verify(GPv2Order.Data calldata order, bytes calldata data) external view returns (bool);
 }

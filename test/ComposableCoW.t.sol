@@ -17,7 +17,6 @@ import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
 import "../src/ComposableCoW.sol";
 
-
 contract ComposableCoWTest is Base, Merkle {
     using TestAccountLib for TestAccount[];
     using TestAccountLib for TestAccount;
@@ -111,8 +110,8 @@ contract ComposableCoWTest is Base, Merkle {
         );
 
         // 9. The GPvOrder.Data for the TWAP segment
-        (GPv2Order.Data memory order, ) = twap.getTradeableOrder(address(safe1), address(0), leaf.data);
-    
+        (GPv2Order.Data memory order,) = twap.getTradeableOrder(address(safe1), address(0), leaf.data);
+
         bytes memory encodeData = abi.encode(order);
 
         // bytes32 domainSeparator, bytes32 typeHash, bytes32 encodeData)
@@ -126,15 +125,9 @@ contract ComposableCoWTest is Base, Merkle {
             abi.encode(proof, leaf)
         );
 
-
         // 9. Construct the signature payload
-        bytes memory data = abi.encodeCall(
-            ERC1271.isValidSignature,
-            (
-                GPv2Order.hash(order, settlement.domainSeparator()),
-                signature
-            )
-        );
+        bytes memory data =
+            abi.encodeCall(ERC1271.isValidSignature, (GPv2Order.hash(order, settlement.domainSeparator()), signature));
 
         (bool success, bytes memory result) = address(safe1).staticcall(data);
         require(success, "failed to call isValidSignature");

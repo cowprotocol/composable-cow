@@ -6,7 +6,7 @@ import {ISafeSignatureVerifier} from "safe/handler/extensible/SignatureVerifierM
 
 /**
  * @dev The conditional order EIP-712 `typeHash` for creating an order.
- * 
+ *
  * This value is pre-computed from the following expression:
  * ```
  * keccak256(
@@ -21,13 +21,13 @@ bytes32 constant CONDITIONAL_ORDER_TYPE_HASH = hex"59a89a42026f77464983113514109
 
 /**
  * @dev The conditional order EIP-712 `typeHash` for a cancelled order.
- * 
+ *
  * This value is pre-computed from the following expression:
  * ```
  * keccak256(
  *      "CancelOrder(" +
  *          "bytes32 order" +
- *      ")" 
+ *      ")"
  * )
  * ```
  * The `order` parameter is the `hashStruct` of the `ConditionalOrder`.
@@ -65,10 +65,14 @@ interface ConditionalOrder is ISafeSignatureVerifier {
      * @param payload any additional implementation payload that is needed to verify the order
      * @return true if the order is valid, false otherwise
      */
-    function verify(address owner, address sender, bytes32 hash, bytes32 domainSeparator, GPv2Order.Data calldata order, bytes calldata payload)
-        external
-        view
-        returns (bool);
+    function verify(
+        address owner,
+        address sender,
+        bytes32 hash,
+        bytes32 domainSeparator,
+        GPv2Order.Data calldata order,
+        bytes calldata payload
+    ) external view returns (bool);
 }
 
 interface ConditionalOrderFactory is ConditionalOrder {

@@ -12,12 +12,12 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 /// @author mfw78 <mfw78@rndlabs.xyz>
 /// @dev A fallback handler to enable TWAP conditional orders on Safe, settling via CoW Protocol.
 contract TWAP is ConditionalOrderFactory {
-
-    function getTradeableOrder(
-        address owner,
-        address sender,
-        bytes memory data
-    ) public view override returns (GPv2Order.Data memory order, bytes memory) {
+    function getTradeableOrder(address owner, address sender, bytes memory data)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory order, bytes memory)
+    {
         owner;
         sender;
 
@@ -29,18 +29,16 @@ contract TWAP is ConditionalOrderFactory {
         order = TWAPOrder.orderFor(abi.decode(data, (TWAPOrder.Data)));
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
-        if (!(block.timestamp <= order.validTo))
+        if (!(block.timestamp <= order.validTo)) {
             revert ConditionalOrder.OrderNotValid();
+        }
     }
 
-    function _verify(
-        address owner,
-        address sender,
-        bytes32 _hash,
-        bytes32 domainSeparator,
-        bytes calldata data
-    ) internal view {
-        (GPv2Order.Data memory generatedOrder, ) = getTradeableOrder(owner, sender, data);
+    function _verify(address owner, address sender, bytes32 _hash, bytes32 domainSeparator, bytes calldata data)
+        internal
+        view
+    {
+        (GPv2Order.Data memory generatedOrder,) = getTradeableOrder(owner, sender, data);
 
         /// @dev Verify that the order is valid and matches the payload.
         if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
@@ -73,9 +71,5 @@ contract TWAP is ConditionalOrderFactory {
         return true;
     }
 
-    function dispatch(
-        address safe,
-        address sender,
-        bytes calldata payload
-    ) external override {}
+    function dispatch(address safe, address sender, bytes calldata payload) external override {}
 }
