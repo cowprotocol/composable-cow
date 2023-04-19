@@ -39,12 +39,14 @@ contract TWAP is IConditionalOrderFactory {
         }
     }
 
-    function verify(address owner, address sender, bytes32 _hash, bytes32 domainSeparator, GPv2Order.Data calldata, bytes calldata data)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function verify(
+        address owner,
+        address sender,
+        bytes32 _hash,
+        bytes32 domainSeparator,
+        GPv2Order.Data calldata,
+        bytes calldata data
+    ) external view override returns (bool) {
         (GPv2Order.Data memory generatedOrder,) = getTradeableOrder(owner, sender, data);
 
         /// @dev Verify that the order is valid and matches the payload.
