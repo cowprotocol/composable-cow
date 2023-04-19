@@ -7,10 +7,13 @@ import {ISafeSignatureVerifier, ERC1271} from "safe/handler/extensible/Signature
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
+import {ISwapGuard} from "./interfaces/ISwapGuard.sol";
 
 contract ComposableCoW is ISafeSignatureVerifier {
     // A mapping of user's merkle roots
     mapping(Safe => bytes32) public roots;
+    // TODO: Gas efficiency for packing storage variables
+    mapping(Safe => ISwapGuard) public swapGuards;
 
     // An enum representing different ways to store proofs
     enum ProofStorage {
@@ -72,6 +75,15 @@ contract ComposableCoW is ISafeSignatureVerifier {
         {
             // Decode the order
             GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
+
+            // Next check the guard (if any)
+            ISwapGuard guard = swapGuards[safe];
+            if (address(guard) != address(0)) {
+                require(
+                    guard.verify(order, params.data),
+                    "ComposableCow: swap guard rejected"
+                );
+            }
 
             // Proof is valid, guard (if any) is valid, now check the handler
             if (params.handler.verify(address(safe), sender, _hash, domainSeparator, order, params.data)) {
