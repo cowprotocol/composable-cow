@@ -3,23 +3,14 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "forge-std/Test.sol";
 
-import {Enum} from "safe/common/Enum.sol";
-import {Safe} from "safe/Safe.sol";
-import {SafeProxy} from "safe/proxies/SafeProxy.sol";
-import {MultiSend} from "safe/libraries/MultiSend.sol";
-import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
-
-import "safe/handler/ExtensibleFallbackHandler.sol";
-
 import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
-import {SafeLib} from "./libraries/SafeLib.t.sol";
-import {CoWProtocol} from "./helpers/CoWProtocol.t.sol";
-import {SafeHelper} from "./helpers/Safe.t.sol";
+
+import "./helpers/CoWProtocol.t.sol";
+import "./helpers/Safe.t.sol";
 
 abstract contract Base is Test, SafeHelper, CoWProtocol {
     using TestAccountLib for TestAccount[];
     using TestAccountLib for TestAccount;
-    using SafeLib for Safe;
 
     // --- accounts
     TestAccount alice;
@@ -54,44 +45,12 @@ abstract contract Base is Test, SafeHelper, CoWProtocol {
         safe3 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 2)));
     }
 
-    function signers() internal view returns (TestAccount[] memory) {
+    function signers() internal view override returns (TestAccount[] memory) {
         TestAccount[] memory _signers = new TestAccount[](2);
         _signers[0] = alice;
         _signers[1] = bob;
         _signers = TestAccountLib.sortAccounts(_signers);
         return _signers;
-    }
-
-    function setFallbackHandler(Safe safe, address handler) internal {
-        // do the transaction
-        safe.execute(
-            address(safe),
-            0,
-            abi.encodeWithSelector(safe.setFallbackHandler.selector, handler),
-            Enum.Operation.Call,
-            signers()
-        );
-    }
-
-    function setSafeMethodHandler(Safe safe, bytes4 selector, bool isStatic, address handler) internal {
-        bytes32 encodedHandler = MarshalLib.encode(isStatic, handler);
-        safe.execute(
-            address(safe),
-            0,
-            abi.encodeWithSelector(FallbackHandler.setSafeMethod.selector, selector, encodedHandler),
-            Enum.Operation.Call,
-            signers()
-        );
-    }
-
-    function safeSignMessage(Safe safe, bytes memory message) internal {
-        safe.execute(
-            address(signMessageLib),
-            0,
-            abi.encodeWithSelector(signMessageLib.signMessage.selector, message),
-            Enum.Operation.DelegateCall,
-            signers()
-        );
     }
 
     // function createOrder(Safe safe, bytes memory conditionalOrder, IERC20 sellToken, uint256 sellAmount)
