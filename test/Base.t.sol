@@ -9,26 +9,14 @@ import {SafeProxy} from "safe/proxies/SafeProxy.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-import {GPv2Interaction} from "cowprotocol/libraries/GPv2Interaction.sol";
-import {GPv2Trade} from "cowprotocol/libraries/GPv2Trade.sol";
-import {GPv2Signing} from "cowprotocol/mixins/GPv2Signing.sol";
-import {GPv2Settlement} from "cowprotocol/GPv2Settlement.sol";
-import {GPv2VaultRelayer} from "cowprotocol/GPv2VaultRelayer.sol";
-
 import "safe/handler/ExtensibleFallbackHandler.sol";
-
-import {ConditionalOrderLib} from "../src/libraries/ConditionalOrderLib.sol";
-import {GPv2TradeEncoder} from "./vendored/GPv2TradeEncoder.sol";
-import {ComposableCoW} from "../src/ComposableCoW.sol";
 
 import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
-import {IERC20, Tokens} from "./helpers/Tokens.t.sol";
 import {CoWProtocol} from "./helpers/CoWProtocol.t.sol";
 import {SafeHelper} from "./helpers/Safe.t.sol";
 
-abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
+abstract contract Base is Test, SafeHelper, CoWProtocol {
     using TestAccountLib for TestAccount[];
     using TestAccountLib for TestAccount;
     using SafeLib for Safe;
@@ -160,79 +148,4 @@ abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
     //     );
     // }
 
-    function settlePart(SafeProxy proxy, GPv2Order.Data memory order, bytes memory bundleBytes) internal {
-        // Generate Bob's counter order
-        GPv2Order.Data memory bobOrder = GPv2Order.Data({
-            sellToken: order.buyToken,
-            buyToken: order.sellToken,
-            receiver: address(0),
-            sellAmount: order.buyAmount,
-            buyAmount: order.sellAmount,
-            validTo: order.validTo,
-            appData: order.appData,
-            feeAmount: 0,
-            kind: GPv2Order.KIND_BUY,
-            partiallyFillable: false,
-            buyTokenBalance: GPv2Order.BALANCE_ERC20,
-            sellTokenBalance: GPv2Order.BALANCE_ERC20
-        });
-
-        bytes memory bobSignature =
-            TestAccountLib.signPacked(bob, GPv2Order.hash(bobOrder, settlement.domainSeparator()));
-
-        // Authorize the GPv2VaultRelayer to spend bob's sell token
-        vm.prank(bob.addr);
-        IERC20(bobOrder.sellToken).approve(address(relayer), bobOrder.sellAmount);
-
-        // first declare the tokens we will be trading
-        IERC20[] memory tokens = new IERC20[](2);
-        tokens[0] = IERC20(order.sellToken);
-        tokens[1] = IERC20(order.buyToken);
-
-        // second declare the clearing prices
-        uint256[] memory clearingPrices = new uint256[](2);
-        clearingPrices[0] = bobOrder.sellAmount;
-        clearingPrices[1] = bobOrder.buyAmount;
-
-        // third declare the trades
-        GPv2Trade.Data[] memory trades = new GPv2Trade.Data[](2);
-
-        // The safe's order is the first trade
-        trades[0] = GPv2Trade.Data({
-            sellTokenIndex: 0,
-            buyTokenIndex: 1,
-            receiver: address(0),
-            sellAmount: order.sellAmount,
-            buyAmount: order.buyAmount,
-            validTo: order.validTo,
-            appData: order.appData,
-            feeAmount: order.feeAmount,
-            flags: GPv2TradeEncoder.encodeFlags(order, GPv2Signing.Scheme.Eip1271),
-            executedAmount: order.sellAmount,
-            signature: abi.encodePacked(address(proxy), bundleBytes)
-        });
-
-        // Bob's order is the second trade
-        trades[1] = GPv2Trade.Data({
-            sellTokenIndex: 1,
-            buyTokenIndex: 0,
-            receiver: address(0),
-            sellAmount: bobOrder.sellAmount,
-            buyAmount: bobOrder.buyAmount,
-            validTo: bobOrder.validTo,
-            appData: bobOrder.appData,
-            feeAmount: bobOrder.feeAmount,
-            flags: GPv2TradeEncoder.encodeFlags(bobOrder, GPv2Signing.Scheme.Eip712),
-            executedAmount: bobOrder.sellAmount,
-            signature: bobSignature
-        });
-
-        // fourth declare the interactions
-        GPv2Interaction.Data[][3] memory interactions =
-            [new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](0), new GPv2Interaction.Data[](0)];
-
-        // finally we can execute the settlement
-        vm.prank(solver.addr);
-        settlement.settle(tokens, clearingPrices, trades, interactions);
-    }
 }
