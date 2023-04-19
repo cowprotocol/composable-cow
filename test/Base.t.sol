@@ -16,9 +16,7 @@ import {GPv2Signing} from "cowprotocol/mixins/GPv2Signing.sol";
 import {GPv2Settlement} from "cowprotocol/GPv2Settlement.sol";
 import {GPv2VaultRelayer} from "cowprotocol/GPv2VaultRelayer.sol";
 
-import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
-import {SignatureVerifierMuxer, ERC1271} from "safe/handler/SignatureVerifierMuxer.sol";
-import {ExtensibleDefaultFallbackHandler} from "safe/handler/vendored/ExtensibleDefaultFallbackHandler.sol";
+import "safe/handler/ExtensibleFallbackHandler.sol";
 
 import {ConditionalOrderLib} from "../src/libraries/ConditionalOrderLib.sol";
 import {GPv2TradeEncoder} from "./vendored/GPv2TradeEncoder.sol";
@@ -44,9 +42,6 @@ abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
     Safe public safe2;
     Safe public safe3;
 
-    ExtensibleFallbackHandler public efhSingleton;
-    SignatureVerifierMuxer public svmSingleton;
-
     function setUp() public virtual override(CoWProtocol) {
         // setup CoWProtocol
         super.setUp();
@@ -66,18 +61,9 @@ abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
         owners[1] = bob.addr;
         owners[2] = carol.addr;
 
-        // deploy the extensible fallback handler and signature verifier muxer
-        efhSingleton = new ExtensibleFallbackHandler(address(new ExtensibleDefaultFallbackHandler()));
-        svmSingleton = new SignatureVerifierMuxer();
-
-        safe1 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(efhSingleton), 0)));
-        safe2 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(efhSingleton), 1)));
-        safe3 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(efhSingleton), 2)));
-
-        // set the signature verifier muxer to handle ERC1271 signatures
-        setSafeMethodHandler(safe1, ERC1271.isValidSignature.selector, address(svmSingleton));
-        setSafeMethodHandler(safe2, ERC1271.isValidSignature.selector, address(svmSingleton));
-        setSafeMethodHandler(safe3, ERC1271.isValidSignature.selector, address(svmSingleton));
+        safe1 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 0)));
+        safe2 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 1)));
+        safe3 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 2)));
     }
 
     function signers() internal view returns (TestAccount[] memory) {
@@ -99,11 +85,12 @@ abstract contract Base is Test, Tokens, SafeHelper, CoWProtocol {
         );
     }
 
-    function setSafeMethodHandler(Safe safe, bytes4 selector, address handler) internal {
+    function setSafeMethodHandler(Safe safe, bytes4 selector, bool isStatic, address handler) internal {
+        bytes32 encodedHandler = MarshalLib.encode(isStatic, handler);
         safe.execute(
             address(safe),
             0,
-            abi.encodeWithSelector(ExtensibleFallbackHandler.setSafeMethod.selector, selector, handler),
+            abi.encodeWithSelector(FallbackHandler.setSafeMethod.selector, selector, encodedHandler),
             Enum.Operation.Call,
             signers()
         );

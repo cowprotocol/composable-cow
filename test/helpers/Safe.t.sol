@@ -4,6 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Safe} from "safe/Safe.sol";
 import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
 import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
+import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 
@@ -13,6 +14,7 @@ abstract contract SafeHelper {
     Safe public singleton;
     SafeProxyFactory public factory;
     CompatibilityFallbackHandler public handler;
+    ExtensibleFallbackHandler public eHandler;
     MultiSend public multisend;
     SignMessageLib public signMessageLib;
 
@@ -21,6 +23,7 @@ abstract contract SafeHelper {
         singleton = new Safe();
         factory = new SafeProxyFactory();
         handler = new CompatibilityFallbackHandler();
+        eHandler = new ExtensibleFallbackHandler();
         multisend = new MultiSend();
         signMessageLib = new SignMessageLib();
     }
