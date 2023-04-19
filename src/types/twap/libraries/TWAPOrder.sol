@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.17;
+pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
@@ -7,13 +7,15 @@ import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import {TWAPOrderMathLib} from "./TWAPOrderMathLib.sol";
 
-/// @title Time-weighted Average Order Library
-/// @author mfw78 <mfw78@rndlabs.xyz>
-/// @dev Structs, errors, and functions for time-weighted average orders.
+/**
+ * @title Time-weighted Average Order Library
+ * @author mfw78 <mfw78@rndlabs.xyz>
+ * @dev Structs, errors, and functions for time-weighted average orders.
+ */
 library TWAPOrder {
     using SafeCast for uint256;
 
-    // --- errors specific to TWAP orders
+    // --- errors
 
     error InvalidSameToken();
     error InvalidToken();
@@ -45,8 +47,10 @@ library TWAPOrder {
 
     // --- functions
 
-    /// @dev revert if the order is invalid
-    /// @param self The TWAP order to validate
+    /**
+     * @dev revert if the order is invalid
+     * @param self The TWAP order to validate
+     */
     function validate(Data memory self) internal pure {
         if (!(self.sellToken != self.buyToken)) revert InvalidSameToken();
         if (!(address(self.sellToken) != address(0) && address(self.buyToken) != address(0))) revert InvalidToken();
@@ -58,9 +62,11 @@ library TWAPOrder {
         if (!(self.span <= self.t)) revert InvalidSpan();
     }
 
-    /// @dev Generate the `GPv2Order` for the current part of the TWAP order.
-    /// @param self The TWAP order to generate the order for.
-    /// @return order The `GPv2Order` for the current part.
+    /**
+     * @dev Generate the `GPv2Order` for the current part of the TWAP order.
+     * @param self The TWAP order to generate the order for.
+     * @return order The `GPv2Order` for the current part.
+     */
     function orderFor(Data memory self) internal view returns (GPv2Order.Data memory order) {
         // First, validate and revert if the TWAP is invalid.
         validate(self);
