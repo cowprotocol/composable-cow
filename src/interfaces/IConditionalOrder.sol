@@ -44,7 +44,7 @@ bytes32 constant CANCEL_ORDER_TYPE_HASH = hex"e2d395a4176e36febca53784f02b9bf31a
  *      - Function `dispatch` dedicated to emitting the `ConditionalOrderCreated` event.
  *      - Function `getTradeableOrder` takes the `bytes` parameter representing the conditional order as input.
  */
-interface ConditionalOrder is ISafeSignatureVerifier {
+interface IConditionalOrder is ISafeSignatureVerifier {
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
     error OrderNotValid();
     /// @dev This error is returned by the `getTradeableOrder` function if the order is not signed.
@@ -75,7 +75,7 @@ interface ConditionalOrder is ISafeSignatureVerifier {
     ) external view returns (bool);
 }
 
-interface ConditionalOrderFactory is ConditionalOrder {
+interface IConditionalOrderFactory is IConditionalOrder {
     /**
      * @dev This event is emitted when a new conditional order is created.
      * @param safe the address of the Safe that implements the `getTradeableOrder` function

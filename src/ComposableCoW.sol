@@ -6,7 +6,7 @@ import {Safe} from "safe/Safe.sol";
 import {ISafeSignatureVerifier, ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
-import {ConditionalOrder} from "./interfaces/ConditionalOrder.sol";
+import {IConditionalOrder} from "./interfaces/IConditionalOrder.sol";
 import {ISwapGuard} from "./interfaces/ISwapGuard.sol";
 
 contract ComposableCoW is ISafeSignatureVerifier {
@@ -31,7 +31,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
     // A struct representing the conditional order's parameters
     struct ConditionalOrderParams {
-        ConditionalOrder handler;
+        IConditionalOrder handler;
         bytes32 salt;
         bytes data;
     }
