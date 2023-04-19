@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "safe/Safe.sol";
-import "safe/handler/SignatureVerifierMuxer.sol";
+import "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import "../../interfaces/ConditionalOrder.sol";
@@ -41,12 +41,16 @@ contract TWAP is ConditionalOrderFactory {
     function isValidSafeSignature(
         Safe safe,
         address sender,
-        bytes32 hash,
-        bytes calldata signature
+        bytes32 _hash,
+        bytes32 domainSeparator,
+        bytes32 typeHash,
+        bytes calldata encodeData,
+        bytes calldata payload
     ) external view override returns (bytes4 magic) {
-        PayloadStruct memory payload = abi.decode(signature, (PayloadStruct));
+        PayloadStruct memory p = abi.decode(payload, (PayloadStruct));
+        GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
 
-        if (hash != GPv2Order.hash(getTradeableOrder(address(safe), sender, payload.data).order, settlementDomainSeparator)) {
+        if (_hash != GPv2Order.hash(getTradeableOrder(address(safe), sender, p.data).order, domainSeparator)) {
             revert ConditionalOrder.OrderNotValid();
         } else {
             return ERC1271.isValidSignature.selector;
