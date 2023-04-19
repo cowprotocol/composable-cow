@@ -36,7 +36,7 @@ library TWAPOrderMathLib {
 
             /**
              *  @dev Order is expired after the last part (`n` parts, running at `t` time length).
-             * 
+             *
              * Multiplication overflow: `numParts` is bounded by `type(uint32).max` and `frequency` is bounded by
              * `365 days` which is smaller than `type(uint32).max` so the product of `numParts * frequency` is
              * ≈ 2⁵⁴.
@@ -47,7 +47,7 @@ library TWAPOrderMathLib {
 
             /**
              * @dev We use integer division to get the part number as we want to round down to the nearest part.
-             * 
+             *
              * Subtraction underflow: `startTime` is asserted to be less than `block.timestamp` so the difference
              * of `block.timestamp - startTime` shall always be positive.
              * Divide by zero: `frequency` is asserted to be greater than zero.
@@ -74,7 +74,7 @@ library TWAPOrderMathLib {
 
             /**
              *  @dev If the span is non-zero, then the order is valid for the span of the part.
-             * 
+             *
              * Multiplication overflow: `part` is bounded by `numParts` which is bounded by `type(uint32).max` with
              * `frequency` bounded by `365 days` which is smaller than `type(uint32).max` so the product of
              * `part * frequency` is ≈ 2⁵⁴.
