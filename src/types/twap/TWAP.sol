@@ -5,13 +5,13 @@ import "safe/Safe.sol";
 import "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
-import "../../interfaces/ConditionalOrder.sol";
+import "../../interfaces/IConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
 /// @title CoW TWAP Fallback Handler
 /// @author mfw78 <mfw78@rndlabs.xyz>
 /// @dev A fallback handler to enable TWAP conditional orders on Safe, settling via CoW Protocol.
-contract TWAP is ConditionalOrderFactory {
+contract TWAP is IConditionalOrderFactory {
     function getTradeableOrder(address owner, address sender, bytes memory data)
         public
         view
@@ -30,7 +30,7 @@ contract TWAP is ConditionalOrderFactory {
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
         if (!(block.timestamp <= order.validTo)) {
-            revert ConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid();
         }
     }
 
@@ -42,7 +42,7 @@ contract TWAP is ConditionalOrderFactory {
 
         /// @dev Verify that the order is valid and matches the payload.
         if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
-            revert ConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid();
         }
     }
 

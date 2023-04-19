@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {CANCEL_ORDER_TYPE_HASH, CONDITIONAL_ORDER_TYPE_HASH} from "../interfaces/ConditionalOrder.sol";
+import {CANCEL_ORDER_TYPE_HASH, CONDITIONAL_ORDER_TYPE_HASH} from "../interfaces/IConditionalOrder.sol";
 
 /// @title Conditional Order Library
 /// @author mfw78 <mfw78@rndlabs.xyz>

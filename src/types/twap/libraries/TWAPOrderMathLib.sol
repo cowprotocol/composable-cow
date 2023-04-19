@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {ConditionalOrder} from "../../../interfaces/ConditionalOrder.sol";
+import {IConditionalOrder} from "../../../interfaces/IConditionalOrder.sol";
 
 /// @title CoWProtocol TWAP Order Math Library
 /// @dev TWAP Math is separated to facilitate easier unit testing / SMT verification.
@@ -28,7 +28,7 @@ library TWAPOrderMathLib {
 
         unchecked {
             /// @dev Order is not valid before the start (order commences at `t0`).
-            if (!(startTime <= block.timestamp)) revert ConditionalOrder.OrderNotValid();
+            if (!(startTime <= block.timestamp)) revert IConditionalOrder.OrderNotValid();
 
             /// @dev Order is expired after the last part (`n` parts, running at `t` time length).
             /// Multiplication overflow: `numParts` is bounded by `type(uint32).max` and `frequency` is bounded by
@@ -36,7 +36,7 @@ library TWAPOrderMathLib {
             /// ≈ 2⁵⁴.
             /// Addition overflow: `startTime` is bounded by `block.timestamp` which is reasonably bounded by
             /// `type(uint32).max` so the sum of `startTime + (numParts * frequency)` is ≈ 2⁵⁵.
-            if (!(block.timestamp < startTime + (numParts * frequency))) revert ConditionalOrder.OrderExpired();
+            if (!(block.timestamp < startTime + (numParts * frequency))) revert IConditionalOrder.OrderExpired();
 
             /// @dev We use integer division to get the part number as we want to round down to the nearest part.
             /// Subtraction underflow: `startTime` is asserted to be less than `block.timestamp` so the difference
