@@ -6,9 +6,14 @@ import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 import "../../interfaces/IConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
-/// @title CoW TWAP Fallback Handler
-/// @author mfw78 <mfw78@rndlabs.xyz>
-/// @dev A fallback handler to enable TWAP conditional orders on Safe, settling via CoW Protocol.
+/**
+ * @title TWAP Conditional Order
+ * @author mfw78 <mfw78@rndlabs.xyz>
+ * @notice TWAP conditional orders allow for splitting an order into a series of orders that are
+ * executed at a fixed interval. This is useful for ensuring that a trade is executed at a
+ * specific price, even if the price of the token changes during the trade.
+ * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
+ */
 contract TWAP is IConditionalOrderFactory {
     function getTradeableOrder(address owner, address sender, bytes memory data)
         public
@@ -19,11 +24,13 @@ contract TWAP is IConditionalOrderFactory {
         owner;
         sender;
 
-        /// @dev Decode the payload into a TWAP bundle and get the order. `orderFor` will revert if
-        /// there is no current valid order.
-        /// NOTE: This will return an order even if the part of the TWAP bundle that is currently
-        /// valid is filled. This is safe as CoW Protocol ensures that each `orderUid` is only
-        /// settled once.
+        /**
+         * @dev Decode the payload into a TWAP bundle and get the order. `orderFor` will revert if
+         * there is no current valid order.
+         * NOTE: This will return an order even if the part of the TWAP bundle that is currently
+         * valid is filled. This is safe as CoW Protocol ensures that each `orderUid` is only
+         * settled once.
+         */
         order = TWAPOrder.orderFor(abi.decode(data, (TWAPOrder.Data)));
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
