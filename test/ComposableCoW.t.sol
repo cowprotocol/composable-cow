@@ -125,12 +125,27 @@ contract ComposableCoWTest is Base, Merkle {
             abi.encode(proof, leaf)
         );
 
-        // 9. Construct the signature payload
-        bytes memory data =
-            abi.encodeCall(ERC1271.isValidSignature, (GPv2Order.hash(order, settlement.domainSeparator()), signature));
+        // 10. Set the ERC20 allowance for the TWAP
+        safe1.execute(
+            address(token0),
+            0,
+            abi.encodeWithSelector(
+                IERC20.approve.selector,
+                address(relayer),
+                twapData.n * twapData.partSellAmount
+            ),
+            Enum.Operation.Call,
+            signers()
+        );
 
-        (bool success, bytes memory result) = address(safe1).staticcall(data);
-        require(success, "failed to call isValidSignature");
+        // 11. Execute the order
+        settle(address(safe1), bob, order, signature);
+
+        // 9. Construct the signature payload
+        // bytes memory data =
+        //     abi.encodeCall(ERC1271.isValidSignature, (GPv2Order.hash(order, settlement.domainSeparator()), signature));
+
+        // (bool success, bytes memory result) = address(safe1).staticcall(data);
     }
 
     function hashLeaf(ComposableCoW.ConditionalOrderParams memory leaf) public pure returns (bytes32) {
