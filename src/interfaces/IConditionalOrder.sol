@@ -2,36 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-
-/**
- * @dev The conditional order EIP-712 `typeHash` for creating an order.
- *
- * This value is pre-computed from the following expression:
- * ```
- * keccak256(
- *    "ConditionalOrder(" +
- *       "bytes payload" +
- *   ")"
- * )
- * ```
- * The `payload` parameter is the implementation-specific payload used to create the order.
- */
-bytes32 constant CONDITIONAL_ORDER_TYPE_HASH = hex"59a89a42026f77464983113514109ddff8e510f0e62c114303617cb5ca97e091";
-
-/**
- * @dev The conditional order EIP-712 `typeHash` for a cancelled order.
- *
- * This value is pre-computed from the following expression:
- * ```
- * keccak256(
- *      "CancelOrder(" +
- *          "bytes32 order" +
- *      ")"
- * )
- * ```
- * The `order` parameter is the `hashStruct` of the `ConditionalOrder`.
- */
-bytes32 constant CANCEL_ORDER_TYPE_HASH = hex"e2d395a4176e36febca53784f02b9bf31a44db36d5688fe8fc4306e6dfa54148";
+import {IERC165} from "safe/interfaces/IERC165.sol";
 
 /**
  * @title Conditional Order Interface
