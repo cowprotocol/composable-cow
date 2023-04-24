@@ -2,12 +2,11 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-import {GPv2Settlement, GPv2Order} from "cowprotocol/GPv2Settlement.sol";
 
-import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
+import "../BaseConditionalOrder.sol";
 
 // @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
-contract TradeAboveThreshold is ConditionalOrder {
+contract TradeAboveThreshold is BaseConditionalOrder {
     using GPv2Order for GPv2Order.Data;
 
     struct Data {
@@ -19,14 +18,14 @@ contract TradeAboveThreshold is ConditionalOrder {
 
     // @dev If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance
     // for `buyToken` at the current market price (no limit!).
-    function getTradeableOrder(address owner, address, bytes calldata payload)
-        external
+    function getTradeableOrder(address owner, address, bytes calldata staticInput, bytes calldata)
+        public
         view
         override
         returns (GPv2Order.Data memory order)
     {
         /// @dev Decode the payload into the trade above threshold parameters.
-        TradeAboveThreshold.Data memory data = abi.decode(payload, (Data));
+        TradeAboveThreshold.Data memory data = abi.decode(staticInput, (Data));
 
         uint256 balance = data.sellToken.balanceOf(owner);
         require(balance >= data.threshold, "Not enough balance");
