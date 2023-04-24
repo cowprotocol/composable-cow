@@ -17,7 +17,6 @@ import {GPv2TradeEncoder} from "../vendored/GPv2TradeEncoder.sol";
 import {TestAccount, TestAccountLib} from "../libraries/TestAccountLib.t.sol";
 import {IERC20, Tokens} from "./Tokens.t.sol";
 
-
 /**
  * @title CoW Protocol - A helper contract for local integration testing with CoW Protocol.
  * @author mfw78 <mfw78@rndlabs.xyz>
@@ -100,7 +99,9 @@ abstract contract CoWProtocol is Test, Tokens {
      * @param order the order to settle
      * @param bundleBytes the ERC-1271 bundle for the order
      */
-    function settle(address who, TestAccount memory counterParty, GPv2Order.Data memory order, bytes memory bundleBytes) internal {
+    function settle(address who, TestAccount memory counterParty, GPv2Order.Data memory order, bytes memory bundleBytes)
+        internal
+    {
         // Generate counter party's order
         GPv2Order.Data memory counterOrder = GPv2Order.Data({
             sellToken: order.buyToken,
@@ -117,7 +118,8 @@ abstract contract CoWProtocol is Test, Tokens {
             sellTokenBalance: GPv2Order.BALANCE_ERC20
         });
 
-        bytes memory counterPartySig = counterParty.signPacked(GPv2Order.hash(counterOrder, settlement.domainSeparator()));
+        bytes memory counterPartySig =
+            counterParty.signPacked(GPv2Order.hash(counterOrder, settlement.domainSeparator()));
 
         // Authorize the GPv2VaultRelayer to spend bob's sell token
         vm.prank(counterParty.addr);
