@@ -33,6 +33,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
     // An event emitted when a user sets their merkle root
     event MerkleRootSet(address indexed owner, bytes32 root, Proof proof);
     event ConditionalOrderCreated(address indexed owner, IConditionalOrder.ConditionalOrderParams params);
+    event SwapGuardSet(address indexed owner, ISwapGuard swapGuard);
 
     // --- state
     // Domain separator is only used for generating signatures
@@ -84,6 +85,15 @@ contract ComposableCoW is ISafeSignatureVerifier {
      */
     function remove(bytes32 singleOrderHash) external {
         singleOrders[msg.sender][singleOrderHash] = false;
+    }
+
+    /**
+     * Set the swap guard of the user's conditional orders
+     * @param swapGuard The address of the swap guard
+     */
+    function setSwapGuard(ISwapGuard swapGuard) external {
+        swapGuards[msg.sender] = swapGuard;
+        emit SwapGuardSet(msg.sender, swapGuard);
     }
 
     // --- ISafeSignatureVerifier
