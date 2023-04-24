@@ -43,7 +43,7 @@ library TWAPOrderMathLib {
              * Addition overflow: `startTime` is bounded by `block.timestamp` which is reasonably bounded by
              * `type(uint32).max` so the sum of `startTime + (numParts * frequency)` is ≈ 2⁵⁵.
              */
-            if (!(block.timestamp < startTime + (numParts * frequency))) revert IConditionalOrder.OrderExpired();
+            if (!(block.timestamp < startTime + (numParts * frequency))) revert IConditionalOrder.OrderNotValid();
 
             /**
              * @dev We use integer division to get the part number as we want to round down to the nearest part.
