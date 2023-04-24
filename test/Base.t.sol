@@ -43,7 +43,7 @@ abstract contract Base is Test, SafeHelper, CoWProtocol {
         safe1 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 0)));
         safe2 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 1)));
         safe3 = Safe(payable(SafeLib.createSafe(factory, singleton, owners, 2, address(eHandler), 2)));
-        
+
         // give some tokens to the safe
         deal(address(token0), address(safe1), 1000e18);
     }
@@ -109,5 +109,4 @@ abstract contract Base is Test, SafeHelper, CoWProtocol {
     //         signers()
     //     );
     // }
-
 }
