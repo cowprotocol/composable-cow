@@ -7,18 +7,21 @@ import {IERC165} from "safe/interfaces/IERC165.sol";
 /**
  * @title Conditional Order Interface
  * @author CoW Protocol Developers + mfw78 <mfw78@rndlabs.xyz>
- * @dev This interface is an extended version of `ConditionalOrder` as found at the repository:
- *      https://github.com/cowprotocol/conditional-smart-orders/blob/main/src/ConditionalOrder.sol. The differences are:
- *      - Event `ConditionalOrderCreated` contains both the `address` of the Safe that implements the `getTradeableOrder`
- *        function and the `bytes` parameter representing the conditional order.
- *      - Function `dispatch` dedicated to emitting the `ConditionalOrderCreated` event.
- *      - Function `getTradeableOrder` takes the `bytes` parameter representing the conditional order as input.
  */
 interface IConditionalOrder {
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
     error OrderNotValid();
 
     /**
+     * @dev This struct is used to uniquely identify a conditional order for an owner.
+     *      H(handler || salt || staticInput) **MUST** be unique for an owner.
+     */
+    struct ConditionalOrderParams {
+        IConditionalOrder handler;
+        bytes32 salt;
+        bytes staticInput;
+    }
+
     /**
      * Verify if a given discrete order is valid.
      * @dev Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.
@@ -41,20 +44,17 @@ interface IConditionalOrder {
     ) external view returns (bool);
 }
 
-interface IConditionalOrderFactory is IConditionalOrder {
+/**
+ * @title Conditional Order Generator Interface
+ * @author mfw78 <mfw78@rndlabs.xyz>
+ */
+interface IConditionalOrderGenerator is IERC165 {
     /**
      * @dev This event is emitted when a new conditional order is created.
-     * @param safe the address of the Safe that implements the `getTradeableOrder` function
-     * @param payload the payload struct containing the order and the implementation-specific payload
+     * @param owner the address that has created the conditional order
+     * @param params the address / salt / data of the conditional order
      */
-    event ConditionalOrderCreated(address indexed safe, bytes payload);
-
-    /**
-     * @dev This function is used to dispatch the `ConditionalOrderCreated` event.
-     * @param safe the address of the Safe that implements the `getTradeableOrder` function
-     * @param payload the payload struct containing the order and the implementation-specific payload
-     */
-    function dispatch(address safe, address sender, bytes calldata payload) external;
+    event ConditionalOrderCreated(address indexed owner, IConditionalOrder.ConditionalOrderParams params);
 
     /**
      * @dev Get a tradeable order that can be posted to the CoW Protocol API and would pass signature validation.
