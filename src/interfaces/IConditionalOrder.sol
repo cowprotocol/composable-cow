@@ -19,23 +19,25 @@ interface IConditionalOrder {
     error OrderNotValid();
 
     /**
-     * Verify if a given order is valid. This function is used in combination with the `isValidSafeSignature`
-     * function to verify that the order is signed by the Safe.
+    /**
+     * Verify if a given discrete order is valid.
+     * @dev Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.
      * @param owner the contract who is the owner of the order
      * @param sender the `msg.sender` of the transaction
-     * @param hash the hash of the order
+     * @param _hash the hash of the order
      * @param domainSeparator the domain separator used to sign the order
-     * @param order that is being verified (passed from `encodeData`)
-     * @param payload any additional implementation payload that is needed to verify the order
+     * @param staticInput the static input for all discrete orders cut from this conditional order
+     * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
      * @return true if the order is valid, false otherwise
      */
     function verify(
         address owner,
         address sender,
-        bytes32 hash,
+        bytes32 _hash,
         bytes32 domainSeparator,
-        GPv2Order.Data calldata order,
-        bytes calldata payload
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        GPv2Order.Data calldata order
     ) external view returns (bool);
 }
 
@@ -58,13 +60,13 @@ interface IConditionalOrderFactory is IConditionalOrder {
      * @dev Get a tradeable order that can be posted to the CoW Protocol API and would pass signature validation.
      *     Reverts if the order condition is not met.
      * @param owner the contract who is the owner of the order
-     * @param sender the `msg.sender` of the transaction
-     * @param payload The implementation-specific payload used to create the order, as emitted by the
-     *       ConditionalOrderCreated event
-     * @return the tradeable order and the implementation-specific payload
+     * @param sender the `msg.sender` of the parent `isValidSignature` call
+     * @param staticInput the static input for all discrete orders cut from this conditional order
+     * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
+     * @return the tradeable order for submission to the CoW Protocol API
      */
-    function getTradeableOrder(address owner, address sender, bytes calldata payload)
+    function getTradeableOrder(address owner, address sender, bytes calldata staticInput, bytes calldata offchainInput)
         external
         view
-        returns (GPv2Order.Data memory, bytes memory);
+        returns (GPv2Order.Data memory);
 }
