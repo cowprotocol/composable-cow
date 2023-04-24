@@ -2,56 +2,98 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {Safe} from "safe/Safe.sol";
-import {ISafeSignatureVerifier, ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
+import "safe/handler/ExtensibleFallbackHandler.sol";
 
-import {IConditionalOrder} from "./interfaces/IConditionalOrder.sol";
-import {ISwapGuard} from "./interfaces/ISwapGuard.sol";
+import "./interfaces/IConditionalOrder.sol";
+import "./interfaces/ISwapGuard.sol";
 
 contract ComposableCoW is ISafeSignatureVerifier {
-    // A mapping of user's merkle roots
-    mapping(Safe => bytes32) public roots;
-    // TODO: Gas efficiency for packing storage variables
-    mapping(Safe => ISwapGuard) public swapGuards;
+    // --- errors
+    error ProofNotAuthed();
+    error SingleOrderNotAuthed();
+    error SwapGuardRestricted();
 
-    // An enum representing different ways to store proofs
-    enum ProofStorage {
-        None,
-        Emit,
-        Swarm,
-        IPFS
+    // --- types
+
+    // A struct to encapsulate order parameters / offchain input
+    struct PayloadStruct {
+        bytes32[] proof;
+        IConditionalOrder.ConditionalOrderParams params;
+        bytes offchainInput;
     }
 
     // A struct representing where to find the proofs
     struct Proof {
-        ProofStorage storageType;
-        bytes payload;
-    }
-
-    // A struct representing the conditional order's parameters
-    struct ConditionalOrderParams {
-        IConditionalOrder handler;
-        bytes32 salt;
+        uint256 location;
         bytes data;
     }
 
-    // An event emitted when a user sets their merkle root
-    event RootSet(address indexed usr, bytes32 root, Proof proof);
+    // --- events
 
-    /// @notice Set the merkle root of the user's conditional orders
-    /// @param root The merkle root of the user's conditional orders
-    /// @param proof Where to find the proofs
-    function setRoot(bytes32 root, Proof calldata proof) external {
-        roots[Safe(payable(msg.sender))] = root;
-        emit RootSet(msg.sender, root, proof);
+    // An event emitted when a user sets their merkle root
+    event MerkleRootSet(address indexed owner, bytes32 root, Proof proof);
+    event ConditionalOrderCreated(address indexed owner, IConditionalOrder.ConditionalOrderParams params);
+
+    // --- state
+    // Domain separator is only used for generating signatures
+    bytes32 private immutable _domainSeparator;
+    /// @dev Mapping of owner's merkle roots
+    mapping(address => bytes32) public roots;
+    /// @dev Mapping of owner's single orders
+    mapping(address => mapping(bytes32 => bool)) public singleOrders;
+    // @dev Mapping of owner's swap guard
+    mapping(address => ISwapGuard) public swapGuards;
+
+    // --- constructor
+
+    /**
+     * @param domainSeparator The domain separator used for generating signatures
+     */
+    constructor(bytes32 domainSeparator) {
+        _domainSeparator = domainSeparator;
     }
+
+    // --- setters
+
+    /**
+     * Set the merkle root of the user's conditional orders
+     * @notice Set the merkle root of the user's conditional orders
+     * @param root The merkle root of the user's conditional orders
+     * @param proof Where to find the proofs
+     */
+    function setRoot(bytes32 root, Proof calldata proof) external {
+        roots[msg.sender] = root;
+        emit MerkleRootSet(msg.sender, root, proof);
+    }
+
+    /**
+     * Authorise a single conditional order
+     * @param params The parameters of the conditional order
+     * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
+     */
+    function create(IConditionalOrder.ConditionalOrderParams calldata params, bool dispatch) external {
+        singleOrders[msg.sender][keccak256(abi.encode(params))] = true;
+        if (dispatch) {
+            emit ConditionalOrderCreated(msg.sender, params);
+        }
+    }
+
+    /**
+     * Remove the authorisation of a single conditional order
+     * @param singleOrderHash The hash of the single conditional order to remove
+     */
+    function remove(bytes32 singleOrderHash) external {
+        singleOrders[msg.sender][singleOrderHash] = false;
+    }
+
+    // --- ISafeSignatureVerifier
 
     /**
      * @inheritdoc ISafeSignatureVerifier
      * @dev This function does not make use of the `typeHash` parameter as CoW Protocol does not
      *      have more than one type.
      * @param encodeData Is the abi encoded `GPv2Order.Data`
+     * @param payload Is the abi encoded `PayloadStruct`
      */
     function isValidSafeSignature(
         Safe safe,
@@ -62,36 +104,138 @@ contract ComposableCoW is ISafeSignatureVerifier {
         bytes calldata encodeData,
         bytes calldata payload
     ) external view override returns (bytes4 magic) {
-        // The signature is an abi.encode(bytes32[] proof, ConditionalOrderParams orderParams)
-        (bytes32[] memory proof, ConditionalOrderParams memory params) =
-            abi.decode(payload, (bytes32[], ConditionalOrderParams));
+        // First decode the payload
+        PayloadStruct memory _payload = abi.decode(payload, (PayloadStruct));
 
-        // Scope to avoid stack too deep errors
-        {
-            // Computing proof using leaf double hashing
-            // https://flawed.net.nz/2018/02/21/attacking-merkle-trees-with-a-second-preimage-attack/
-            bytes32 root = roots[safe];
-            bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
+        // Check if the order is authorised
+        _auth(address(safe), _payload.params, _payload.proof);
 
-            // First, verify the proof
-            require(MerkleProof.verify(proof, root, leaf), "ComposableCow: invalid proof");
+        // It's an authorised order, validate it.
+        GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
+
+        // Check with the swap guard if the order is restricted or not
+        if (!(_guardCheck(address(safe), _payload.params, _payload.offchainInput, order))) {
+            revert SwapGuardRestricted();
         }
 
-        // Scope to avoid stack too deep errors
-        {
-            // Decode the order
-            GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
-
-            // Next check the guard (if any)
-            ISwapGuard guard = swapGuards[safe];
-            if (address(guard) != address(0)) {
-                require(guard.verify(order, params.data), "ComposableCow: swap guard rejected");
-            }
-
-            // Proof is valid, guard (if any) is valid, now check the handler
-            if (params.handler.verify(address(safe), sender, _hash, domainSeparator, order, params.data)) {
-                magic = ERC1271.isValidSignature.selector;
-            }
+        // Proof is valid, guard (if any)_ is valid, now check the handler
+        if (
+            _payload.params.handler.verify(
+                address(safe),
+                sender,
+                _hash,
+                domainSeparator,
+                _payload.params.staticInput,
+                _payload.offchainInput,
+                order
+            )
+        ) {
+            magic = ERC1271.isValidSignature.selector;
         }
+    }
+
+    // --- getters
+
+    /**
+     * Get the `GPv2Order.Data` and signature for submitting to CoW Protocol API
+     * @param owner of the order
+     * @param handler used when instantiating the order
+     * @param salt used when instantiating the order
+     * @param staticInput used when instantiating the order
+     * @param offchainInput any dynamic off-chain input for generating the discrete order
+     * @param proof if using merkle-roots that H(handler || salt || staticInput) is in the merkle tree
+     * @return order discrete order for submitting to CoW Protocol API
+     * @return signature for submitting to CoW Protocol API
+     */
+    function getTradeableOrderWithSignature(
+        address owner,
+        IConditionalOrder handler,
+        bytes32 salt,
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        bytes32[] calldata proof
+    ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
+        IConditionalOrder.ConditionalOrderParams memory params =
+            IConditionalOrder.ConditionalOrderParams({handler: handler, salt: salt, staticInput: staticInput});
+
+        // Check if the order is authorised
+        _auth(owner, params, proof);
+
+        // Make sure the handler supports `IConditionalOrderGenerator`
+        require(
+            IConditionalOrderGenerator(address(params.handler)).supportsInterface(
+                type(IConditionalOrderGenerator).interfaceId
+            ),
+            "Handler does not support IConditionalOrderGenerator"
+        );
+        order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
+            owner, msg.sender, params.staticInput, offchainInput
+        );
+
+        // Check with the swap guard if the order is restricted or not
+        if (!(_guardCheck(owner, params, offchainInput, order))) {
+            revert SwapGuardRestricted();
+        }
+
+        try ExtensibleFallbackHandler(owner).NAME() returns (string memory name) {
+            // Confirm that the name is "Extensible Fallback Handler"
+            require(
+                keccak256(abi.encodePacked(name)) == keccak256(abi.encodePacked("Extensible Fallback Handler")),
+                "Invalid fallback handler"
+            );
+            signature = abi.encodeWithSignature(
+                "safeSignature(bytes32,bytes32,bytes,bytes)",
+                _domainSeparator,
+                GPv2Order.TYPE_HASH,
+                abi.encode(order),
+                abi.encode(PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}))
+            );
+        } catch {
+            // TODO: Insert alternative formatting for EIP-1271 Forwarder
+        }
+    }
+
+    // --- internal functions
+
+    /**
+     * Check if the order has been authorised by the owner
+     * @dev If `proof.length == 0`, then we use the single order auth
+     * @param owner of the order whose authorisation is being checked
+     * @param params that uniquely identify the order
+     * @param proof to assert that H(params) is in the merkle tree (optional)
+     */
+    function _auth(address owner, IConditionalOrder.ConditionalOrderParams memory params, bytes32[] memory proof)
+        internal
+        view
+    {
+        /// @dev Computing proof using leaf double hashing
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
+        if (!(proof.length == 0 || MerkleProof.verify(proof, roots[owner], leaf))) {
+            revert ProofNotAuthed();
+        }
+
+        if (!(proof.length != 0 || singleOrders[owner][keccak256(abi.encode(params))])) {
+            revert SingleOrderNotAuthed();
+        }
+    }
+
+    /**
+     * Check the swap guard if the order is restricted or not
+     * @param owner who's swap guard to check
+     * @param params that uniquely identify the order
+     * @param offchainInput that has been proposed by `sender`
+     * @param order GPv2Order.Data that has been proposed by `sender`
+     */
+    function _guardCheck(
+        address owner,
+        IConditionalOrder.ConditionalOrderParams memory params,
+        bytes memory offchainInput,
+        GPv2Order.Data memory order
+    ) internal view returns (bool) {
+        ISwapGuard guard = swapGuards[owner];
+        if (address(guard) != address(0)) {
+            return guard.verify(order, params, offchainInput);
+        }
+        return true;
     }
 }
