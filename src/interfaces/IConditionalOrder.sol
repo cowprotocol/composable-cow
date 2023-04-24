@@ -17,12 +17,6 @@ import {IERC165} from "safe/interfaces/IERC165.sol";
 interface IConditionalOrder {
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
     error OrderNotValid();
-    /// @dev This error is returned by the `getTradeableOrder` function if the order is not signed.
-    error OrderNotSigned();
-    /// @dev This error is returned by the `getTradeableOrder` function if the order is expired.
-    error OrderExpired();
-    /// @dev This error is returned by the `getTradeableOrder` function if the order is cancelled.
-    error OrderCancelled();
 
     /**
      * Verify if a given order is valid. This function is used in combination with the `isValidSafeSignature`
