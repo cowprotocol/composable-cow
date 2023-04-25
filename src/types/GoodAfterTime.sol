@@ -3,6 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 
 import "../vendored/Milkman.sol";
 
@@ -13,12 +14,14 @@ import "../BaseConditionalOrder.sol";
  * @author mfw78 <mfw78@rndlabs.xyz>
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  *      This order type allows for placing an order that is valid after a certain time
- *      and that has a minimum `sellAmount` determined by a price checker. The actual `buyAmount` 
- *      is determined by off chain input. As changing the `buyAmount` changes the `orderUid` of 
- *      the order, this allows for placing multiple orders. To ensure that the order is not 
- *      filled multiple times, a `minSellBalance` is checked before the order is placed.
+ *      and that has an optional minimum `sellAmount` determined by a price checker. The 
+ *      actual `buyAmount` is determined by off chain input. As changing the `buyAmount` 
+ *      changes the `orderUid` of the order, this allows for placing multiple orders. To
+ *      ensure that the order is not filled multiple times, a `minSellBalance` is
+ *      checked before the order is placed.
  */
-contract GAT is BaseConditionalOrder {
+contract GoodAfterTime is BaseConditionalOrder {
+    using SafeCast for uint256;
 
     uint256 private constant MAX_BPS = 10000;
 
@@ -26,14 +29,18 @@ contract GAT is BaseConditionalOrder {
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
-        uint256 minSellBalance;
         uint256 sellAmount; // buy amount comes from offchainInput
-        uint32 t0; // when the order becomes valid
-        uint32 t1; // when the order expires
+        uint256 minSellBalance;
+        uint256 startTime; // when the order becomes valid
+        uint256 endTime; // when the order expires
         bool allowPartialFill;
-        uint256 allowedSlippage; // in basis points
-        IExpectedOutCalculator priceChecker;
         bytes priceCheckerPayload;
+    }
+
+    struct PriceCheckerPayload {
+        IExpectedOutCalculator checker;
+        bytes payload;
+        uint256 allowedSlippage; // in basis points
     }
 
     function getTradeableOrder(
@@ -46,7 +53,7 @@ contract GAT is BaseConditionalOrder {
         Data memory data = abi.decode(staticInput, (Data));
 
         // Don't allow the order to be placed before it becomes valid.
-        if(!(block.timestamp >= data.t0)) {
+        if(!(block.timestamp >= data.startTime)) {
             revert IConditionalOrder.OrderNotValid();
         }
 
@@ -55,19 +62,28 @@ contract GAT is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid();
         }
 
-        // Get the expected out from the price checker.
-        uint256 _expectedOut = data.priceChecker.getExpectedOut(
-            data.sellAmount,
-            data.sellToken,
-            data.buyToken,
-            data.priceCheckerPayload
-        );
-
         uint256 buyAmount = abi.decode(offchainInput, (uint256));
 
-        // Don't allow the order to be placed if the sellAmount is less than the minimum out.
-        if(!(buyAmount >= (_expectedOut * (MAX_BPS - data.allowedSlippage)) / MAX_BPS)) {
-            revert IConditionalOrder.OrderNotValid();
+        // Optionally check the price checker.
+        if (data.priceCheckerPayload.length > 0) {
+            // Decode the payload into the price checker parameters.
+            PriceCheckerPayload memory p = abi.decode(
+                data.priceCheckerPayload,
+                (PriceCheckerPayload)
+            );
+
+            // Get the expected out from the price checker.
+            uint256 _expectedOut = p.checker.getExpectedOut(
+                data.sellAmount,
+                data.sellToken,
+                data.buyToken,
+                p.payload
+            );
+
+            // Don't allow the order to be placed if the sellAmount is less than the minimum out.
+            if(!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
+                revert IConditionalOrder.OrderNotValid();
+            }
         }
 
         order = GPv2Order.Data(
@@ -76,7 +92,7 @@ contract GAT is BaseConditionalOrder {
             owner,
             data.sellAmount,
             buyAmount,
-            data.t1,
+            data.endTime.toUint32(),
             keccak256("GoodAfterTime"),
             0, // use zero fee for limit orders
             GPv2Order.KIND_SELL,
