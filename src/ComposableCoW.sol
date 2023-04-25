@@ -147,9 +147,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
     /**
      * Get the `GPv2Order.Data` and signature for submitting to CoW Protocol API
      * @param owner of the order
-     * @param handler used when instantiating the order
-     * @param salt used when instantiating the order
-     * @param staticInput used when instantiating the order
+     * @param params `ConditionalOrderParams` for the order
      * @param offchainInput any dynamic off-chain input for generating the discrete order
      * @param proof if using merkle-roots that H(handler || salt || staticInput) is in the merkle tree
      * @return order discrete order for submitting to CoW Protocol API
@@ -157,15 +155,10 @@ contract ComposableCoW is ISafeSignatureVerifier {
      */
     function getTradeableOrderWithSignature(
         address owner,
-        IConditionalOrder handler,
-        bytes32 salt,
-        bytes calldata staticInput,
+        IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata offchainInput,
         bytes32[] calldata proof
     ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
-        IConditionalOrder.ConditionalOrderParams memory params =
-            IConditionalOrder.ConditionalOrderParams({handler: handler, salt: salt, staticInput: staticInput});
-
         // Check if the order is authorised
         _auth(owner, params, proof);
 
