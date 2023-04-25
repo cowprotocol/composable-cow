@@ -98,8 +98,9 @@ abstract contract CoWProtocol is Test, Tokens {
      * @param counterParty the account that is on the other side of the trade
      * @param order the order to settle
      * @param bundleBytes the ERC-1271 bundle for the order
+     * @param _revertSelector the selector to revert with if the order is invalid
      */
-    function settle(address who, TestAccount memory counterParty, GPv2Order.Data memory order, bytes memory bundleBytes)
+    function settle(address who, TestAccount memory counterParty, GPv2Order.Data memory order, bytes memory bundleBytes, bytes4 _revertSelector)
         internal
     {
         // Generate counter party's order
@@ -174,6 +175,11 @@ abstract contract CoWProtocol is Test, Tokens {
 
         // finally we can execute the settlement
         vm.prank(solver.addr);
-        settlement.settle(tokens, clearingPrices, trades, interactions);
+        if (_revertSelector == bytes4(0)) {
+            settlement.settle(tokens, clearingPrices, trades, interactions);
+        } else {
+            vm.expectRevert(_revertSelector);
+            settlement.settle(tokens, clearingPrices, trades, interactions);
+        }
     }
 }
