@@ -33,7 +33,7 @@ contract ComposableCoWTest is Base, Merkle {
         super.setUp();
 
         // deploy composable cow
-        composableCow = new ComposableCoW(settlement.domainSeparator());
+        composableCow = new ComposableCoW(address(settlement));
 
         // set safe1 to have the ComposableCoW `ISafeSignatureVerifier` custom verifier
         // we will set the domainSeparator to settlement.domainSeparator()
