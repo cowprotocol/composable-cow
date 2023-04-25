@@ -14,8 +14,8 @@ import "../BaseConditionalOrder.sol";
  * @author mfw78 <mfw78@rndlabs.xyz>
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  *      This order type allows for placing an order that is valid after a certain time
- *      and that has an optional minimum `sellAmount` determined by a price checker. The 
- *      actual `buyAmount` is determined by off chain input. As changing the `buyAmount` 
+ *      and that has an optional minimum `sellAmount` determined by a price checker. The
+ *      actual `buyAmount` is determined by off chain input. As changing the `buyAmount`
  *      changes the `orderUid` of the order, this allows for placing multiple orders. To
  *      ensure that the order is not filled multiple times, a `minSellBalance` is
  *      checked before the order is placed.
@@ -43,22 +43,22 @@ contract GoodAfterTime is BaseConditionalOrder {
         uint256 allowedSlippage; // in basis points
     }
 
-    function getTradeableOrder(
-        address owner,
-        address,
-        bytes calldata staticInput,
-        bytes calldata offchainInput
-    ) public view override returns (GPv2Order.Data memory order) {
+    function getTradeableOrder(address owner, address, bytes calldata staticInput, bytes calldata offchainInput)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory order)
+    {
         // Decode the payload into the trade above threshold parameters.
         Data memory data = abi.decode(staticInput, (Data));
 
         // Don't allow the order to be placed before it becomes valid.
-        if(!(block.timestamp >= data.startTime)) {
+        if (!(block.timestamp >= data.startTime)) {
             revert IConditionalOrder.OrderNotValid();
         }
 
         // Require that the sell token balance is above the minimum.
-        if(!(data.sellToken.balanceOf(owner) >= data.minSellBalance)) {
+        if (!(data.sellToken.balanceOf(owner) >= data.minSellBalance)) {
             revert IConditionalOrder.OrderNotValid();
         }
 
@@ -67,21 +67,13 @@ contract GoodAfterTime is BaseConditionalOrder {
         // Optionally check the price checker.
         if (data.priceCheckerPayload.length > 0) {
             // Decode the payload into the price checker parameters.
-            PriceCheckerPayload memory p = abi.decode(
-                data.priceCheckerPayload,
-                (PriceCheckerPayload)
-            );
+            PriceCheckerPayload memory p = abi.decode(data.priceCheckerPayload, (PriceCheckerPayload));
 
             // Get the expected out from the price checker.
-            uint256 _expectedOut = p.checker.getExpectedOut(
-                data.sellAmount,
-                data.sellToken,
-                data.buyToken,
-                p.payload
-            );
+            uint256 _expectedOut = p.checker.getExpectedOut(data.sellAmount, data.sellToken, data.buyToken, p.payload);
 
             // Don't allow the order to be placed if the sellAmount is less than the minimum out.
-            if(!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
+            if (!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
                 revert IConditionalOrder.OrderNotValid();
             }
         }
@@ -100,6 +92,5 @@ contract GoodAfterTime is BaseConditionalOrder {
             GPv2Order.BALANCE_ERC20,
             GPv2Order.BALANCE_ERC20
         );
-        
     }
 }

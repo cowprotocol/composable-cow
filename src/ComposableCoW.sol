@@ -136,13 +136,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
         // Proof is valid, guard (if any)_ is valid, now check the handler
         _payload.params.handler.verify(
-            address(safe),
-            sender,
-            _hash,
-            _domainSeparator,
-            _payload.params.staticInput,
-            _payload.offchainInput,
-            order
+            address(safe), sender, _hash, _domainSeparator, _payload.params.staticInput, _payload.offchainInput, order
         );
 
         return ERC1271.isValidSignature.selector;
