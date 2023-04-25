@@ -11,7 +11,7 @@ import "./interfaces/IConditionalOrder.sol";
  *      to focus on the logic for generating the tradeable order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-abstract contract BaseConditionalOrder is IConditionalOrder, IConditionalOrderGenerator {
+abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
     /**
      * @inheritdoc IConditionalOrder
      */
