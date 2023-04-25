@@ -48,7 +48,7 @@ interface IConditionalOrder {
  * @title Conditional Order Generator Interface
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-interface IConditionalOrderGenerator is IERC165 {
+interface IConditionalOrderGenerator is IConditionalOrder, IERC165 {
     /**
      * @dev This event is emitted when a new conditional order is created.
      * @param owner the address that has created the conditional order
