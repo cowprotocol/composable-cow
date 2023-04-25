@@ -198,7 +198,9 @@ contract ComposableCoW is ISafeSignatureVerifier {
                 abi.encode(PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}))
             );
         } catch {
-            // TODO: Insert alternative formatting for EIP-1271 Forwarder
+            // Assume that this is the EIP-1271 Forwarder (which does not have a `NAME` function)
+            // The default signature is the abi.encode of the tuple (order, payload)
+            signature = abi.encode(order, PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}));
         }
     }
 
