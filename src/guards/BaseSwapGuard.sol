@@ -7,7 +7,7 @@ import "../interfaces/ISwapGuard.sol";
  * @title An abstract base contract for Swap Guards to inherit from
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-abstract contract BaseGuard is ISwapGuard {
+abstract contract BaseSwapGuard is ISwapGuard {
     /**
      * @inheritdoc IERC165
      */
