@@ -25,13 +25,13 @@ interface IConditionalOrder {
     /**
      * Verify if a given discrete order is valid.
      * @dev Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.
+     *      **MUST** revert if the order condition is not met.
      * @param owner the contract who is the owner of the order
      * @param sender the `msg.sender` of the transaction
      * @param _hash the hash of the order
      * @param domainSeparator the domain separator used to sign the order
      * @param staticInput the static input for all discrete orders cut from this conditional order
      * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
-     * @return true if the order is valid, false otherwise
      */
     function verify(
         address owner,
@@ -41,7 +41,7 @@ interface IConditionalOrder {
         bytes calldata staticInput,
         bytes calldata offchainInput,
         GPv2Order.Data calldata order
-    ) external view returns (bool);
+    ) external view;
 }
 
 /**
@@ -58,7 +58,7 @@ interface IConditionalOrderGenerator is IERC165 {
 
     /**
      * @dev Get a tradeable order that can be posted to the CoW Protocol API and would pass signature validation.
-     *     Reverts if the order condition is not met.
+     *      **MUST** revert if the order condition is not met.
      * @param owner the contract who is the owner of the order
      * @param sender the `msg.sender` of the parent `isValidSignature` call
      * @param staticInput the static input for all discrete orders cut from this conditional order

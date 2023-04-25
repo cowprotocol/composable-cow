@@ -23,14 +23,12 @@ abstract contract BaseConditionalOrder is IConditionalOrder, IConditionalOrderGe
         bytes calldata staticInput,
         bytes calldata offchainInput,
         GPv2Order.Data calldata
-    ) external view override returns (bool) {
+    ) external view override {
         GPv2Order.Data memory generatedOrder = getTradeableOrder(owner, sender, staticInput, offchainInput);
 
         /// @dev Verify that the order is valid and matches the payload.
         if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
             revert IConditionalOrder.OrderNotValid();
-        } else {
-            return true;
         }
     }
 
