@@ -6,6 +6,7 @@ import "safe/handler/ExtensibleFallbackHandler.sol";
 
 import "./interfaces/IConditionalOrder.sol";
 import "./interfaces/ISwapGuard.sol";
+import "./vendored/CoWSettlement.sol";
 
 contract ComposableCoW is ISafeSignatureVerifier {
     // --- errors
@@ -37,7 +38,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
     // --- state
     // Domain separator is only used for generating signatures
-    bytes32 private immutable _domainSeparator;
+    bytes32 public immutable domainSeparator;
     /// @dev Mapping of owner's merkle roots
     mapping(address => bytes32) public roots;
     /// @dev Mapping of owner's single orders
@@ -48,10 +49,10 @@ contract ComposableCoW is ISafeSignatureVerifier {
     // --- constructor
 
     /**
-     * @param domainSeparator The domain separator used for generating signatures
+     * @param _settlement The GPv2 settlement contract
      */
-    constructor(bytes32 domainSeparator) {
-        _domainSeparator = domainSeparator;
+    constructor(address _settlement) {
+        domainSeparator = CoWSettlement(_settlement).domainSeparator();
     }
 
     // --- setters
@@ -109,7 +110,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
         Safe safe,
         address sender,
         bytes32 _hash,
-        bytes32 domainSeparator,
+        bytes32 _domainSeparator,
         bytes32, // typeHash
         bytes calldata encodeData,
         bytes calldata payload
@@ -186,7 +187,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             );
             signature = abi.encodeWithSignature(
                 "safeSignature(bytes32,bytes32,bytes,bytes)",
-                _domainSeparator,
+                domainSeparator,
                 GPv2Order.TYPE_HASH,
                 abi.encode(order),
                 abi.encode(PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}))
