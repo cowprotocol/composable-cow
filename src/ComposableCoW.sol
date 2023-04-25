@@ -8,6 +8,11 @@ import "./interfaces/IConditionalOrder.sol";
 import "./interfaces/ISwapGuard.sol";
 import "./vendored/CoWSettlement.sol";
 
+/**
+ * @title ComposableCoW - A contract that allows users to create multiple conditional orders
+ * @author mfw78 <mfw78@rndlabs.xyz>
+ * @dev Designed to be used with Safe + ExtensibleFallbackHandler
+ */
 contract ComposableCoW is ISafeSignatureVerifier {
     // --- errors
     error ProofNotAuthed();
