@@ -111,7 +111,7 @@ contract ComposableCoWTest is Base, Merkle {
 
         // 9. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
-            address(safe1), leaf.handler, leaf.salt, leaf.staticInput, bytes(""), proof
+            address(safe1), leaf, bytes(""), proof
         );
 
         // 10. Set the ERC20 allowance for the TWAP
