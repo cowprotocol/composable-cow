@@ -82,10 +82,7 @@ contract ComposableCoWTest is Base, Merkle {
         ComposableCoW.Proof memory proofStruct = ComposableCoW.Proof({location: 0, data: ""});
         assertTrue(composableCow.roots(owner) != root);
 
-        vm.expectEmit(true, true, true, true);
-        emit MerkleRootSet(owner, root, proofStruct);
-        vm.startPrank(owner);
-        composableCow.setRoot(root, proofStruct);
+        _setRoot(owner, root, proofStruct);
     }
 
     /**
@@ -103,38 +100,31 @@ contract ComposableCoWTest is Base, Merkle {
         (bytes32 root, bytes32[] memory proof, IConditionalOrder.ConditionalOrderParams memory params) =
             _leaves.getRootAndProof(0, leaves, getRoot, getProof);
 
-        // The root stored in the contract should be 0
-        assertEq(composableCow.roots(address(safe1)), bytes32(0));
-
-        // Try and validate the proof (should fail as an invalid root is set)
+        // try and validate the proof (should fail as an bytes32(0) root is set)
         vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
-        // Set the root correctly - this should emit a `MerkleRootSet` event
-        vm.expectEmit(true, true, true, true);
+        // sets the root correctly
         ComposableCoW.Proof memory proofStruct = ComposableCoW.Proof({location: 0, data: ""});
-        emit MerkleRootSet(address(safe1), root, proofStruct);
-        setRoot(safe1, root, proofStruct);
-        assertEq(composableCow.roots(address(safe1)), root);
+        _setRoot(address(safe1), root, proofStruct);
 
-        // Try and validate the proof (should pass as root is set)
+        // Trtryy and validate the proof (should pass as root is set)
         (GPv2Order.Data memory order, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
-        uint256 snapshot = vm.snapshot(); // saves the state
+        // save the state
+        uint256 snapshot = vm.snapshot();
 
         // Execute the order - this should pass as the order is valid
         settle(address(safe1), bob, order, signature, bytes4(0));
 
-        vm.revertTo(snapshot); // restores the state
+        // restore the state
+        vm.revertTo(snapshot);
 
-        // Remove the root
-        vm.expectEmit(true, true, true, true);
-        emit MerkleRootSet(address(safe1), bytes32(0), proofStruct);
-        setRoot(safe1, bytes32(0), proofStruct);
-        assertEq(composableCow.roots(address(safe1)), bytes32(0));
+        // removes the root correctly
+        _setRoot(address(safe1), bytes32(0), proofStruct);
 
-        // Try and validate the proof (should fail as root is removed)
+        // try and validate the proof (should fail as root is removed)
         vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
     }
@@ -147,6 +137,7 @@ contract ComposableCoWTest is Base, Merkle {
         });
 
         vm.expectRevert(ComposableCoW.InvalidHandler.selector);
+        // should revert as the handler (address(0)) is invalid
         composableCow.create(params, true);
     }
 
@@ -165,15 +156,10 @@ contract ComposableCoWTest is Base, Merkle {
         assertEq(composableCow.singleOrders(owner, orderHash), false);
 
         // create the order
-        vm.expectEmit(true, true, true, true);
-        emit ConditionalOrderCreated(owner, params);
-        vm.startPrank(owner);
-        composableCow.create(params, true);
-
-        assertEq(composableCow.singleOrders(owner, orderHash), true);
+        _create(owner, params, true);
 
         // remove the order
-        composableCow.remove(orderHash);
+        _remove(owner, params);
 
         assertEq(composableCow.singleOrders(owner, orderHash), false);
     }
@@ -200,10 +186,7 @@ contract ComposableCoWTest is Base, Merkle {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // now create the order
-        vm.expectEmit(true, true, true, true);
-        emit ConditionalOrderCreated(address(safe1), params);
-        create(safe1, params, true);
-        assertEq(composableCow.singleOrders(address(safe1), orderHash), true);
+        _create(address(safe1), params, true);
 
         uint256 snapshot = vm.snapshot(); // saves the state
 
@@ -215,8 +198,7 @@ contract ComposableCoWTest is Base, Merkle {
         vm.revertTo(snapshot); // restores the state
 
         // now remove the order
-        remove(safe1, orderHash);
-        assertEq(composableCow.singleOrders(address(safe1), orderHash), false);
+        _remove(address(safe1), params);
 
         // try and validate the order (should fail as the order is removed)
         settle(address(safe1), bob, order, signature, ComposableCoW.SingleOrderNotAuthed.selector);
@@ -229,19 +211,10 @@ contract ComposableCoWTest is Base, Merkle {
         assertEq(address(composableCow.swapGuards(owner)), address(0));
 
         // set the swap guard
-        vm.expectEmit(true, true, true, true);
-        emit SwapGuardSet(owner, ISwapGuard(address(swapGuard)));
-        vm.startPrank(owner);
-        composableCow.setSwapGuard(ISwapGuard(address(swapGuard)));
-
-        assertEq(address(composableCow.swapGuards(owner)), swapGuard);
+        _setSwapGuard(owner, ISwapGuard(swapGuard));
 
         // remove the swap guard
-        vm.expectEmit(true, true, true, true);
-        emit SwapGuardSet(owner, ISwapGuard(address(0)));
-        composableCow.setSwapGuard(ISwapGuard(address(0)));
-
-        assertEq(address(composableCow.swapGuards(owner)), address(0));
+        _setSwapGuard(owner, ISwapGuard(address(0)));
     }
 
     /**
@@ -263,10 +236,8 @@ contract ComposableCoWTest is Base, Merkle {
         // by setting the proof to a zero-length bytes32 array, this indicates that the order
         // is to be processed as a single order
         bytes32[] memory proof = new bytes32[](0);
-        bytes32 orderHash = keccak256(abi.encode(params));
 
-        create(safe1, params, true);
-        assertEq(composableCow.singleOrders(address(safe1), orderHash), true);
+        _create(address(safe1), params, true);
 
         uint256 snapshot = vm.snapshot(); // saves the state
 
@@ -278,9 +249,7 @@ contract ComposableCoWTest is Base, Merkle {
         vm.revertTo(snapshot); // restores the state
 
         // now set the swap guard
-        vm.expectEmit(true, true, true, true);
-        emit SwapGuardSet(address(safe1), evenSwapGuard);
-        setSwapGuard(safe1, evenSwapGuard);
+        _setSwapGuard(address(safe1), evenSwapGuard);
 
         // Now settlement should not work as the swap guard should not allow it
         settle(address(safe1), bob, order, signature, ComposableCoW.SwapGuardRestricted.selector);
@@ -290,17 +259,13 @@ contract ComposableCoWTest is Base, Merkle {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // change to an odd swap guard
-        vm.expectEmit(true, true, true, true);
-        emit SwapGuardSet(address(safe1), oddSwapGuard);
-        setSwapGuard(safe1, oddSwapGuard);
+        _setSwapGuard(address(safe1), oddSwapGuard);
 
         // Now settlement should work as the swap guard should allow it
         settle(address(safe1), bob, order, signature, bytes4(0));
 
         // now remove the swap guard
-        vm.expectEmit(true, true, true, true);
-        emit SwapGuardSet(address(safe1), ISwapGuard(address(0)));
-        setSwapGuard(safe1, ISwapGuard(address(0)));
+        _setSwapGuard(address(safe1), ISwapGuard(address(0)));
     }
 
     function test_isValidSafeSignature_RevertOnInvalidHash() public {
@@ -314,8 +279,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.startPrank(alice.addr);
-        composableCow.create(params, false);
+        _create(alice.addr, params, false);
 
         GPv2Order.Data memory order = getBlankOrder();
         GPv2Order.Data memory fraudulentOrder = getBlankOrder();
@@ -360,8 +324,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: staticInput
         });
 
-        vm.startPrank(owner);
-        composableCow.setRoot(root, ComposableCoW.Proof({location: 0, data: ""}));
+        _setRoot(owner, root, ComposableCoW.Proof({location: 0, data: ""}));
 
         vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
         composableCow.isValidSafeSignature(
@@ -388,9 +351,6 @@ contract ComposableCoWTest is Base, Merkle {
             salt: salt,
             staticInput: staticInput
         });
-        bytes32 orderHash = keccak256(abi.encode(params));
-
-        assertEq(composableCow.singleOrders(owner, orderHash), false);
 
         vm.expectRevert(ComposableCoW.SingleOrderNotAuthed.selector);
         composableCow.isValidSafeSignature(
@@ -414,8 +374,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.startPrank(owner);
-        composableCow.create(params, false);
+        _create(owner, params, false);
 
         GPv2Order.Data memory order = getBlankOrder();
 
@@ -461,8 +420,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.prank(alice.addr);
-        composableCow.create(params, false);
+        _create(alice.addr, params, false);
 
         vm.expectRevert(ComposableCoW.InterfaceNotSupported.selector);
         composableCow.getTradeableOrderWithSignature(alice.addr, params, bytes(""), new bytes32[](0));
@@ -486,8 +444,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: staticInput
         });
 
-        vm.prank(owner);
-        composableCow.setRoot(root, ComposableCoW.Proof({location: 0, data: ""}));
+        _setRoot(owner, root, ComposableCoW.Proof({location: 0, data: ""}));
 
         vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
         composableCow.getTradeableOrderWithSignature(owner, params, bytes(""), proof);
@@ -506,9 +463,6 @@ contract ComposableCoWTest is Base, Merkle {
             salt: salt,
             staticInput: staticInput
         });
-        bytes32 orderHash = keccak256(abi.encode(params));
-
-        assertEq(composableCow.singleOrders(owner, orderHash), false);
 
         vm.expectRevert(ComposableCoW.SingleOrderNotAuthed.selector);
         composableCow.getTradeableOrderWithSignature(owner, params, bytes(""), new bytes32[](0));
@@ -523,8 +477,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.prank(address(safe1));
-        composableCow.create(params, false);
+        _create(address(safe1), params, false);
 
         // 1. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
@@ -550,8 +503,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.startPrank(address(nonSafe));
-        composableCow.create(params, false);
+        _create(address(nonSafe), params, false);
 
         // 1. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
@@ -575,8 +527,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.startPrank(address(nonSafe));
-        composableCow.create(params, false);
+        _create(address(nonSafe), params, false);
 
         // 1. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
@@ -601,8 +552,7 @@ contract ComposableCoWTest is Base, Merkle {
             staticInput: bytes("")
         });
 
-        vm.prank(address(safe1));
-        composableCow.create(params, false);
+        _create(address(safe1), params, false);
 
         GPv2Order.Data memory orderOtherReceiver = getBlankOrder();
         orderOtherReceiver.receiver = address(0xdeadbeef);
@@ -614,8 +564,7 @@ contract ComposableCoWTest is Base, Merkle {
         );
 
         // 2. Set the guard
-        vm.prank(address(safe1));
-        composableCow.setSwapGuard(lock);
+        _setSwapGuard(address(safe1), lock);
 
         // 3. `getTradeableOrderWithSignature` should revert
         vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
@@ -643,8 +592,7 @@ contract ComposableCoWTest is Base, Merkle {
         (bytes32 root, bytes32[] memory proof, IConditionalOrder.ConditionalOrderParams memory leaf) =
             _leaves.getRootAndProof(0, leaves, getRoot, getProof);
 
-        // 3. Set the Merkle root
-        setRoot(safe1, root, ComposableCoW.Proof({location: 0, data: ""}));
+        _setRoot(address(safe1), root, ComposableCoW.Proof({location: 0, data: ""}));
 
         // 4. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) =
@@ -656,44 +604,37 @@ contract ComposableCoWTest is Base, Merkle {
 
     // --- Helpers ---
 
-    function setRoot(Safe safe, bytes32 root, ComposableCoW.Proof memory proof) private {
-        safe.execute(
-            address(composableCow),
-            0,
-            abi.encodeWithSelector(composableCow.setRoot.selector, root, proof),
-            Enum.Operation.Call,
-            signers()
-        );
+    function _setRoot(address owner, bytes32 root, ComposableCoW.Proof memory proof) internal {
+        vm.prank(owner);
+        vm.expectEmit(true, true, true, true);
+        emit MerkleRootSet(owner, root, proof);
+        composableCow.setRoot(root, proof);
+        assertEq(composableCow.roots(owner), root);
     }
 
-    function setSwapGuard(Safe safe, ISwapGuard swapGuard) private {
-        safe.execute(
-            address(composableCow),
-            0,
-            abi.encodeWithSelector(composableCow.setSwapGuard.selector, swapGuard),
-            Enum.Operation.Call,
-            signers()
-        );
+    function _setSwapGuard(address owner, ISwapGuard guard) internal {
+        vm.prank(owner);
+        vm.expectEmit(true, true, true, true);
+        emit SwapGuardSet(owner, guard);
+        composableCow.setSwapGuard(guard);
+        assertEq(address(composableCow.swapGuards(owner)), address(guard));
     }
 
-    function create(Safe safe, IConditionalOrder.ConditionalOrderParams memory params, bool dispatch) private {
-        safe.execute(
-            address(composableCow),
-            0,
-            abi.encodeWithSelector(composableCow.create.selector, params, dispatch),
-            Enum.Operation.Call,
-            signers()
-        );
+    function _create(address owner, IConditionalOrder.ConditionalOrderParams memory params, bool dispatch) internal {
+        vm.prank(owner);
+        if (dispatch) {
+            vm.expectEmit(true, true, true, true);
+            emit ConditionalOrderCreated(owner, params);
+        }
+        composableCow.create(params, dispatch);
+        assertEq(composableCow.singleOrders(owner, keccak256(abi.encode(params))), true);
     }
 
-    function remove(Safe safe, bytes32 orderHash) private {
-        safe.execute(
-            address(composableCow),
-            0,
-            abi.encodeWithSelector(composableCow.remove.selector, orderHash),
-            Enum.Operation.Call,
-            signers()
-        );
+    function _remove(address owner, IConditionalOrder.ConditionalOrderParams memory params) internal {
+        vm.prank(owner);
+        bytes32 orderHash = keccak256(abi.encode(params));
+        composableCow.remove(orderHash);
+        assertEq(composableCow.singleOrders(owner, orderHash), false);
     }
 
     function getBlankOrder() private pure returns (GPv2Order.Data memory order) {
