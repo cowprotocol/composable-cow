@@ -100,9 +100,13 @@ abstract contract CoWProtocol is Test, Tokens {
      * @param bundleBytes the ERC-1271 bundle for the order
      * @param _revertSelector the selector to revert with if the order is invalid
      */
-    function settle(address who, TestAccount memory counterParty, GPv2Order.Data memory order, bytes memory bundleBytes, bytes4 _revertSelector)
-        internal
-    {
+    function settle(
+        address who,
+        TestAccount memory counterParty,
+        GPv2Order.Data memory order,
+        bytes memory bundleBytes,
+        bytes4 _revertSelector
+    ) internal {
         // Generate counter party's order
         GPv2Order.Data memory counterOrder = GPv2Order.Data({
             sellToken: order.buyToken,
