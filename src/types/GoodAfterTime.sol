@@ -49,7 +49,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         override
         returns (GPv2Order.Data memory order)
     {
-        // Decode the payload into the trade above threshold parameters.
+        // Decode the payload into the good after time parameters.
         Data memory data = abi.decode(staticInput, (Data));
 
         // Don't allow the order to be placed before it becomes valid.
