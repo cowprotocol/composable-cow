@@ -3,13 +3,12 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {SafeMath} from "@openzeppelin/utils/math/SafeMath.sol";
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
-import {GPv2Settlement, GPv2Order} from "cowprotocol/GPv2Settlement.sol";
 
-import {ConditionalOrder} from "../interfaces/ConditionalOrder.sol";
+import "../BaseConditionalOrder.sol";
 
 // @title A smart contract that is always willing to trade between tokenA and tokenB 1:1,
 // taking decimals into account (and adding specifiable spread)
-contract PerpetualStableSwap is ConditionalOrder {
+contract PerpetualStableSwap is BaseConditionalOrder {
     using GPv2Order for GPv2Order.Data;
     using SafeMath for uint256;
     using SafeMath for uint8;
@@ -31,40 +30,20 @@ contract PerpetualStableSwap is ConditionalOrder {
     // There are 10k basis points in a unit
     uint256 private constant BPS = 10_000;
 
-    function getTradeableOrder(address owner, address, bytes calldata payload)
-        external
+    /**
+     * @inheritdoc IConditionalOrderGenerator
+     */
+    function getTradeableOrder(address owner, address, bytes calldata staticInput, bytes calldata)
+        public
         view
         override
         returns (GPv2Order.Data memory order)
     {
         /// @dev Decode the payload into the perpetual stable swap parameters.
-        PerpetualStableSwap.Data memory data = abi.decode(payload, (Data));
+        PerpetualStableSwap.Data memory data = abi.decode(staticInput, (Data));
 
         // Always sell whatever of the two tokens we have more of
-        IERC20 sellToken;
-        IERC20 buyToken;
-        uint256 sellAmount;
-        uint256 buyAmount;
-
-        // Variable scope is used to avoid stack too deep errors
-        {
-            IERC20Metadata tokenA = IERC20Metadata(address(data.tokenA));
-            IERC20Metadata tokenB = IERC20Metadata(address(data.tokenB));
-            uint256 balanceA = tokenA.balanceOf(owner);
-            uint256 balanceB = tokenB.balanceOf(owner);
-
-            if (convertAmount(tokenA, balanceA, tokenB) > balanceB) {
-                sellToken = tokenA;
-                buyToken = tokenB;
-                sellAmount = balanceA;
-                buyAmount = convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS);
-            } else {
-                sellToken = tokenB;
-                buyToken = tokenA;
-                sellAmount = balanceB;
-                buyAmount = convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS);
-            }
-        }
+        (IERC20 sellToken, IERC20 buyToken, uint256 sellAmount, uint256 buyAmount) = side(owner, data);
         require(sellAmount > 0, "not funded");
 
         // Unless spread is 0 (and there is no surplus), order collision is not an issue as sell and buy amounts should
@@ -90,8 +69,31 @@ contract PerpetualStableSwap is ConditionalOrder {
         );
     }
 
+    function side(address owner, PerpetualStableSwap.Data memory data)
+        internal
+        view
+        returns (IERC20Metadata sellToken, IERC20Metadata buyToken, uint256 sellAmount, uint256 buyAmount)
+    {
+        IERC20Metadata tokenA = IERC20Metadata(address(data.tokenA));
+        IERC20Metadata tokenB = IERC20Metadata(address(data.tokenB));
+        uint256 balanceA = tokenA.balanceOf(owner);
+        uint256 balanceB = tokenB.balanceOf(owner);
+
+        if (convertAmount(tokenA, balanceA, tokenB) > balanceB) {
+            sellToken = tokenA;
+            buyToken = tokenB;
+            sellAmount = balanceA;
+            buyAmount = convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS);
+        } else {
+            sellToken = tokenB;
+            buyToken = tokenA;
+            sellAmount = balanceB;
+            buyAmount = convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS);
+        }
+    }
+
     function convertAmount(IERC20Metadata srcToken, uint256 srcAmount, IERC20Metadata destToken)
-        public
+        internal
         view
         returns (uint256 destAmount)
     {
