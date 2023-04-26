@@ -18,6 +18,8 @@ contract ComposableCoW is ISafeSignatureVerifier {
     error ProofNotAuthed();
     error SingleOrderNotAuthed();
     error SwapGuardRestricted();
+    error InvalidHandler();
+    error InterfaceNotSupported();
 
     // --- types
 
@@ -79,6 +81,10 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
      */
     function create(IConditionalOrder.ConditionalOrderParams calldata params, bool dispatch) external {
+        if (!(address(params.handler) != address(0))) {
+            revert InvalidHandler();
+        }
+
         singleOrders[msg.sender][keccak256(abi.encode(params))] = true;
         if (dispatch) {
             emit ConditionalOrderCreated(msg.sender, params);
@@ -134,7 +140,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             revert SwapGuardRestricted();
         }
 
-        // Proof is valid, guard (if any)_ is valid, now check the handler
+        // Proof is valid, guard (if any) is valid, now check the handler
         _payload.params.handler.verify(
             address(safe), sender, _hash, _domainSeparator, _payload.params.staticInput, _payload.offchainInput, order
         );
@@ -163,12 +169,16 @@ contract ComposableCoW is ISafeSignatureVerifier {
         _auth(owner, params, proof);
 
         // Make sure the handler supports `IConditionalOrderGenerator`
-        require(
-            IConditionalOrderGenerator(address(params.handler)).supportsInterface(
-                type(IConditionalOrderGenerator).interfaceId
-            ),
-            "Handler does not support IConditionalOrderGenerator"
-        );
+        try IConditionalOrderGenerator(address(params.handler)).supportsInterface(
+            type(IConditionalOrderGenerator).interfaceId
+        ) returns (bool supported) {
+            if (!supported) {
+                revert InterfaceNotSupported();
+            }
+        } catch {
+            revert InterfaceNotSupported();
+        }
+
         order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
             owner, msg.sender, params.staticInput, offchainInput
         );
