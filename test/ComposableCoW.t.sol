@@ -138,7 +138,7 @@ contract ComposableCoWTest is Base, Merkle {
         bytes32[] memory proof = new bytes32[](0);
 
         bytes32 orderHash = keccak256(abi.encode(params));
-        
+
         // first check to make sure that the order is not valid
         assertEq(composableCow.singleOrders(address(safe1), orderHash), false);
 
@@ -331,11 +331,11 @@ contract TestSwapGuard is BaseSwapGuard {
     }
 
     // only allow even amounts to be swapped
-    function verify(
-        GPv2Order.Data calldata order,
-        IConditionalOrder.ConditionalOrderParams calldata,
-        bytes calldata
-    ) external view returns (bool) {
+    function verify(GPv2Order.Data calldata order, IConditionalOrder.ConditionalOrderParams calldata, bytes calldata)
+        external
+        view
+        returns (bool)
+    {
         return order.sellAmount % divisor == 0;
     }
 }
