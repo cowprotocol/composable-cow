@@ -145,7 +145,9 @@ contract ComposableCoWTest is Base, Merkle {
     function test_createAndRemove_FuzzSetAndEmit(address owner, address handler, bytes32 salt, bytes memory staticInput)
         public
     {
+        // address(0) is not a valid handler
         vm.assume(handler != address(0));
+
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
             handler: IConditionalOrder(handler),
             salt: salt,
@@ -193,7 +195,7 @@ contract ComposableCoWTest is Base, Merkle {
         // order can be returned as it is authorized
         (GPv2Order.Data memory order, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
-        
+
         // should successfully settle the order
         settle(address(safe1), bob, order, signature, bytes4(0));
 
@@ -302,11 +304,7 @@ contract ComposableCoWTest is Base, Merkle {
             bytes32(0),
             abi.encode(order1),
             abi.encode(
-                ComposableCoW.PayloadStruct({
-                    proof: new bytes32[](0),
-                    params: params,
-                    offchainInput: abi.encode(order2)
-                })
+                ComposableCoW.PayloadStruct({proof: new bytes32[](0), params: params, offchainInput: abi.encode(order2)})
             )
         );
     }
