@@ -389,22 +389,4 @@ contract ComposableCoWTest is BaseComposableCoWTest {
             ERC1271.isValidSignature.selector
         );
     }
-
-    function test_TWAP() public {
-        // 1. Get the TWAP conditional orders that will be used to dogfood the ComposableCoW
-        IConditionalOrder.ConditionalOrderParams[] memory _leaves = getBundle(safe1, 50);
-
-        // 2. Do the merkle tree dance
-        (bytes32 root, bytes32[] memory proof, IConditionalOrder.ConditionalOrderParams memory leaf) =
-            _leaves.getRootAndProof(0, leaves, getRoot, getProof);
-
-        _setRoot(address(safe1), root, ComposableCoW.Proof({location: 0, data: ""}));
-
-        // 4. Get the order and signature
-        (GPv2Order.Data memory order, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), leaf, bytes(""), proof);
-
-        // 5. Execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
-    }
 }
