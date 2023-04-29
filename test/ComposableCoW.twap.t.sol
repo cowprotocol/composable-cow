@@ -57,7 +57,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = IERC20(address(0));
 
-        IConditionalOrder.ConditionalOrderParams memory params = super.createOrder(twap, keccak256("twap"), abi.encode(o));
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(twap, keccak256("twap"), abi.encode(o));
         _create(address(safe1), params, false);
 
         vm.expectRevert(TWAPOrder.InvalidToken.selector);
@@ -116,7 +117,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.n = numParts;
 
-        IConditionalOrder.ConditionalOrderParams memory params = super.createOrder(twap, keccak256("twap"), abi.encode(o));
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(twap, keccak256("twap"), abi.encode(o));
         _create(address(safe1), params, false);
 
         vm.expectRevert(TWAPOrder.InvalidNumParts.selector);
