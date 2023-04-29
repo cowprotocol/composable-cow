@@ -25,10 +25,7 @@ import {ReceiverLock} from "../src/guards/ReceiverLock.sol";
 import "../src/ComposableCoW.sol";
 
 contract BaseComposableCoWTest is Base, Merkle {
-    using TestAccountLib for TestAccount[];
-    using TestAccountLib for TestAccount;
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams;
-    using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
     using SafeLib for Safe;
 
     event MerkleRootSet(address indexed owner, bytes32 root, ComposableCoW.Proof proof);
@@ -36,11 +33,10 @@ contract BaseComposableCoWTest is Base, Merkle {
     event SwapGuardSet(address indexed owner, ISwapGuard swapGuard);
 
     ComposableCoW composableCow;
-    TWAP twap;
-    GoodAfterTime gat;
 
     TestConditionalOrderGenerator passThrough;
     MirrorConditionalOrder mirror;
+    TWAP twap;
 
     mapping(bytes32 => IConditionalOrder.ConditionalOrderParams) public leaves;
 
@@ -64,10 +60,10 @@ contract BaseComposableCoWTest is Base, Merkle {
         );
 
         // deploy conditional order handlers (types)
-        twap = new TWAP();
-        gat = new GoodAfterTime();
         passThrough = new TestConditionalOrderGenerator();
         mirror = new MirrorConditionalOrder();
+
+        twap = new TWAP();
     }
 
     /// @dev Ensure `ComposableCoW` contract is the `ISafeSignatureVerifier` for `safe1` on the `settlement` domain
@@ -140,12 +136,21 @@ contract BaseComposableCoWTest is Base, Merkle {
         });
     }
 
-    function getPassthroughOrder() internal view returns (IConditionalOrder.ConditionalOrderParams memory) {
-        return IConditionalOrder.ConditionalOrderParams({
-            handler: passThrough,
-            salt: keccak256("pass through order"),
-            staticInput: bytes("")
+    function createOrder(IConditionalOrder handler, bytes32 salt, bytes memory staticInput)
+        internal
+        pure
+        virtual
+        returns (IConditionalOrder.ConditionalOrderParams memory params)
+    {
+        params = IConditionalOrder.ConditionalOrderParams({
+            handler: IConditionalOrder(handler),
+            salt: salt,
+            staticInput: staticInput
         });
+    }
+
+    function getPassthroughOrder() internal view returns (IConditionalOrder.ConditionalOrderParams memory) {
+        return createOrder(passThrough, keccak256("pass through order"), bytes(""));
     }
 
     function getBundle(Safe safe, uint256 n)
