@@ -4,7 +4,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWForwarderTest is BaseComposableCoWTest {
-
     function setUp() public virtual override(BaseComposableCoWTest) {
         // setup Base
         super.setUp();
@@ -29,5 +28,4 @@ contract ComposableCoWForwarderTest is BaseComposableCoWTest {
         vm.expectRevert("ERC1271Forwarder: invalid hash");
         nonSafe.isValidSignature(badDigest, signature);
     }
-
 }

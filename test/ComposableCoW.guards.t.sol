@@ -4,7 +4,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWGuardsTest is BaseComposableCoWTest {
-
     function setUp() public virtual override(BaseComposableCoWTest) {
         // setup Base
         super.setUp();
