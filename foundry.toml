@@ -16,4 +16,4 @@ targets = [
 timeout = 100000
 
 [profile.ci]
-verbosity = 4
+verbosity = 3
