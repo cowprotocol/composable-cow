@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 
 import "../vendored/Milkman.sol";
-
 import "../BaseConditionalOrder.sol";
 
 /**
