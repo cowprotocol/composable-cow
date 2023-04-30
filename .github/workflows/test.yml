@@ -37,6 +37,6 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv --no-match-test fork --fuzz-seed 672679878
+          forge test -vvv --optimize --optimizer-runs 20000 --no-match-test fork --fuzz-seed 672679878
           forge snapshot --no-match-test "simulate|fork" --fuzz-seed 672679878 --check
         id: test
