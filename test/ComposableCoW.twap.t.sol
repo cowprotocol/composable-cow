@@ -39,7 +39,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         createOrder(safe1, defaultBundle, defaultBundle.sellToken, defaultBundle.partSellAmount * defaultBundle.n);
     }
 
-    function test_RevertOnSameTokens() public {
+    /**
+     * @dev Revert when the sell token and buy token are the same
+     */
         // Revert when the same token is used for both the buy and sell token
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = token0;
@@ -52,7 +54,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_RevertOnTokenZero() public {
+    /**
+     * @dev Revert when either the buy or sell token is address(0)
+     */
         // Revert when either the buy or sell token is address(0)
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = IERC20(address(0));
@@ -74,7 +78,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_RevertOnZeroPartSellAmount() public {
+    /**
+     * @dev Revert when the sell amount is 0
+     */
         // Revert when the sell amount is zero
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.partSellAmount = 0;
@@ -86,7 +92,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_RevertOnZeroMinPartLimit() public {
+    /**
+     * @dev Revert when the min part limit is 0
+     */
         // Revert when the limit is zero
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.minPartLimit = 0;
@@ -98,7 +106,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_FuzzRevertOnInvalidStartTime(uint256 startTime) public {
+    /**
+     * @dev Fuzz test revert on invalid start time
+     */
         vm.assume(startTime >= type(uint32).max);
         // Revert when the start time exceeds or equals the max uint32
         TWAPOrder.Data memory o = _twapTestBundle(startTime);
@@ -111,7 +121,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_FuzzRevertOnInvalidNumParts(uint256 numParts) public {
+    /**
+     * @dev Fuzz test revert on invalid numParts
+     */
         vm.assume(numParts < 2 || numParts > type(uint32).max);
         // Revert if not an actual TWAP (ie. numParts < 2)
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
@@ -125,7 +137,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_FuzzRevertOnInvalidFrequency(uint256 frequency) public {
+    /**
+     * @dev Fuzz test revert on invalid frequency
+     */
         vm.assume(frequency < 1 || frequency > 365 days);
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.t = frequency;
@@ -137,7 +151,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_FuzzRevertOnInvalidSpan(uint256 frequency, uint256 span) public {
+    /**
+     * @dev Fuzz test revert on invalid span
+     */
         vm.assume(frequency > 0 && frequency <= 365 days);
         vm.assume(span > frequency);
 
@@ -186,6 +202,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
+    /**
+     * @dev Fuzz test to make sure that the order reverts if the current time is before the start time
+     */
     function test_getTradeableOrder_FuzzRevertIfBeforeStart(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
@@ -212,6 +231,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
+    /**
+     * @dev Fuzz test that the order reverts if the current time is after the expiry
+     */
     function test_getTradeableOrder_FuzzRevertIfExpired(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
@@ -238,6 +260,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
+    /**
+     * @dev Fuzz test that the order reverts if the current time is outside of the span
+     */
     function test_getTradeableOrder_FuzzRevertIfOutsideSpan(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
@@ -267,6 +292,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
+    /**
+     * @dev Fuzz test an order that is valid and should not revert from e2e
+     */
     function test_getTradeableOrder_e2e_fuzz(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
@@ -299,71 +327,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         );
     }
 
-    function test_isValidSignature_FuzzRevertIfBeforeStart(uint256 startTime, uint256 currentTime) public {
-        // guard against overflows
-        vm.assume(startTime < type(uint32).max);
-        // force revert before start
-        vm.assume(currentTime < startTime);
-
-        TWAPOrder.Data memory o = _twapTestBundle(startTime);
-
-        // Create the order - this signs the order and marks it a valid
-        IConditionalOrder.ConditionalOrderParams memory params =
-            createOrder(safe1, o, o.sellToken, o.partSellAmount * o.n);
-
-        // Warp to the start of the order
-        vm.warp(startTime);
-
-        // cache the order / signature / domain separator
-        (GPv2Order.Data memory order, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-        bytes32 domainSeparator = composableCow.domainSeparator();
-
-        // Warp to before the start
-        vm.warp(currentTime);
-
-        // This should revert
-        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-
-        // This should revert
-        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        ExtensibleFallbackHandler(address(safe1)).isValidSignature(GPv2Order.hash(order, domainSeparator), signature);
-    }
-
-    function test_isValidSignature_FuzzRevertIfExpired(uint256 startTime, uint256 currentTime) public {
-        // guard against overflows
-        vm.assume(startTime < type(uint32).max);
-        // force revert after expiry
-        vm.assume(currentTime >= startTime + (FREQUENCY * NUM_PARTS));
-
-        TWAPOrder.Data memory o = _twapTestBundle(startTime);
-
-        // Create the order - this signs the order and marks it a valid
-        IConditionalOrder.ConditionalOrderParams memory params =
-            createOrder(safe1, o, o.sellToken, o.partSellAmount * o.n);
-
-        // Warp to the start of the order
-        vm.warp(startTime);
-
-        // cache the order / signature / domain separator
-        (GPv2Order.Data memory order, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-        bytes32 domainSeparator = composableCow.domainSeparator();
-
-        // Warp to after the expiry
-        vm.warp(currentTime);
-
-        // This should revert
-        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-
-        // This should revert
-        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        ExtensibleFallbackHandler(address(safe1)).isValidSignature(GPv2Order.hash(order, domainSeparator), signature);
-    }
-
-    function test_isValidSignature_e2e_fuzz(uint256 startTime, uint256 currentTime) public {
+    /**
+     * @dev Test that the order is valid when the current time is within range
+     */
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
         vm.assume(currentTime < type(uint32).max);
@@ -395,7 +361,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         );
     }
 
-    function test_twap_with_settle_e2e() public {
+    /**
+     * @dev Test the entire flow of a TWAP order from `ComposableCoW`'s perspective
+     */
         // 1. Get the TWAP conditional orders that will be used to dogfood the ComposableCoW
         IConditionalOrder.ConditionalOrderParams[] memory _leaves = getBundle(safe1, 50);
 
@@ -403,6 +371,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         (bytes32 root, bytes32[] memory proof, IConditionalOrder.ConditionalOrderParams memory leaf) =
             _leaves.getRootAndProof(0, leaves, getRoot, getProof);
 
+        // 3. Set the root
         _setRoot(address(safe1), root, ComposableCoW.Proof({location: 0, data: ""}));
 
         // 4. Get the order and signature
@@ -413,12 +382,14 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         settle(address(safe1), bob, order, signature, bytes4(0));
     }
 
-    /// @dev This is a very expensive test as it iterates over every second for
-    ///      the duration of the TWAP order.
-    ///      This is a full e2e test from order creation to settlement.
-    /// @param numParts The number of parts in the TWAP order
-    /// @param frequency The frequency of the TWAP order
-    /// @param span The span of the TWAP order
+    /**
+     * @notice A full e2e test from order creation to settlement.
+     * @dev This is a very expensive test as it iterates over every second for
+     *     the duration of the TWAP order.
+     * @param numParts The number of parts in the TWAP order
+     * @param frequency The frequency of the TWAP order
+     * @param span The span of the TWAP order
+     */
     function test_simulate_fuzz(uint32 numParts, uint32 frequency, uint32 span) public {
         // guard against underflows
         vm.assume(span < frequency);
@@ -530,13 +501,14 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         );
     }
 
-    /// @dev Fuzz test `calculateValidTo` function
-    /// @param currentTime The current time
-    /// @param startTime The start time of the TWAP order
-    /// @param numParts The number of parts in the TWAP order
-    /// @param frequency The frequency of the TWAP order
-    /// @param span The span of the TWAP order
-    function test_calculateValidTo(
+    /**
+     * @dev Fuzz test `calculateValidTo` function
+     * @param currentTime The current time
+     * @param startTime The start time of the TWAP order
+     * @param numParts The number of parts in the TWAP order
+     * @param frequency The frequency of the TWAP order
+     * @param span The span of the TWAP order
+     */
         uint256 currentTime,
         uint256 startTime,
         uint256 numParts,
@@ -588,6 +560,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // `validTo` MUST be equal to this.
         assertTrue(validTo == expectedValidTo);
     }
+
+    // --- Helper functions ---
 
     function createOrder(Safe safe, TWAPOrder.Data memory twapBundle, IERC20 sellToken, uint256 sellAmount)
         internal
