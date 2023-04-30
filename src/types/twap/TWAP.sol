@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-
 import "../../BaseConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
