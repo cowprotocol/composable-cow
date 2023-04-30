@@ -42,6 +42,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Revert when the sell token and buy token are the same
      */
+    function test_getTradeableOrder_RevertOnSameTokens() public {
         // Revert when the same token is used for both the buy and sell token
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = token0;
@@ -57,13 +58,10 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Revert when either the buy or sell token is address(0)
      */
+    function test_getTradeableOrder_RevertOnTokenZero() public {
         // Revert when either the buy or sell token is address(0)
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = IERC20(address(0));
-
-        IConditionalOrder.ConditionalOrderParams memory params =
-            super.createOrder(twap, keccak256("twap"), abi.encode(o));
-        _create(address(safe1), params, false);
 
         vm.expectRevert(TWAPOrder.InvalidToken.selector);
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
@@ -81,6 +79,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Revert when the sell amount is 0
      */
+    function test_getTradeableOrder_RevertOnZeroPartSellAmount() public {
         // Revert when the sell amount is zero
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.partSellAmount = 0;
@@ -95,6 +94,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Revert when the min part limit is 0
      */
+    function test_getTradeableOrder_RevertOnZeroMinPartLimit() public {
         // Revert when the limit is zero
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.minPartLimit = 0;
@@ -109,6 +109,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on invalid start time
      */
+    function test_getTradeableOrder_FuzzRevertOnInvalidStartTime(uint256 startTime) public {
         vm.assume(startTime >= type(uint32).max);
         // Revert when the start time exceeds or equals the max uint32
         TWAPOrder.Data memory o = _twapTestBundle(startTime);
@@ -124,6 +125,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on invalid numParts
      */
+    function test_getTradeableOrder_FuzzRevertOnInvalidNumParts(uint256 numParts) public {
         vm.assume(numParts < 2 || numParts > type(uint32).max);
         // Revert if not an actual TWAP (ie. numParts < 2)
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
@@ -140,6 +142,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on invalid frequency
      */
+    function test_getTradeableOrder_FuzzRevertOnInvalidFrequency(uint256 frequency) public {
         vm.assume(frequency < 1 || frequency > 365 days);
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.t = frequency;
@@ -154,6 +157,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on invalid span
      */
+    function test_getTradeableOrder_FuzzRevertOnInvalidSpan(uint256 frequency, uint256 span) public {
         vm.assume(frequency > 0 && frequency <= 365 days);
         vm.assume(span > frequency);
 
@@ -330,6 +334,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Test that the order is valid when the current time is within range
      */
+    function test_verify_e2e_fuzz(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
         vm.assume(startTime < type(uint32).max);
         vm.assume(currentTime < type(uint32).max);
@@ -364,6 +369,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     /**
      * @dev Test the entire flow of a TWAP order from `ComposableCoW`'s perspective
      */
+    function test_settle_e2e() public {
         // 1. Get the TWAP conditional orders that will be used to dogfood the ComposableCoW
         IConditionalOrder.ConditionalOrderParams[] memory _leaves = getBundle(safe1, 50);
 
@@ -509,6 +515,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
      * @param frequency The frequency of the TWAP order
      * @param span The span of the TWAP order
      */
+    function test_TWAPOrderMathLib_calculateValidTo(
         uint256 currentTime,
         uint256 startTime,
         uint256 numParts,
