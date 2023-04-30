@@ -1,6 +1,13 @@
 name: test
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
 
 env:
   FOUNDRY_PROFILE: ci
@@ -25,10 +32,11 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
-          forge build --sizes
+          forge build --sizes --skip test
         id: build
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test -vvv --no-match-test fork --fuzz-seed 672679878
+          forge snapshot --no-match-test "simulate|fork" --fuzz-seed 672679878 --check
         id: test
