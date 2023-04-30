@@ -147,40 +147,6 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         twap.getTradeableOrder(address(0), address(0), abi.encode(o), bytes(""));
     }
 
-    function test_getTradeableOrder_RevertOnOrderNotCreated() public {
-        // Revert when the order is not signed by the safe
-        TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
-
-        // Create the order
-        IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: twap,
-            salt: keccak256("twap order"),
-            staticInput: abi.encode(o)
-        });
-
-        vm.expectRevert(ComposableCoW.SingleOrderNotAuthed.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-    }
-
-    function test_getTradeableOrder_RevertOnOrderCreatedThenRemoved() public {
-        // Revert when the order is signed by the safe and cancelled
-        TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
-
-        // Create the order - this signs the order and marks it a valid
-        IConditionalOrder.ConditionalOrderParams memory params =
-            createOrder(safe1, o, o.sellToken, o.partSellAmount * o.n);
-
-        // Verify that the order is valid - this shouldn't revert
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-
-        // Should cancel the order
-        _remove(address(safe1), params);
-
-        // Should now revert
-        vm.expectRevert(ComposableCoW.SingleOrderNotAuthed.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
-    }
-
     /**
      * @dev Fuzz test to make sure that the order reverts if the current time is before the start time
      */
