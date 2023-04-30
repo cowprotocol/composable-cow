@@ -79,7 +79,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
-            owner,
+            address(0),
             data.sellAmount,
             buyAmount,
             data.endTime.toUint32(),
