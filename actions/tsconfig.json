@@ -1,0 +1,14 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "outDir": "out",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2020",
+    "resolveJsonModule": true
+  },
+  "exclude": ["**/*.spec.ts"],
+  "include": ["**/*"]
+}

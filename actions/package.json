@@ -1,0 +1,26 @@
+{
+  "name": "actions",
+  "license": "MIT",
+  "scripts": {
+    "artifacts": "mkdir -p artifacts && cp ../out/GPv2Settlement.sol/GPv2Settlement.json artifacts/ && cp ../out/ERC20.sol/ERC20.json artifacts/ && cp ../out/ComposableCoW.sol/ComposableCoW.json artifacts/",
+    "typechain": "typechain --target ethers-v5 --out-dir types/ \"artifacts/*.json\"",
+    "prepare": "npm run artifacts && npm run typechain",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.2.0",
+    "@types/node": "^18.16.3",
+    "@tenderly/actions-test": "^0.2.0",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.1"
+  },
+  "dependencies": {
+    "@cowprotocol/contracts": "^1.4.0",
+    "@tenderly/actions": "^0.2.0",
+    "axios": "^1.4.0",
+    "ethers": "^5.7.2",
+    "node-fetch": "3",
+    "typescript": "^5.0.4"
+  },
+  "private": true
+}

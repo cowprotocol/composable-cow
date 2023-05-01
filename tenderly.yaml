@@ -1,0 +1,58 @@
+account_id: 365d1c08-1187-453c-ace5-c0cc4e53a41f
+actions:
+  mfw78/rndlabs:
+    runtime: v1
+    sources: actions
+    specs:
+      register_order:
+        description: Listens to events that index new conditional orders
+        function: register:addContract
+        trigger:
+          transaction:
+            filters:
+            - logEmitted:
+                startsWith:
+                # `ConditionalOrderCreated(address, (address,bytes32,bytes))`
+                - 0x2cceac5555b0ca45a3744ced542f54b56ad2eb45e521962372eef212a2cbf361
+                # `MerkleRootSet(address, bytes32, (uint256, bytes))`
+                - 0x58662f46b4a87d0f96d929b24c37fe25c55d52c0025d0b2bec3936534cc31e57
+              network:
+              - 1
+              - 5
+              - 100
+              status: success
+            status:
+            - mined
+          type: transaction
+      watch_settlements:
+        description: Watch for settled trades and update the state
+        function: watch:checkForSettlement
+        trigger:
+          transaction:
+            filters:
+            - logEmitted:
+                startsWith:
+                # `Trade(address, address, address, uint256, uint256, uint256, bytes)`
+                - 0xa07a543ab8a018198e99ca0184c93fe9050a79400a0a723441f84de1d972cc17
+              network:
+              - 1
+              - 5
+              - 100
+              status: success
+            status:
+            - mined
+          type: transaction
+      watch_orders:
+        description: Checks on every block if the registered smart order contract
+          wants to trade
+        function: watch:checkForAndPlaceOrder
+        trigger:
+          block:
+            blocks: 5
+            network:
+            - 1
+            - 5
+            - 100
+          type: block
+project_slug: rndlabs
+provider: ""
