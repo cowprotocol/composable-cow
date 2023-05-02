@@ -69,4 +69,18 @@ library SafeLib {
         // execute the transaction
         safe.execTransaction(to, value, data, operation, 0, 0, 0, address(0), payable(0), abi.encodePacked(signatures));
     }
+
+    function executeSingleOwner(
+        Safe safe,
+        address to,
+        uint256 value,
+        bytes memory data,
+        Enum.Operation operation,
+        address owner
+    ) internal {
+        bytes memory signature = abi.encodePacked(uint256(uint160(owner)), bytes32(0), bytes1(0x01));
+
+        // execute the transaction
+        safe.execTransaction(to, value, data, operation, 0, 0, 0, address(0), payable(0), signature);
+    }
 }

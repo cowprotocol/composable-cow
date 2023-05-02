@@ -15,11 +15,12 @@ import "cowprotocol/interfaces/GPv2Authentication.sol";
 // Safe contracts
 import {Safe} from "safe/Safe.sol";
 import {Enum} from "safe/common/Enum.sol";
-import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
+import "safe/proxies/SafeProxyFactory.sol";
 import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 import "safe/handler/ExtensibleFallbackHandler.sol";
+import {SafeLib} from "../test/libraries/SafeLib.t.sol";
 
 // Composable CoW
 import {ComposableCoW} from "../src/ComposableCoW.sol";
@@ -56,18 +57,41 @@ contract DeployAnvilStack is Script {
         // deploy the CoW Protocol stack
         // **NOTE**: Requires a higher code size limit due to the Balancer vault
         // `anvil --code-size-limit 50000`
-        deploy_cowProtocol(vm.addr(deployerPrivateKey));
+        deployCowProtocolStack(vm.addr(deployerPrivateKey));
 
         // deploy the Safe contract stack
-        deploy_safe();
+        deploySafeStack();
+
+        // deploy the Safe
+        SafeProxy proxy = deploySafe(vm.addr(deployerPrivateKey));
 
         // deploy the Composable CoW
         new ComposableCoW(address(settlement));
+        new TWAP();
+        new GoodAfterTime();
+        new PerpetualStableSwap();
+        new TradeAboveThreshold();
 
         vm.stopBroadcast();
+
+        console.log("Safe address");
+        console.logAddress(address(proxy));
     }
 
-    function deploy_safe() internal {
+    function deploySafe(address owner) internal returns (SafeProxy proxy) {
+        address[] memory owners = new address[](1);
+        owners[0] = owner;
+        proxy = SafeLib.createSafe(
+            factory,
+            singleton,
+            owners,
+            1,
+            address(eHandler),
+            0
+        );
+    }
+
+    function deploySafeStack() internal {
         // Deploy the contracts
         singleton = new Safe();
         factory = new SafeProxyFactory();
@@ -78,7 +102,7 @@ contract DeployAnvilStack is Script {
         signMessageLib = new SignMessageLib();
     }
 
-    function deploy_cowProtocol(address all) internal {
+    function deployCowProtocolStack(address all) internal {
         // deploy the WETH contract
         weth = new WETH9();
 
