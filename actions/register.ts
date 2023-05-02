@@ -40,7 +40,7 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
       ) as [string, IConditionalOrder.ConditionalOrderParamsStruct];
 
       // Attempt to add the conditional order to the registry
-      add(owner, params, null, registry);
+      add(owner, params, null, log.address, registry);
     } else if (log.topics[0] == iface.getEventTopic("MerkleRootSet")) {
       const [owner, root, proof] = iface.decodeEventLog(
         "MerkleRootSet",
@@ -72,6 +72,7 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
             owner,
             decodedOrder[1],
             { merkleRoot: root, path: decodedOrder[0] },
+            log.address,
             registry
           );
         });
@@ -91,12 +92,14 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
  * @param owner to add the conditional order to
  * @param params for the conditional order
  * @param proof for the conditional order (if it is part of a merkle root)
+ * @param composableCow address of the ComposableCoW contract that emitted the event
  * @param registry of all conditional orders
  */
 export const add = async (
   owner: Owner,
   params: IConditionalOrder.ConditionalOrderParamsStruct,
   proof: Proof | null,
+  composableCow: string,
   registry: Registry
 ) => {
   if (registry.ownerOrders.has(owner)) {
@@ -116,13 +119,13 @@ export const add = async (
 
     // If the params are not in the conditionalOrder, add them
     if (!exists) {
-      conditionalOrders?.add({ params, proof, orders: new Map() });
+      conditionalOrders?.add({ params, proof, orders: new Map(), composableCow });
     }
   } else {
     console.log(`adding conditional order ${params} to new contract ${owner}`);
     registry.ownerOrders.set(
       owner,
-      new Set([{ params, proof, orders: new Map() }])
+      new Set([{ params, proof, orders: new Map(), composableCow }])
     );
   }
 };
@@ -182,6 +185,8 @@ export type ConditionalOrder = {
   proof: Proof | null;
   // a map of discrete order hashes to their status
   orders: Map<OrderUid, OrderStatus>;
+  // the address to poll for orders
+  composableCow: string;
 };
 
 /**
