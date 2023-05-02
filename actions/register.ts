@@ -235,6 +235,7 @@ export class Registry {
    * Write the registry to storage.
    */
   public async write() {
+    console.log(`Writing: ${JSON.stringify(this.ownerOrders, replacer)}`);
     await this.storage.putStr(
       storageKey(this.network),
       JSON.stringify(this.ownerOrders, replacer)
