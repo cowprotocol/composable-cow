@@ -85,6 +85,8 @@ export const checkForAndPlaceOrder: ActionFn = async (
   const registry = await Registry.load(context, blockEvent.network);
   const chainContext = await ChainContext.create(context, blockEvent.network);
 
+  console.log(`Processing block ${blockEvent.blockNumber}...`);
+
   // enumerate all the owners
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
     console.log(`Checking ${owner}...`);
