@@ -32,7 +32,7 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
-          forge build --sizes --skip test
+          forge build --skip test
         id: build
 
       - name: Run Forge tests
