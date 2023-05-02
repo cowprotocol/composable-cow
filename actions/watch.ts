@@ -19,7 +19,6 @@ import { Registry, OrderStatus } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
-const COMPOSABLE_COW = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 
 /**
  * Watch for settled trades and update the registry
@@ -95,7 +94,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
     for (const conditionalOrder of conditionalOrders) {
       console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
-        COMPOSABLE_COW,
+        conditionalOrder.composableCow,
         chainContext.provider
       );
       try {
@@ -203,33 +202,40 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
  */
 async function placeOrder(order: any, api_url: string) {
   try {
-    const { data } = await axios.post(
-      `${api_url}/api/v1/orders`,
-      {
-        sellToken: order.sellToken,
-        buyToken: order.buyToken,
-        receiver: order.receiver,
-        sellAmount: order.sellAmount.toString(),
-        buyAmount: order.buyAmount.toString(),
-        validTo: order.validTo,
-        appData: order.appData,
-        feeAmount: order.feeAmount.toString(),
-        kind: order.kind,
-        partiallyFillable: order.partiallyFillable,
-        sellTokenBalance: order.sellTokenBalance,
-        buyTokenBalance: order.buyTokenBalance,
-        signingScheme: "eip1271",
-        signature: order.signature,
-        from: order.from,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-      }
-    );
-    console.log(`API response: ${data}`);
+    const postData = {
+      sellToken: order.sellToken,
+      buyToken: order.buyToken,
+      receiver: order.receiver,
+      sellAmount: order.sellAmount.toString(),
+      buyAmount: order.buyAmount.toString(),
+      validTo: order.validTo,
+      appData: order.appData,
+      feeAmount: order.feeAmount.toString(),
+      kind: order.kind,
+      partiallyFillable: order.partiallyFillable,
+      sellTokenBalance: order.sellTokenBalance,
+      buyTokenBalance: order.buyTokenBalance,
+      signingScheme: "eip1271",
+      signature: order.signature,
+      from: order.from,
+    }
+
+    // if the api_url doesn't contain localhost, post
+    if (!api_url.includes("localhost")) {
+      const { data } = await axios.post(
+        `${api_url}/api/v1/orders`,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
+      console.log(`API response: ${data}`);
+    } else {
+      console.log(`API request: ${JSON.stringify(postData)}`)
+    }
   } catch (error: any) {
     if (error.response) {
       // The request was made and the server responded with a status code
