@@ -55,5 +55,4 @@ abstract contract Base is Test, SafeHelper, CoWProtocol {
         _signers = TestAccountLib.sortAccounts(_signers);
         return _signers;
     }
-
 }

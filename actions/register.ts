@@ -119,7 +119,12 @@ export const add = async (
 
     // If the params are not in the conditionalOrder, add them
     if (!exists) {
-      conditionalOrders?.add({ params, proof, orders: new Map(), composableCow });
+      conditionalOrders?.add({
+        params,
+        proof,
+        orders: new Map(),
+        composableCow,
+      });
     }
   } else {
     console.log(`adding conditional order ${params} to new contract ${owner}`);

@@ -48,7 +48,6 @@ contract SubmitSingleOrder is Script {
             span: 0
         });
 
-
         vm.startBroadcast(deployerPrivateKey);
 
         // call to ComposableCoW to submit a single order

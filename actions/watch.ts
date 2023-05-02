@@ -218,23 +218,19 @@ async function placeOrder(order: any, api_url: string) {
       signingScheme: "eip1271",
       signature: order.signature,
       from: order.from,
-    }
+    };
 
     // if the api_url doesn't contain localhost, post
     if (!api_url.includes("localhost")) {
-      const { data } = await axios.post(
-        `${api_url}/api/v1/orders`,
-        postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-          },
-        }
-      );
+      const { data } = await axios.post(`${api_url}/api/v1/orders`, postData, {
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+      });
       console.log(`API response: ${data}`);
     } else {
-      console.log(`API request: ${JSON.stringify(postData)}`)
+      console.log(`API request: ${JSON.stringify(postData)}`);
     }
   } catch (error: any) {
     if (error.response) {

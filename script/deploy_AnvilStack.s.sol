@@ -30,7 +30,6 @@ import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 
 contract DeployAnvilStack is Script {
-
     // --- constants
     uint256 constant PAUSE_WINDOW_DURATION = 7776000;
     uint256 constant BUFFER_PERIOD_DURATION = 2592000;
@@ -81,14 +80,7 @@ contract DeployAnvilStack is Script {
     function deploySafe(address owner) internal returns (SafeProxy proxy) {
         address[] memory owners = new address[](1);
         owners[0] = owner;
-        proxy = SafeLib.createSafe(
-            factory,
-            singleton,
-            owners,
-            1,
-            address(eHandler),
-            0
-        );
+        proxy = SafeLib.createSafe(factory, singleton, owners, 1, address(eHandler), 0);
     }
 
     function deploySafeStack() internal {

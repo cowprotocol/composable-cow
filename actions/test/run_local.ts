@@ -1,4 +1,8 @@
-import { TestRuntime, TestBlockEvent, TestTransactionEvent } from "@tenderly/actions-test";
+import {
+  TestRuntime,
+  TestBlockEvent,
+  TestTransactionEvent,
+} from "@tenderly/actions-test";
 import { checkForAndPlaceOrder } from "../watch";
 import { addContract } from "../register";
 import { ethers } from "ethers";
@@ -29,7 +33,9 @@ const main = async () => {
     await testRuntime.execute(checkForAndPlaceOrder, testBlockEvent);
 
     // Transaction watcher for adding new contracts
-    const blockWithTransactions = await provider.getBlockWithTransactions(blockNumber);
+    const blockWithTransactions = await provider.getBlockWithTransactions(
+      blockNumber
+    );
     for (const transaction of blockWithTransactions.transactions) {
       const receipt = await provider.getTransactionReceipt(transaction.hash);
       if (receipt) {
@@ -47,8 +53,12 @@ const main = async () => {
           gasUsed: receipt.gasUsed.toString(),
           cumulativeGasUsed: receipt.cumulativeGasUsed.toString(),
           gasPrice: receipt.effectiveGasPrice.toString(),
-          gasTipCap: transaction.maxPriorityFeePerGas ? transaction.maxPriorityFeePerGas.toString() : "",
-          gasFeeCap: transaction.maxFeePerGas ? transaction.maxFeePerGas.toString() : "",
+          gasTipCap: transaction.maxPriorityFeePerGas
+            ? transaction.maxPriorityFeePerGas.toString()
+            : "",
+          gasFeeCap: transaction.maxFeePerGas
+            ? transaction.maxFeePerGas.toString()
+            : "",
           transactionHash: transaction.hash,
         };
 
