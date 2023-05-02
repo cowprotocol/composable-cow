@@ -19,7 +19,7 @@ import { Registry, OrderStatus } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
-const COMPOSABLE_COW = "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead";
+const COMPOSABLE_COW = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 
 /**
  * Watch for settled trades and update the registry
@@ -326,6 +326,8 @@ function apiUrl(network: string): string {
       return "https://api.cow.fi/goerli";
     case "100":
       return "https://api.cow.fi/xdai";
+    case "31337":
+      return "http://localhost:3000";
     default:
       throw "Unsupported network";
   }
