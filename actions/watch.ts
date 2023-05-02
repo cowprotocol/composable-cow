@@ -107,9 +107,9 @@ export const checkForAndPlaceOrder: ActionFn = async (
 
         const orderToSubmit: Order = {
           ...order,
-          kind: OrderKind.SELL,
-          sellTokenBalance: OrderBalance.ERC20,
-          buyTokenBalance: OrderBalance.ERC20,
+          kind: kindToString(order.kind),
+          sellTokenBalance: balanceToString(order.sellTokenBalance),
+          buyTokenBalance: balanceToString(order.buyTokenBalance),
         };
 
         // calculate the orderUid
@@ -212,10 +212,10 @@ async function placeOrder(order: any, api_url: string) {
         validTo: order.validTo,
         appData: order.appData,
         feeAmount: order.feeAmount.toString(),
-        kind: kindToString(order.kind),
+        kind: order.kind,
         partiallyFillable: order.partiallyFillable,
-        sellTokenBalance: balanceToString(order.sellTokenBalance),
-        buyTokenBalance: balanceToString(order.buyTokenBalance),
+        sellTokenBalance: order.sellTokenBalance,
+        buyTokenBalance: order.buyTokenBalance,
         signingScheme: "eip1271",
         signature: order.signature,
         from: order.from,
@@ -259,12 +259,12 @@ export const kindToString = (kind: string) => {
     kind ===
     "0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775"
   ) {
-    return "sell";
+    return OrderKind.SELL;
   } else if (
     kind ===
     "0x6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc229e27342283dc429ccc"
   ) {
-    return "buy";
+    return OrderKind.BUY;
   } else {
     throw new Error(`Unknown kind: ${kind}`);
   }
@@ -281,17 +281,17 @@ export const balanceToString = (balance: string) => {
     balance ===
     "0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9"
   ) {
-    return "erc20";
+    return OrderBalance.ERC20;
   } else if (
     balance ===
     "0xabee3b73373acd583a130924aad6dc38cfdc44ba0555ba94ce2ff63980ea0632"
   ) {
-    return "external";
+    return OrderBalance.EXTERNAL;
   } else if (
     balance ===
     "0x4ac99ace14ee0a5ef932dc609df0943ab7ac16b7583634612f8dc35a4289a6ce"
   ) {
-    return "internal";
+    return OrderBalance.INTERNAL;
   } else {
     throw new Error(`Unknown balance type: ${balance}`);
   }
