@@ -11,7 +11,7 @@
     "scripts": {
       "typechain": "typechain --target ethers-v5 --out-dir types/ \"artifacts/*.json\"",
       "prepare": "npm run artifacts && npm run typechain",
-      "artifacts": "mkdir -p artifacts && cp ../out/ERC20.sol/ERC20.json artifacts/ && cp ../out/ConditionalOrder.sol/ConditionalOrder.json artifacts/ && cp ../out/CoWSettlement.sol/CoWSettlement.json artifacts/",
+      "artifacts": "mkdir -p artifacts && cp ../out/ERC20.sol/ERC20.json artifacts/ && cp ../out/ComposableCoW.sol/ComposableCoW.json artifacts/",
       "build": "tsc"
     },
     "devDependencies": {
