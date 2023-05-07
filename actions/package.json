@@ -10,13 +10,13 @@
   "devDependencies": {
     "@typechain/ethers-v5": "^10.2.0",
     "@types/node": "^18.16.3",
-    "@tenderly/actions-test": "^0.2.0",
+    "@tenderly/actions-test": "^0.0.13",
     "ts-node": "^10.9.1",
     "typechain": "^8.1.1"
   },
   "dependencies": {
     "@cowprotocol/contracts": "^1.4.0",
-    "@tenderly/actions": "^0.2.0",
+    "@tenderly/actions": "^0.0.13",
     "axios": "^1.4.0",
     "ethers": "^5.7.2",
     "node-fetch": "2",
