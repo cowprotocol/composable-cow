@@ -69,7 +69,7 @@ interface RootCliOptions {
  * @property span Time span of the TWAP order (0 for indefinite)
  */
 interface TWAPCliOptions extends RootCliOptions {
-  twapHandler: string;
+  handler: string;
   sellToken: string;
   buyToken: string;
   receiver: string;
@@ -256,7 +256,7 @@ async function createTwapOrder(options: TWAPCliOptions) {
   };
 
   const params: IConditionalOrder.ConditionalOrderParamsStruct = {
-    handler: options.twapHandler,
+    handler: options.handler,
     salt: utils.keccak256(utils.toUtf8Bytes(Date.now().toString())),
     staticInput: utils.defaultAbiCoder.encode([TWAP_ORDER_STRUCT], [twap])
   }
