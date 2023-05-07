@@ -27,7 +27,7 @@ const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
 const TWAP_ORDER_STRUCT =
   "tuple(address sellToken,address buyToken,address receiver,uint256 partSellAmount,uint256 minPartLimit,uint256 t0,uint256 n,uint256 t,uint256 span)";
 
-const CONDITIONAL_ORDER_PARAMS_STRUCT = "tuple(address handler, bytes32 salt, bytes staticInput";
+const CONDITIONAL_ORDER_PARAMS_STRUCT = "tuple(address handler, bytes32 salt, bytes staticInput)";
 
 // The TWAP order data that is signed by Safe
 interface TWAPData {
