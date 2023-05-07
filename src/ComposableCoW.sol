@@ -188,12 +188,10 @@ contract ComposableCoW is ISafeSignatureVerifier {
             revert SwapGuardRestricted();
         }
 
-        try ExtensibleFallbackHandler(owner).NAME() returns (string memory name) {
-            // Confirm that the name is "Extensible Fallback Handler"
-            require(
-                keccak256(abi.encodePacked(name)) == keccak256(abi.encodePacked("Extensible Fallback Handler")),
-                "Invalid fallback handler"
-            );
+        try ExtensibleFallbackHandler(owner).supportsInterface(type(ISignatureVerifierMuxer).interfaceId) returns (
+            bool supported
+        ) {
+            require(supported, "Invalid fallback handler");
             signature = abi.encodeWithSignature(
                 "safeSignature(bytes32,bytes32,bytes,bytes)",
                 domainSeparator,
