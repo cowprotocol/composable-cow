@@ -11,6 +11,8 @@ import Safe from "@safe-global/safe-core-sdk";
 import {
   ERC20__factory,
   ComposableCoW__factory,
+  GPv2Settlement__factory,
+  ExtensibleFallbackHandler__factory,
 } from "./types";
 
 import type { IConditionalOrder } from "./types/ComposableCoW";
@@ -20,6 +22,7 @@ dotenv.config();
 
 // These are constant across all networks supported by CoW Protocol
 const RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
+const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
 
 const TWAP_ORDER_STRUCT =
   "tuple(address sellToken,address buyToken,address receiver,uint256 partSellAmount,uint256 minPartLimit,uint256 t0,uint256 n,uint256 t,uint256 span)";
@@ -148,6 +151,38 @@ async function setFallbackHandler(options: SetFallbackHandlerCliOptions) {
     )}`
   );
   await proposeTransaction(safe, safeService, safeTransaction, signer);
+}
+
+/**
+ * Set the CoW Protocol domain verifier of a Safe (`ExtensibleFallbackHandler`)
+ * @param options CLI and domain verifier options
+ */
+async function setDomainVerifier(options: RootCliOptions) {
+  const { safeService, safe, signer } = await getSafeAndService(options);
+
+  // For the given chain, we need to lookup the EIP-712 domain separator
+  // to set the domain verifier.
+  const settlement = GPv2Settlement__factory.connect(
+    SETTLEMENT,
+    signer
+  );
+
+  const domain = await settlement.domainSeparator();
+
+  const safeTransaction = await safe.createTransaction({
+    safeTransactionData: {
+      to: options.safeAddress,
+      value: "0",
+      data: ExtensibleFallbackHandler__factory.createInterface().encodeFunctionData(
+        "setDomainVerifier",
+        [domain, options.composableCow]),
+    }
+  })
+
+  console.log(
+    `Proposing setDomainVerifier Transaction: ${JSON.stringify(safeTransaction.data)}`
+  )
+  await proposeTransaction(safe, safeService, safeTransaction, signer)
 }
 
 /**
@@ -424,6 +459,12 @@ async function main() {
     .description("Set the fallback handler of the Safe")
     .requiredOption("--handler <handler>", "Address of the fallback handler")
     .action(setFallbackHandler);
+
+  program
+    .command("set-domain-verifier")
+    .description("Set the CoW Protocol domain verifier of the Safe")
+    .requiredOption("--handler <handler>", "Address of the ExtensibleFallbackHandler")
+    .action(setDomainVerifier);
 
   await program.parseAsync(process.argv);
 }
