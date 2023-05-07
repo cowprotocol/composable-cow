@@ -22,12 +22,13 @@ dotenv.config();
 
 // These are constant across all networks supported by CoW Protocol
 const RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
-const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
+const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
 const TWAP_ORDER_STRUCT =
   "tuple(address sellToken,address buyToken,address receiver,uint256 partSellAmount,uint256 minPartLimit,uint256 t0,uint256 n,uint256 t,uint256 span)";
 
-const CONDITIONAL_ORDER_PARAMS_STRUCT = "tuple(address handler, bytes32 salt, bytes staticInput)";
+const CONDITIONAL_ORDER_PARAMS_STRUCT =
+  "tuple(address handler, bytes32 salt, bytes staticInput)";
 
 // The TWAP order data that is signed by Safe
 interface TWAPData {
@@ -162,10 +163,7 @@ async function setDomainVerifier(options: RootCliOptions) {
 
   // For the given chain, we need to lookup the EIP-712 domain separator
   // to set the domain verifier.
-  const settlement = GPv2Settlement__factory.connect(
-    SETTLEMENT,
-    signer
-  );
+  const settlement = GPv2Settlement__factory.connect(SETTLEMENT, signer);
 
   const domain = await settlement.domainSeparator();
 
@@ -175,14 +173,17 @@ async function setDomainVerifier(options: RootCliOptions) {
       value: "0",
       data: ExtensibleFallbackHandler__factory.createInterface().encodeFunctionData(
         "setDomainVerifier",
-        [domain, options.composableCow]),
-    }
-  })
+        [domain, options.composableCow]
+      ),
+    },
+  });
 
   console.log(
-    `Proposing setDomainVerifier Transaction: ${JSON.stringify(safeTransaction.data)}`
-  )
-  await proposeTransaction(safe, safeService, safeTransaction, signer)
+    `Proposing setDomainVerifier Transaction: ${JSON.stringify(
+      safeTransaction.data
+    )}`
+  );
+  await proposeTransaction(safe, safeService, safeTransaction, signer);
 }
 
 /**
@@ -258,10 +259,13 @@ async function createTwapOrder(options: TWAPCliOptions) {
   const params: IConditionalOrder.ConditionalOrderParamsStruct = {
     handler: options.handler,
     salt: utils.keccak256(utils.toUtf8Bytes(Date.now().toString())),
-    staticInput: utils.defaultAbiCoder.encode([TWAP_ORDER_STRUCT], [twap])
-  }
+    staticInput: utils.defaultAbiCoder.encode([TWAP_ORDER_STRUCT], [twap]),
+  };
 
-  const orderHash = utils.defaultAbiCoder.encode([CONDITIONAL_ORDER_PARAMS_STRUCT], [params]);
+  const orderHash = utils.defaultAbiCoder.encode(
+    [CONDITIONAL_ORDER_PARAMS_STRUCT],
+    [params]
+  );
 
   const safeTransactionData: MetaTransactionData[] = [
     {
@@ -306,7 +310,10 @@ class RootCommand extends Command {
           .makeOptionMandatory(true)
       )
       .addOption(
-        new Option("-c, --composable-cow <composableCow>", "Address of Composable Cow")
+        new Option(
+          "-c, --composable-cow <composableCow>",
+          "Address of Composable Cow"
+        )
           .env("COMPOSABLE_COW")
           .makeOptionMandatory(true)
       )
@@ -463,7 +470,10 @@ async function main() {
   program
     .command("set-domain-verifier")
     .description("Set the CoW Protocol domain verifier of the Safe")
-    .requiredOption("--handler <handler>", "Address of the ExtensibleFallbackHandler")
+    .requiredOption(
+      "--handler <handler>",
+      "Address of the ExtensibleFallbackHandler"
+    )
     .action(setDomainVerifier);
 
   await program.parseAsync(process.argv);
