@@ -170,8 +170,6 @@ export const checkForAndPlaceOrder: ActionFn = async (
           console.log("Removing conditional order from registry");
           conditionalOrders.delete(conditionalOrder);
         }
-
-        console.log(`Not tradeable (${e})`);
       }
     }
   }
@@ -236,8 +234,7 @@ async function placeOrder(order: any, api_url: string) {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.log(error.response.status);
-      console.log(error.response.data);
+      console.log(JSON.stringify(error.response))
     } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
