@@ -23,7 +23,7 @@ A conditional order is a struct `ConditionalOrderParams`, consisting of:
 
 ##### Single Order
 
-1. Call `ComposableCoW.create` with the `ConditionalOrderParams` struct. Optionally set `dispatch = true` to have events emitted that are picked up by a watch tower.
+1. From the context of the Safe that is placing the order, call `ComposableCoW.create` with the `ConditionalOrderParams` struct. Optionally set `dispatch = true` to have events emitted that are picked up by a watch tower.
 
 ##### Merkle Root
 
