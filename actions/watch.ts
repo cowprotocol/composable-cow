@@ -170,6 +170,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
           console.log("Removing conditional order from registry");
           conditionalOrders.delete(conditionalOrder);
         }
+        console.log(`Unexpected error while processing order: ${e}`);
       }
     }
   }
