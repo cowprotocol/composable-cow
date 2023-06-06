@@ -38,12 +38,8 @@ library TWAPOrder {
         uint256 n;
         uint256 t;
         uint256 span;
+        bytes32 appData;
     }
-
-    // --- constants
-
-    /// @dev keccak256("conditionalorder.twap")
-    bytes32 private constant APP_DATA = bytes32(0x6a1cb2f57824a1985d4bd2c556f30a048157ee9973efc0a4714604dde0a23104);
 
     // --- functions
 
@@ -82,7 +78,7 @@ library TWAPOrder {
             sellAmount: self.partSellAmount,
             buyAmount: self.minPartLimit,
             validTo: TWAPOrderMathLib.calculateValidTo(self.t0, self.n, self.t, self.span).toUint32(),
-            appData: APP_DATA,
+            appData: self.appData,
             feeAmount: 0,
             kind: GPv2Order.KIND_SELL,
             partiallyFillable: false,
