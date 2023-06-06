@@ -244,6 +244,48 @@ async function createTwapOrder(options: TWAPCliOptions) {
   );
   const minPartLimit = minBuyAmount.div(options.numParts);
 
+  // enforce that it is a valid TWAP order
+  
+  // sell token and buy token must be different
+  if (sellToken === buyToken) {
+    throw new Error("Sell token and buy token must be different");
+  }
+
+  // neither sell token nor buy token can be address(0)
+  if (sellToken.address === ethers.constants.AddressZero || buyToken.address === ethers.constants.AddressZero) {
+    throw new Error("Sell token and buy token must be non-zero addresses");
+  }
+
+  // part sell amount must be greater than 0
+  if (partSellAmount.isZero()) {
+    throw new Error("Part sell amount must be greater than 0");
+  }
+
+  // min part limit must be greater than 0
+  if (minPartLimit.isZero()) {
+    throw new Error("Min part limit must be greater than 0");
+  }
+
+  // startTime must be in the future and less than uint32 max
+  if (options.startTime < Date.now() || options.startTime > 2 ** 32) {
+    throw new Error("Start time must be in the future and less than uin32 max");
+  }
+
+  // numParts must be greater than 1 and less than uint32 max
+  if (options.numParts < 1 || options.numParts > 2 ** 32) {
+    throw new Error("Num parts must be greater than 1 and less than uin32 max");
+  }
+
+  // timeInterval must be greater than 0 and less than or equal to 365 days
+  if (options.timeInterval == 0 || options.timeInterval > 365 * 24 * 60 * 60) {
+    throw new Error("Invalid time interval");
+  }
+
+  // span must be less than or equal to time interval
+  if (options.span > options.timeInterval) {
+    throw new Error("Span must be less than or equal to time interval");
+  }
+
   const twap: TWAPData = {
     sellToken: options.sellToken,
     buyToken: options.buyToken,
