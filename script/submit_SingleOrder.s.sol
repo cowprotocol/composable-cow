@@ -45,7 +45,8 @@ contract SubmitSingleOrder is Script {
             t0: block.timestamp,
             n: 10,
             t: 120,
-            span: 0
+            span: 0,
+            appData: keccak256("forge.scripts.twap")
         });
 
         vm.startBroadcast(deployerPrivateKey);
