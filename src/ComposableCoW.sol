@@ -85,7 +85,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             revert InvalidHandler();
         }
 
-        singleOrders[msg.sender][keccak256(abi.encode(params))] = true;
+        singleOrders[msg.sender][hash(params)] = true;
         if (dispatch) {
             emit ConditionalOrderCreated(msg.sender, params);
         }
@@ -206,6 +206,17 @@ contract ComposableCoW is ISafeSignatureVerifier {
         }
     }
 
+    // --- helper viewer functions
+
+    /**
+     * Return the hash of the conditional order parameters
+     * @param params `ConditionalOrderParams` for the order
+     * @return hash of the conditional order parameters
+     */
+    function hash(IConditionalOrder.ConditionalOrderParams memory params) public pure returns (bytes32) {
+        return keccak256(abi.encode(params));
+    }
+
     // --- internal functions
 
     /**
@@ -220,12 +231,12 @@ contract ComposableCoW is ISafeSignatureVerifier {
         view
     {
         /// @dev Computing proof using leaf double hashing
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(params))));
+        bytes32 leaf = keccak256(bytes.concat(hash(params)));
         if (!(proof.length == 0 || MerkleProof.verify(proof, roots[owner], leaf))) {
             revert ProofNotAuthed();
         }
 
-        if (!(proof.length != 0 || singleOrders[owner][keccak256(abi.encode(params))])) {
+        if (!(proof.length != 0 || singleOrders[owner][hash(params)])) {
             revert SingleOrderNotAuthed();
         }
     }
