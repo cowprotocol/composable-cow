@@ -166,7 +166,8 @@ contract BaseComposableCoWTest is Base, Merkle {
             t0: block.timestamp,
             n: 2,
             t: 3600,
-            span: 0
+            span: 0,
+            appData: keccak256("test.twap")
         });
 
         // 2. Create n conditional orders as leaves of the ComposableCoW

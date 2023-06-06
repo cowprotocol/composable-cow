@@ -523,7 +523,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             t0: startTime,
             n: NUM_PARTS,
             t: FREQUENCY,
-            span: SPAN
+            span: SPAN,
+            appData: keccak256("test.twap")
         });
     }
 }
