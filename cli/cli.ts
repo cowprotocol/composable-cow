@@ -18,6 +18,7 @@ import {
 import type { IConditionalOrder } from "./types/ComposableCoW";
 
 import * as dotenv from "dotenv";
+import { keccak256 } from "ethers/lib/utils";
 dotenv.config();
 
 // These are constant across all networks supported by CoW Protocol
@@ -25,7 +26,7 @@ const RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110";
 const SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
 const TWAP_ORDER_STRUCT =
-  "tuple(address sellToken,address buyToken,address receiver,uint256 partSellAmount,uint256 minPartLimit,uint256 t0,uint256 n,uint256 t,uint256 span)";
+  "tuple(address sellToken,address buyToken,address receiver,uint256 partSellAmount,uint256 minPartLimit,uint256 t0,uint256 n,uint256 t,uint256 span,bytes32 appData)";
 
 const CONDITIONAL_ORDER_PARAMS_STRUCT =
   "tuple(address handler, bytes32 salt, bytes staticInput)";
@@ -41,6 +42,7 @@ interface TWAPData {
   n: number;
   t: number;
   span: number;
+  appData: string;
 }
 
 /**
@@ -296,6 +298,7 @@ async function createTwapOrder(options: TWAPCliOptions) {
     n: options.numParts,
     t: options.timeInterval,
     span: options.span,
+    appData: keccak256("twap.cli"),
   };
 
   const params: IConditionalOrder.ConditionalOrderParamsStruct = {
