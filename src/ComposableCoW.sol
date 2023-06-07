@@ -6,6 +6,7 @@ import "safe/handler/ExtensibleFallbackHandler.sol";
 
 import "./interfaces/IConditionalOrder.sol";
 import "./interfaces/ISwapGuard.sol";
+import "./interfaces/IValueFactory.sol";
 import "./vendored/CoWSettlement.sol";
 
 /**
@@ -52,6 +53,8 @@ contract ComposableCoW is ISafeSignatureVerifier {
     mapping(address => mapping(bytes32 => bool)) public singleOrders;
     // @dev Mapping of owner's swap guard
     mapping(address => ISwapGuard) public swapGuards;
+    // @dev Mapping of owner's on-chain storage slots
+    mapping(address => mapping(bytes32 => bytes32)) public cabinet;
 
     // --- constructor
 
@@ -70,9 +73,26 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param root The merkle root of the user's conditional orders
      * @param proof Where to find the proofs
      */
-    function setRoot(bytes32 root, Proof calldata proof) external {
+    function setRoot(bytes32 root, Proof calldata proof) public {
         roots[msg.sender] = root;
         emit MerkleRootSet(msg.sender, root, proof);
+    }
+
+    /**
+     * Set the merkle root of the user's conditional orders and store a value from on-chain in the cabinet
+     * @param root The merkle root of the user's conditional orders
+     * @param proof Where to find the proofs
+     * @param factory A factory from which to get a value to store in the cabinet related to the merkle root
+     * @param data Implementation specific off-chain data
+     */
+    function setRootWith(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data) external {
+        setRoot(root, proof);
+
+        // Default to the zero slot for a merkle root as this is the most common use case
+        // and should save gas on calldata when reading the cabinet.
+
+        // Set the cabinet slot
+        cabinet[msg.sender][bytes32(0)] = factory.getValue(data);
     }
 
     /**
@@ -80,7 +100,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param params The parameters of the conditional order
      * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
      */
-    function create(IConditionalOrder.ConditionalOrderParams calldata params, bool dispatch) external {
+    function create(IConditionalOrder.ConditionalOrderParams calldata params, bool dispatch) public {
         if (!(address(params.handler) != address(0))) {
             revert InvalidHandler();
         }
@@ -89,6 +109,28 @@ contract ComposableCoW is ISafeSignatureVerifier {
         if (dispatch) {
             emit ConditionalOrderCreated(msg.sender, params);
         }
+    }
+
+    /**
+     * Authorise a single conditional order and store a value from on-chain in the cabinet
+     * @param params The parameters of the conditional order
+     * @param factory A factory from which to get a value to store in the cabinet
+     * @param data Implementation specific off-chain data
+     * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
+     */
+    function createWith(
+        IConditionalOrder.ConditionalOrderParams calldata params,
+        IValueFactory factory,
+        bytes calldata data,
+        bool dispatch
+    ) external {
+        create(params, dispatch);
+
+        // When setting the slot, an opinionated direction is taken to tie the return value of
+        // the slot to the conditional order, such that there is a guarantee or data integrity
+
+        // Set the cabinet slot
+        cabinet[msg.sender][hash(params)] = factory.getValue(data);
     }
 
     /**
@@ -130,19 +172,19 @@ contract ComposableCoW is ISafeSignatureVerifier {
         PayloadStruct memory _payload = abi.decode(payload, (PayloadStruct));
 
         // Check if the order is authorised
-        _auth(address(safe), _payload.params, _payload.proof);
+        bytes32 ctx = _auth(address(safe), _payload.params, _payload.proof);
 
         // It's an authorised order, validate it.
         GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
 
         // Check with the swap guard if the order is restricted or not
-        if (!(_guardCheck(address(safe), _payload.params, _payload.offchainInput, order))) {
+        if (!(_guardCheck(address(safe), ctx, _payload.params, _payload.offchainInput, order))) {
             revert SwapGuardRestricted();
         }
 
         // Proof is valid, guard (if any) is valid, now check the handler
         _payload.params.handler.verify(
-            address(safe), sender, _hash, _domainSeparator, _payload.params.staticInput, _payload.offchainInput, order
+            address(safe), sender, _hash, _domainSeparator, ctx, _payload.params.staticInput, _payload.offchainInput, order
         );
 
         return ERC1271.isValidSignature.selector;
@@ -166,7 +208,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
         bytes32[] calldata proof
     ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
         // Check if the order is authorised
-        _auth(owner, params, proof);
+        bytes32 ctx = _auth(owner, params, proof);
 
         // Make sure the handler supports `IConditionalOrderGenerator`
         try IConditionalOrderGenerator(address(params.handler)).supportsInterface(
@@ -180,11 +222,11 @@ contract ComposableCoW is ISafeSignatureVerifier {
         }
 
         order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
-            owner, msg.sender, params.staticInput, offchainInput
+            owner, msg.sender, ctx, params.staticInput, offchainInput
         );
 
         // Check with the swap guard if the order is restricted or not
-        if (!(_guardCheck(owner, params, offchainInput, order))) {
+        if (!(_guardCheck(owner, ctx, params, offchainInput, order))) {
             revert SwapGuardRestricted();
         }
 
@@ -229,34 +271,43 @@ contract ComposableCoW is ISafeSignatureVerifier {
     function _auth(address owner, IConditionalOrder.ConditionalOrderParams memory params, bytes32[] memory proof)
         internal
         view
+        returns (bytes32 ctx)
     {
-        /// @dev Computing proof using leaf double hashing
-        bytes32 leaf = keccak256(bytes.concat(hash(params)));
-        if (!(proof.length == 0 || MerkleProof.verify(proof, roots[owner], leaf))) {
-            revert ProofNotAuthed();
-        }
+        if (proof.length != 0) {
+            /// @dev Computing proof using leaf double hashing
+            bytes32 leaf = keccak256(bytes.concat(hash(params)));
 
-        if (!(proof.length != 0 || singleOrders[owner][hash(params)])) {
-            revert SingleOrderNotAuthed();
+            // Check if the proof is valid
+            if (!MerkleProof.verify(proof, roots[owner], leaf)) {
+                revert ProofNotAuthed();
+            }
+        } else {
+            // Check if the order is authorised
+            ctx = hash(params);
+            if (!singleOrders[owner][ctx]) {
+                revert SingleOrderNotAuthed();
+            }
         }
     }
 
     /**
      * Check the swap guard if the order is restricted or not
      * @param owner who's swap guard to check
+     * @param ctx of the order (bytes32(0) if a merkle tree is used, otherwise H(params))
      * @param params that uniquely identify the order
      * @param offchainInput that has been proposed by `sender`
      * @param order GPv2Order.Data that has been proposed by `sender`
      */
     function _guardCheck(
         address owner,
+        bytes32 ctx,
         IConditionalOrder.ConditionalOrderParams memory params,
         bytes memory offchainInput,
         GPv2Order.Data memory order
     ) internal view returns (bool) {
         ISwapGuard guard = swapGuards[owner];
         if (address(guard) != address(0)) {
-            return guard.verify(order, params, offchainInput);
+            return guard.verify(order, ctx, params, offchainInput);
         }
         return true;
     }
