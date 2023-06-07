@@ -33,7 +33,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
     /**
      * @inheritdoc IConditionalOrderGenerator
      */
-    function getTradeableOrder(address owner, address, bytes calldata staticInput, bytes calldata)
+    function getTradeableOrder(address owner, address, bytes32, bytes calldata staticInput, bytes calldata)
         public
         view
         override
