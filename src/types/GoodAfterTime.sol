@@ -41,7 +41,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         uint256 allowedSlippage; // in basis points
     }
 
-    function getTradeableOrder(address owner, address, bytes calldata staticInput, bytes calldata offchainInput)
+    function getTradeableOrder(address owner, address, bytes32, bytes calldata staticInput, bytes calldata offchainInput)
         public
         view
         override

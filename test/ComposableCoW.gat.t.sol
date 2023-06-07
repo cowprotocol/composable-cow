@@ -40,7 +40,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // should revert when the current time is before the start time
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        gat.getTradeableOrder(address(safe1), address(0), abi.encode(o), abi.encode(uint256(1e18)));
+        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
     /**
@@ -61,7 +61,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // should revert when the current balance is below the minimum balance
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        gat.getTradeableOrder(address(safe1), address(0), abi.encode(o), abi.encode(uint256(1e18)));
+        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
     /**
@@ -91,7 +91,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
-        gat.getTradeableOrder(address(safe1), address(0), abi.encode(o), abi.encode(buyAmount));
+        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
     }
 
     function test_getTradeableOrder_FuzzContext(
@@ -125,7 +125,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         // This should not revert
-        GPv2Order.Data memory order = gat.getTradeableOrder(owner, address(0), abi.encode(o), abi.encode(buyAmount));
+        GPv2Order.Data memory order = gat.getTradeableOrder(owner, address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
 
         GPv2Order.Data memory comparison = GPv2Order.Data({
             sellToken: token0,
@@ -275,7 +275,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         GPv2Order.Data memory order =
-            gat.getTradeableOrder(address(safe1), address(0), abi.encode(o), abi.encode(buyAmount));
+            gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // Verify that the order is valid - this shouldn't revert
@@ -284,6 +284,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
             address(0),
             GPv2Order.hash(order, domainSeparator),
             domainSeparator,
+            bytes32(0), 
             abi.encode(o),
             abi.encode(buyAmount),
             order

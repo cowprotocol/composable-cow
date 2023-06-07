@@ -17,7 +17,7 @@ contract TWAP is BaseConditionalOrder {
      * @inheritdoc IConditionalOrderGenerator
      * @dev `owner`, `sender` and `offchainInput` is not used.
      */
-    function getTradeableOrder(address, address, bytes calldata staticInput, bytes calldata)
+    function getTradeableOrder(address, address, bytes32, bytes calldata staticInput, bytes calldata)
         public
         view
         override
