@@ -85,7 +85,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param factory A factory from which to get a value to store in the cabinet related to the merkle root
      * @param data Implementation specific off-chain data
      */
-    function setRootWith(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data) external {
+    function setRootWithContext(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data) external {
         setRoot(root, proof);
 
         // Default to the zero slot for a merkle root as this is the most common use case
@@ -118,7 +118,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param data Implementation specific off-chain data
      * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
      */
-    function createWith(
+    function createWithContext(
         IConditionalOrder.ConditionalOrderParams calldata params,
         IValueFactory factory,
         bytes calldata data,
