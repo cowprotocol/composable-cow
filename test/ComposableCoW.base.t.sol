@@ -63,7 +63,7 @@ contract BaseComposableCoWTest is Base, Merkle {
         passThrough = new TestConditionalOrderGenerator();
         mirror = new MirrorConditionalOrder();
 
-        twap = new TWAP();
+        twap = new TWAP(composableCow);
     }
 
     /// @dev Ensure `ComposableCoW` contract is the `ISafeSignatureVerifier` for `safe1` on the `settlement` domain

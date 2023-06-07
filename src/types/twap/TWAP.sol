@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "../../ComposableCoW.sol";
+
 import "../../BaseConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
@@ -13,11 +15,18 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  */
 contract TWAP is BaseConditionalOrder {
+
+    ComposableCoW private immutable composableCow;
+
+    constructor(ComposableCoW _composableCow) {
+        composableCow = _composableCow;
+    }
+
     /**
      * @inheritdoc IConditionalOrderGenerator
      * @dev `owner`, `sender` and `offchainInput` is not used.
      */
-    function getTradeableOrder(address, address, bytes32, bytes calldata staticInput, bytes calldata)
+    function getTradeableOrder(address owner, address, bytes32 ctx, bytes calldata staticInput, bytes calldata)
         public
         view
         override
@@ -30,7 +39,16 @@ contract TWAP is BaseConditionalOrder {
          * valid is filled. This is safe as CoW Protocol ensures that each `orderUid` is only
          * settled once.
          */
-        order = TWAPOrder.orderFor(abi.decode(staticInput, (TWAPOrder.Data)));
+        TWAPOrder.Data memory twap = abi.decode(staticInput, (TWAPOrder.Data));
+
+        /**
+         * @dev If `twap.t0` is set to 0, then get the start time from the context.
+         */
+        if (twap.t0 == 0) {
+            twap.t0 = uint256(composableCow.cabinet(owner, ctx));
+        }
+
+        order = TWAPOrder.orderFor(twap);
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
         if (!(block.timestamp <= order.validTo)) {
