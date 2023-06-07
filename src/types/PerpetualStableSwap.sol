@@ -27,6 +27,13 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         uint256 halfSpreadBps;
     }
 
+    struct BuySellData {
+        IERC20 sellToken;
+        IERC20 buyToken;
+        uint256 sellAmount;
+        uint256 buyAmount;
+    }
+
     // There are 10k basis points in a unit
     uint256 private constant BPS = 10_000;
 
@@ -43,8 +50,9 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         PerpetualStableSwap.Data memory data = abi.decode(staticInput, (Data));
 
         // Always sell whatever of the two tokens we have more of
-        (IERC20 sellToken, IERC20 buyToken, uint256 sellAmount, uint256 buyAmount) = side(owner, data);
-        require(sellAmount > 0, "not funded");
+        BuySellData memory buySellData = side(owner, data);
+        // (IERC20 sellToken, IERC20 buyToken, uint256 sellAmount, uint256 buyAmount) = side(owner, data);
+        require(buySellData.sellAmount > 0, "not funded");
 
         // Unless spread is 0 (and there is no surplus), order collision is not an issue as sell and buy amounts should
         // increase for each subsequent order. We therefore set validity to a large time span
@@ -54,11 +62,11 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         // solhint-disable-next-line not-rely-on-time
         uint32 currentTimeBucket = ((uint32(block.timestamp) / data.validity) + 1) * data.validity;
         order = GPv2Order.Data(
-            sellToken,
-            buyToken,
+            buySellData.sellToken,
+            buySellData.buyToken,
             owner,
-            sellAmount,
-            buyAmount,
+            buySellData.sellAmount,
+            buySellData.buyAmount,
             currentTimeBucket + data.validity,
             keccak256("PerpetualStableSwap"),
             0,
@@ -72,7 +80,8 @@ contract PerpetualStableSwap is BaseConditionalOrder {
     function side(address owner, PerpetualStableSwap.Data memory data)
         internal
         view
-        returns (IERC20Metadata sellToken, IERC20Metadata buyToken, uint256 sellAmount, uint256 buyAmount)
+        returns (BuySellData memory buySellData) 
+        // returns (IERC20Metadata sellToken, IERC20Metadata buyToken, uint256 sellAmount, uint256 buyAmount)
     {
         IERC20Metadata tokenA = IERC20Metadata(address(data.tokenA));
         IERC20Metadata tokenB = IERC20Metadata(address(data.tokenB));
@@ -80,15 +89,19 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         uint256 balanceB = tokenB.balanceOf(owner);
 
         if (convertAmount(tokenA, balanceA, tokenB) > balanceB) {
-            sellToken = tokenA;
-            buyToken = tokenB;
-            sellAmount = balanceA;
-            buyAmount = convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS);
+            buySellData = BuySellData({
+                sellToken: tokenA,
+                buyToken: tokenB,
+                sellAmount: balanceA,
+                buyAmount: convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS)
+            });
         } else {
-            sellToken = tokenB;
-            buyToken = tokenA;
-            sellAmount = balanceB;
-            buyAmount = convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS);
+            buySellData = BuySellData({
+                sellToken: tokenB,
+                buyToken: tokenA,
+                sellAmount: balanceB,
+                buyAmount: convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS)
+            });
         }
     }
 
