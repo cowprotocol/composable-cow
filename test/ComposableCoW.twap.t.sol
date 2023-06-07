@@ -29,7 +29,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         super.setUp();
 
         // deploy the TWAP handler
-        twap = new TWAP();
+        twap = new TWAP(composableCow);
 
         // Set a default bundle
         defaultBundle = _twapTestBundle(block.timestamp + 1 days);

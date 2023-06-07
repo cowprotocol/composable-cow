@@ -65,8 +65,8 @@ contract DeployAnvilStack is Script {
         SafeProxy proxy = deploySafe(vm.addr(deployerPrivateKey));
 
         // deploy the Composable CoW
-        new ComposableCoW(address(settlement));
-        new TWAP();
+        ComposableCoW composableCow = new ComposableCoW(address(settlement));
+        new TWAP(composableCow);
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
