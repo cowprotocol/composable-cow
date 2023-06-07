@@ -249,7 +249,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // This should not revert
-        (GPv2Order.Data memory part, bytes memory signature) =
+        (GPv2Order.Data memory part, bytes memory signature, ) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
 
         // Verify that the order is valid - this shouldn't revert
@@ -279,7 +279,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to the current time
         vm.warp(currentTime);
 
-        GPv2Order.Data memory order = twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        (GPv2Order.Data memory order, ) = twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // Verify that the order is valid - this shouldn't revert
@@ -310,7 +310,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         _setRoot(address(safe1), root, ComposableCoW.Proof({location: 0, data: ""}));
 
         // 4. Get the order and signature
-        (GPv2Order.Data memory order, bytes memory signature) =
+        (GPv2Order.Data memory order, bytes memory signature, ) =
             composableCow.getTradeableOrderWithSignature(address(safe1), leaf, bytes(""), proof);
 
         // 5. Execute the order
@@ -371,7 +371,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             // Simulate being called by the watch tower
 
             try composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0))
-            returns (GPv2Order.Data memory order, bytes memory signature) {
+            returns (GPv2Order.Data memory order, bytes memory signature, IConditionalOrder.Interactions memory interactions) {
                 bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
                 if (
                     orderFills[orderDigest] == 0

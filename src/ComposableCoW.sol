@@ -206,8 +206,8 @@ contract ComposableCoW is ISafeSignatureVerifier {
         IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata offchainInput,
         bytes32[] calldata proof
-    ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
-        // Check if the order is authorised
+    ) external view returns (GPv2Order.Data memory order, bytes memory signature, IConditionalOrder.Interactions memory interactions) {
+        // Check if the order is authorised and in doing so, get the context
         bytes32 ctx = _auth(owner, params, proof);
 
         // Make sure the handler supports `IConditionalOrderGenerator`
@@ -221,7 +221,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             revert InterfaceNotSupported();
         }
 
-        order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
+        (order, interactions) = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
             owner, msg.sender, ctx, params.staticInput, offchainInput
         );
 

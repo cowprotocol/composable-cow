@@ -22,7 +22,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         public
         view
         override
-        returns (GPv2Order.Data memory order)
+        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory)
     {
         /// @dev Decode the payload into the trade above threshold parameters.
         TradeAboveThreshold.Data memory data = abi.decode(staticInput, (Data));

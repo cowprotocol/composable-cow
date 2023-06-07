@@ -37,7 +37,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         public
         view
         override
-        returns (GPv2Order.Data memory order)
+        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions)
     {
         /// @dev Decode the payload into the perpetual stable swap parameters.
         PerpetualStableSwap.Data memory data = abi.decode(staticInput, (Data));
