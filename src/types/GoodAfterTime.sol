@@ -45,7 +45,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         public
         view
         override
-        returns (GPv2Order.Data memory order)
+        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions)
     {
         // Decode the payload into the good after time parameters.
         Data memory data = abi.decode(staticInput, (Data));

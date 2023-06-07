@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
+import {GPv2Interaction} from "cowprotocol/libraries/GPv2Interaction.sol";
 import {IERC165} from "safe/interfaces/IERC165.sol";
 
 /**
@@ -20,6 +21,11 @@ interface IConditionalOrder {
         IConditionalOrder handler;
         bytes32 salt;
         bytes staticInput;
+    }
+
+    struct Interactions {
+        GPv2Interaction.Data[] pre;
+        GPv2Interaction.Data[] post;
     }
 
     /**
@@ -71,5 +77,5 @@ interface IConditionalOrderGenerator is IConditionalOrder, IERC165 {
     function getTradeableOrder(address owner, address sender, bytes32 ctx, bytes calldata staticInput, bytes calldata offchainInput)
         external
         view
-        returns (GPv2Order.Data memory);
+        returns (GPv2Order.Data memory, Interactions memory);
 }
