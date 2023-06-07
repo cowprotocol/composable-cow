@@ -30,6 +30,7 @@ interface IConditionalOrder {
      * @param sender the `msg.sender` of the transaction
      * @param _hash the hash of the order
      * @param domainSeparator the domain separator used to sign the order
+     * @param ctx the context of the order (bytes32(0) if a merkle tree is used, otherwise H(params))
      * @param staticInput the static input for all discrete orders cut from this conditional order
      * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
      */
@@ -38,6 +39,7 @@ interface IConditionalOrder {
         address sender,
         bytes32 _hash,
         bytes32 domainSeparator,
+        bytes32 ctx,
         bytes calldata staticInput,
         bytes calldata offchainInput,
         GPv2Order.Data calldata order
@@ -61,11 +63,12 @@ interface IConditionalOrderGenerator is IConditionalOrder, IERC165 {
      *      **MUST** revert if the order condition is not met.
      * @param owner the contract who is the owner of the order
      * @param sender the `msg.sender` of the parent `isValidSignature` call
+     * @param ctx the context of the order (bytes32(0) if merkle tree is used, otherwise the H(params))
      * @param staticInput the static input for all discrete orders cut from this conditional order
      * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
      * @return the tradeable order for submission to the CoW Protocol API
      */
-    function getTradeableOrder(address owner, address sender, bytes calldata staticInput, bytes calldata offchainInput)
+    function getTradeableOrder(address owner, address sender, bytes32 ctx, bytes calldata staticInput, bytes calldata offchainInput)
         external
         view
         returns (GPv2Order.Data memory);
