@@ -200,7 +200,7 @@ contract TestSwapGuard is BaseSwapGuard {
     }
 
     // only allow even amounts to be swapped
-    function verify(GPv2Order.Data calldata order, IConditionalOrder.ConditionalOrderParams calldata, bytes calldata)
+    function verify(GPv2Order.Data calldata order, bytes32, IConditionalOrder.ConditionalOrderParams calldata, bytes calldata)
         external
         view
         returns (bool)
@@ -211,7 +211,7 @@ contract TestSwapGuard is BaseSwapGuard {
 
 /// @dev A conditional order handler used for testing that returns the GPv2Order passed in as `offchainInput`
 contract TestConditionalOrderGenerator is BaseConditionalOrder {
-    function getTradeableOrder(address, address, bytes calldata, bytes calldata offchainInput)
+    function getTradeableOrder(address, address, bytes32, bytes calldata, bytes calldata offchainInput)
         public
         pure
         override
@@ -228,7 +228,7 @@ contract TestNonSafeWallet is ERC1271Forwarder {
 
 /// @dev A conditional order handler used for testing that reverts on verify
 contract MirrorConditionalOrder is IConditionalOrder {
-    function verify(address, address, bytes32, bytes32, bytes calldata, bytes calldata, GPv2Order.Data calldata)
+    function verify(address, address, bytes32, bytes32, bytes32, bytes calldata, bytes calldata, GPv2Order.Data calldata)
         external
         pure
         override

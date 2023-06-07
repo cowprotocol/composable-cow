@@ -279,6 +279,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
                 address(0), // sender isn't used
                 keccak256(abi.encode(order)),
                 domainSeparator,
+                keccak256(abi.encode(params)),
                 params.staticInput,
                 offchainInput,
                 order
