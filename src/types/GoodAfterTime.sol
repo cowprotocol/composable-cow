@@ -41,12 +41,13 @@ contract GoodAfterTime is BaseConditionalOrder {
         uint256 allowedSlippage; // in basis points
     }
 
-    function getTradeableOrder(address owner, address, bytes32, bytes calldata staticInput, bytes calldata offchainInput)
-        public
-        view
-        override
-        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions)
-    {
+    function getTradeableOrder(
+        address owner,
+        address,
+        bytes32,
+        bytes calldata staticInput,
+        bytes calldata offchainInput
+    ) public view override returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions) {
         // Decode the payload into the good after time parameters.
         Data memory data = abi.decode(staticInput, (Data));
 

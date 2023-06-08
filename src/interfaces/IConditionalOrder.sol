@@ -74,8 +74,11 @@ interface IConditionalOrderGenerator is IConditionalOrder, IERC165 {
      * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
      * @return the tradeable order for submission to the CoW Protocol API
      */
-    function getTradeableOrder(address owner, address sender, bytes32 ctx, bytes calldata staticInput, bytes calldata offchainInput)
-        external
-        view
-        returns (GPv2Order.Data memory, Interactions memory);
+    function getTradeableOrder(
+        address owner,
+        address sender,
+        bytes32 ctx,
+        bytes calldata staticInput,
+        bytes calldata offchainInput
+    ) external view returns (GPv2Order.Data memory, Interactions memory);
 }

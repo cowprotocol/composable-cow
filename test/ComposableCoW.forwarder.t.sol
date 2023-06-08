@@ -18,7 +18,7 @@ contract ComposableCoWForwarderTest is BaseComposableCoWTest {
         _create(address(nonSafe), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature, ) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
             address(nonSafe), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
