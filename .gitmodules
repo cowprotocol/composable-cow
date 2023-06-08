@@ -17,3 +17,6 @@
 [submodule "lib/@openzeppelin"]
 	path = lib/@openzeppelin
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "lib/safe"]
+	path = lib/safe
+	url = https://github.com/rndlabs/safe-contracts
