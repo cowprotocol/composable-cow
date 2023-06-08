@@ -85,7 +85,9 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @param factory A factory from which to get a value to store in the cabinet related to the merkle root
      * @param data Implementation specific off-chain data
      */
-    function setRootWithContext(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data) external {
+    function setRootWithContext(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data)
+        external
+    {
         setRoot(root, proof);
 
         // Default to the zero slot for a merkle root as this is the most common use case
@@ -184,7 +186,14 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
         // Proof is valid, guard (if any) is valid, now check the handler
         _payload.params.handler.verify(
-            address(safe), sender, _hash, _domainSeparator, ctx, _payload.params.staticInput, _payload.offchainInput, order
+            address(safe),
+            sender,
+            _hash,
+            _domainSeparator,
+            ctx,
+            _payload.params.staticInput,
+            _payload.offchainInput,
+            order
         );
 
         return ERC1271.isValidSignature.selector;
@@ -206,7 +215,15 @@ contract ComposableCoW is ISafeSignatureVerifier {
         IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata offchainInput,
         bytes32[] calldata proof
-    ) external view returns (GPv2Order.Data memory order, bytes memory signature, IConditionalOrder.Interactions memory interactions) {
+    )
+        external
+        view
+        returns (
+            GPv2Order.Data memory order,
+            bytes memory signature,
+            IConditionalOrder.Interactions memory interactions
+        )
+    {
         // Check if the order is authorised and in doing so, get the context
         bytes32 ctx = _auth(owner, params, proof);
 

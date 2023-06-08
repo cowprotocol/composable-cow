@@ -12,12 +12,12 @@ contract ReceiverLock is BaseSwapGuard {
      * Only allow orders with a receiver of 0x0 (ie. self)
      * @param order The order being verified
      */
-    function verify(GPv2Order.Data calldata order, bytes32, IConditionalOrder.ConditionalOrderParams calldata, bytes calldata)
-        external
-        pure
-        override
-        returns (bool)
-    {
+    function verify(
+        GPv2Order.Data calldata order,
+        bytes32,
+        IConditionalOrder.ConditionalOrderParams calldata,
+        bytes calldata
+    ) external pure override returns (bool) {
         return order.receiver == address(0);
     }
 }

@@ -80,8 +80,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
     function side(address owner, PerpetualStableSwap.Data memory data)
         internal
         view
-        returns (BuySellData memory buySellData) 
-        // returns (IERC20Metadata sellToken, IERC20Metadata buyToken, uint256 sellAmount, uint256 buyAmount)
+        returns (BuySellData memory buySellData)
     {
         IERC20Metadata tokenA = IERC20Metadata(address(data.tokenA));
         IERC20Metadata tokenB = IERC20Metadata(address(data.tokenB));

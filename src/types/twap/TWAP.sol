@@ -15,7 +15,6 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  */
 contract TWAP is BaseConditionalOrder {
-
     ComposableCoW private immutable composableCow;
 
     constructor(ComposableCoW _composableCow) {
