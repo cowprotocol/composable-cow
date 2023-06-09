@@ -125,7 +125,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         // This should not revert
-        (GPv2Order.Data memory order,) =
+        GPv2Order.Data memory order =
             gat.getTradeableOrder(owner, address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
 
         GPv2Order.Data memory comparison = GPv2Order.Data({
@@ -180,7 +180,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // This should not revert
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(buyAmount), new bytes32[](0)
         );
 
@@ -229,7 +229,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         // This should not revert
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(buyAmount), new bytes32[](0)
         );
 
@@ -275,7 +275,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // set the current balance
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
-        (GPv2Order.Data memory order,) =
+        GPv2Order.Data memory order =
             gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
         bytes32 domainSeparator = composableCow.domainSeparator();
 
@@ -312,7 +312,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(o.startTime);
 
         // 4. Get the order and signature
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(uint256(100)), new bytes32[](0)
         );
 

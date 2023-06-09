@@ -52,7 +52,7 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // should work as there is no swap guard set
-        (GPv2Order.Data memory order, bytes memory signature,) =
+        (GPv2Order.Data memory order, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
         settle(address(safe1), bob, order, signature, bytes4(0));
 
@@ -106,7 +106,7 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // should return a valid order and signature (no guard is set)
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(orderOtherReceiver), new bytes32[](0)
         );
 

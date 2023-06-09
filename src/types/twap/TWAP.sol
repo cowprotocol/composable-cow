@@ -29,7 +29,7 @@ contract TWAP is BaseConditionalOrder {
         public
         view
         override
-        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions)
+        returns (GPv2Order.Data memory order)
     {
         /**
          * @dev Decode the payload into a TWAP bundle and get the order. `orderFor` will revert if

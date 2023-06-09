@@ -38,7 +38,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _setRoot(address(safe1), root, proofStruct);
 
         // should pass with the root correctly set
-        (GPv2Order.Data memory order, bytes memory signature,) =
+        (GPv2Order.Data memory order, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // save the state
@@ -124,7 +124,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // order can be returned as it is authorized
-        (GPv2Order.Data memory order, bytes memory signature,) =
+        (GPv2Order.Data memory order, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // should successfully settle the order
@@ -357,7 +357,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _create(address(safe1), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
@@ -380,7 +380,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _create(address(nonSafe), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature,) = composableCow.getTradeableOrderWithSignature(
+        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(nonSafe), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
