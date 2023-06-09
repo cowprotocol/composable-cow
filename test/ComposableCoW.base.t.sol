@@ -216,7 +216,7 @@ contract TestConditionalOrderGenerator is BaseConditionalOrder {
         public
         pure
         override
-        returns (GPv2Order.Data memory order, IConditionalOrder.Interactions memory interactions)
+        returns (GPv2Order.Data memory order)
     {
         order = abi.decode(offchainInput, (GPv2Order.Data));
     }

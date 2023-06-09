@@ -220,8 +220,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
         view
         returns (
             GPv2Order.Data memory order,
-            bytes memory signature,
-            IConditionalOrder.Interactions memory interactions
+            bytes memory signature
         )
     {
         // Check if the order is authorised and in doing so, get the context
@@ -238,7 +237,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
             revert InterfaceNotSupported();
         }
 
-        (order, interactions) = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
+        order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
             owner, msg.sender, ctx, params.staticInput, offchainInput
         );
 

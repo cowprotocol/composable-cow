@@ -23,11 +23,6 @@ interface IConditionalOrder {
         bytes staticInput;
     }
 
-    struct Interactions {
-        GPv2Interaction.Data[] pre;
-        GPv2Interaction.Data[] post;
-    }
-
     /**
      * Verify if a given discrete order is valid.
      * @dev Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.
@@ -80,5 +75,5 @@ interface IConditionalOrderGenerator is IConditionalOrder, IERC165 {
         bytes32 ctx,
         bytes calldata staticInput,
         bytes calldata offchainInput
-    ) external view returns (GPv2Order.Data memory, Interactions memory);
+    ) external view returns (GPv2Order.Data memory);
 }
