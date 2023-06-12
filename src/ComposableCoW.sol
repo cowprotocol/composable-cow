@@ -215,14 +215,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
         IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata offchainInput,
         bytes32[] calldata proof
-    )
-        external
-        view
-        returns (
-            GPv2Order.Data memory order,
-            bytes memory signature
-        )
-    {
+    ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
         // Check if the order is authorised and in doing so, get the context
         bytes32 ctx = _auth(owner, params, proof);
 

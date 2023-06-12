@@ -93,7 +93,14 @@ contract BaseComposableCoWTest is Base, Merkle {
         assertEq(composableCow.roots(owner), root);
     }
 
-    function _setRootWithContext(address owner, bytes32 root, ComposableCoW.Proof memory proof, IValueFactory valueFactory, bytes memory data) internal {
+    /// @dev Sets the root with context and checks events / state
+    function _setRootWithContext(
+        address owner,
+        bytes32 root,
+        ComposableCoW.Proof memory proof,
+        IValueFactory valueFactory,
+        bytes memory data
+    ) internal {
         vm.prank(owner);
         vm.expectEmit(true, true, true, true);
         emit MerkleRootSet(owner, root, proof);
@@ -123,7 +130,13 @@ contract BaseComposableCoWTest is Base, Merkle {
     }
 
     /// @dev Creates a single order with context and checks events / state
-    function _createWithContext(address owner, IConditionalOrder.ConditionalOrderParams memory params, bool dispatch, IValueFactory valueFactory, bytes memory data) internal {
+    function _createWithContext(
+        address owner,
+        IConditionalOrder.ConditionalOrderParams memory params,
+        bool dispatch,
+        IValueFactory valueFactory,
+        bytes memory data
+    ) internal {
         vm.prank(owner);
         if (dispatch) {
             vm.expectEmit(true, true, true, true);

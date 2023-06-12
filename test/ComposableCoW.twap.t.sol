@@ -372,9 +372,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             // Simulate being called by the watch tower
 
             try composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0))
-            returns (
-                GPv2Order.Data memory order, bytes memory signature
-            ) {
+            returns (GPv2Order.Data memory order, bytes memory signature) {
                 bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
                 if (
                     orderFills[orderDigest] == 0
