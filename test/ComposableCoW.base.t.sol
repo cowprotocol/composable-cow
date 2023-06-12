@@ -22,6 +22,8 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {ERC1271Forwarder} from "../src/ERC1271Forwarder.sol";
 import {ReceiverLock} from "../src/guards/ReceiverLock.sol";
 
+import {IValueFactory} from "../src/interfaces/IValueFactory.sol";
+
 import "../src/ComposableCoW.sol";
 
 contract BaseComposableCoWTest is Base, Merkle {
@@ -35,6 +37,7 @@ contract BaseComposableCoWTest is Base, Merkle {
     ComposableCoW composableCow;
 
     TestConditionalOrderGenerator passThrough;
+    TestContextSpecifyValue testContextValue;
     MirrorConditionalOrder mirror;
     TWAP twap;
 
@@ -58,6 +61,9 @@ contract BaseComposableCoWTest is Base, Merkle {
             Enum.Operation.Call,
             signers()
         );
+
+        // deploy test context specify value
+        testContextValue = new TestContextSpecifyValue();
 
         // deploy conditional order handlers (types)
         passThrough = new TestConditionalOrderGenerator();
@@ -87,6 +93,15 @@ contract BaseComposableCoWTest is Base, Merkle {
         assertEq(composableCow.roots(owner), root);
     }
 
+    function _setRootWithContext(address owner, bytes32 root, ComposableCoW.Proof memory proof, IValueFactory valueFactory, bytes memory data) internal {
+        vm.prank(owner);
+        vm.expectEmit(true, true, true, true);
+        emit MerkleRootSet(owner, root, proof);
+        composableCow.setRootWithContext(root, proof, valueFactory, data);
+        assertEq(composableCow.roots(owner), root);
+        assertEq(composableCow.cabinet(owner, bytes32(0)), abi.decode(data, (bytes32)));
+    }
+
     /// @dev Sets the swap guard and checks events / state
     function _setSwapGuard(address owner, ISwapGuard guard) internal {
         vm.prank(owner);
@@ -105,6 +120,19 @@ contract BaseComposableCoWTest is Base, Merkle {
         }
         composableCow.create(params, dispatch);
         assertEq(composableCow.singleOrders(owner, keccak256(abi.encode(params))), true);
+    }
+
+    /// @dev Creates a single order with context and checks events / state
+    function _createWithContext(address owner, IConditionalOrder.ConditionalOrderParams memory params, bool dispatch, IValueFactory valueFactory, bytes memory data) internal {
+        vm.prank(owner);
+        if (dispatch) {
+            vm.expectEmit(true, true, true, true);
+            emit ConditionalOrderCreated(owner, params);
+        }
+        composableCow.createWithContext(params, valueFactory, data, dispatch);
+        bytes32 orderHash = composableCow.hash(params);
+        assertEq(composableCow.singleOrders(owner, keccak256(abi.encode(params))), true);
+        assertEq(composableCow.cabinet(owner, orderHash), abi.decode(data, (bytes32)));
     }
 
     /// @dev Removes a single order and checks state
@@ -188,6 +216,12 @@ contract BaseComposableCoWTest is Base, Merkle {
             Enum.Operation.Call,
             signers()
         );
+    }
+}
+
+contract TestContextSpecifyValue is IValueFactory {
+    function getValue(bytes calldata payload) external pure override returns (bytes32) {
+        return abi.decode(payload, (bytes32));
     }
 }
 

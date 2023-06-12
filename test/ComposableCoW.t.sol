@@ -16,6 +16,16 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _setRoot(owner, root, ComposableCoW.Proof({location: 0, data: ""}));
     }
 
+    function test_setRootWithContext_FuzzSetAndEmit(address owner, bytes32 root, bytes32 data) public {
+        _setRootWithContext(
+            owner,
+            root,
+            ComposableCoW.Proof({location: 0, data: ""}),
+            testContextValue,
+            abi.encode(data)
+        );
+    }
+
     /**
      * @dev An end-to-end test of the ComposableCoW contract that tests the following:
      *      1. Does **NOT** validate a proof that is not authorized
@@ -36,6 +46,48 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         // should set the root correctly
         ComposableCoW.Proof memory proofStruct = ComposableCoW.Proof({location: 0, data: ""});
         _setRoot(address(safe1), root, proofStruct);
+
+        // should pass with the root correctly set
+        (GPv2Order.Data memory order, bytes memory signature) =
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+
+        // save the state
+        uint256 snapshot = vm.snapshot();
+
+        // should successfully execute the order
+        settle(address(safe1), bob, order, signature, bytes4(0));
+
+        // restore the state
+        vm.revertTo(snapshot);
+
+        // should revoke the root
+        _setRoot(address(safe1), bytes32(0), proofStruct);
+
+        // should fail as the root is set to bytes32(0)
+        vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+    }
+
+    /**
+     * @dev An end-to-end test of the ComposableCoW contract that tests the following:
+     *      1. Does **NOT** validate a proof that is not authorized
+     *      2. `owner` can set their merkle root
+     *      3. **DOES** validate a proof that is authorized
+     *      4. `owner` can remove their merkle root
+     *      5. Does **NOT** validate a proof that is not authorized
+     */
+    function test_setRootWithContext_e2e() public {
+        IConditionalOrder.ConditionalOrderParams[] memory _leaves = getBundle(safe1, 50);
+        (bytes32 root, bytes32[] memory proof, IConditionalOrder.ConditionalOrderParams memory params) =
+            _leaves.getRootAndProof(0, leaves, getRoot, getProof);
+
+        // should fail to validate the proof as root is still set bytes32(0)
+        vm.expectRevert(ComposableCoW.ProofNotAuthed.selector);
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+
+        // should set the root correctly
+        ComposableCoW.Proof memory proofStruct = ComposableCoW.Proof({location: 0, data: ""});
+        _setRootWithContext(address(safe1), root, proofStruct, testContextValue, abi.encode(bytes32("testValue")));
 
         // should pass with the root correctly set
         (GPv2Order.Data memory order, bytes memory signature) =
@@ -91,6 +143,32 @@ contract ComposableCoWTest is BaseComposableCoWTest {
 
         // create the order
         _create(owner, params, true);
+
+        // remove the order
+        _remove(owner, params);
+    }
+
+
+
+    /// @dev should be able to create and remove a single order
+    function test_createWithContextAndRemove_FuzzSetAndEmit(address owner, address handler, bytes32 salt, bytes memory staticInput, bytes32 contextValue)
+        public
+    {
+        // address(0) is not a valid handler
+        vm.assume(handler != address(0));
+
+        IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
+            handler: IConditionalOrder(handler),
+            salt: salt,
+            staticInput: staticInput
+        });
+        bytes32 orderHash = keccak256(abi.encode(params));
+
+        // order should not exist
+        assertEq(composableCow.singleOrders(owner, orderHash), false);
+
+        // create the order
+        _createWithContext(owner, params, true, testContextValue, abi.encode(bytes32("testValue")));
 
         // remove the order
         _remove(owner, params);
