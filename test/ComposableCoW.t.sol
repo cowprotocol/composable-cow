@@ -18,11 +18,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
 
     function test_setRootWithContext_FuzzSetAndEmit(address owner, bytes32 root, bytes32 data) public {
         _setRootWithContext(
-            owner,
-            root,
-            ComposableCoW.Proof({location: 0, data: ""}),
-            testContextValue,
-            abi.encode(data)
+            owner, root, ComposableCoW.Proof({location: 0, data: ""}), testContextValue, abi.encode(data)
         );
     }
 
@@ -148,12 +144,14 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _remove(owner, params);
     }
 
-
-
     /// @dev should be able to create and remove a single order
-    function test_createWithContextAndRemove_FuzzSetAndEmit(address owner, address handler, bytes32 salt, bytes memory staticInput, bytes32 contextValue)
-        public
-    {
+    function test_createWithContextAndRemove_FuzzSetAndEmit(
+        address owner,
+        address handler,
+        bytes32 salt,
+        bytes memory staticInput,
+        bytes32 ctxValue
+    ) public {
         // address(0) is not a valid handler
         vm.assume(handler != address(0));
 
@@ -168,7 +166,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         assertEq(composableCow.singleOrders(owner, orderHash), false);
 
         // create the order
-        _createWithContext(owner, params, true, testContextValue, abi.encode(bytes32("testValue")));
+        _createWithContext(owner, params, true, testContextValue, abi.encode(ctxValue));
 
         // remove the order
         _remove(owner, params);
