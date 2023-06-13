@@ -166,7 +166,10 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         assertEq(composableCow.singleOrders(owner, orderHash), false);
 
         // create the order
-        _createWithContext(owner, params, true, testContextValue, abi.encode(ctxValue));
+        _createWithContext(owner, params, testContextValue, abi.encode(ctxValue), true);
+
+        // cabinet should have the correct value at the context location
+        assertEq(composableCow.cabinet(owner, orderHash), ctxValue);
 
         // remove the order
         _remove(owner, params);

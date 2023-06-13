@@ -133,19 +133,18 @@ contract BaseComposableCoWTest is Base, Merkle {
     function _createWithContext(
         address owner,
         IConditionalOrder.ConditionalOrderParams memory params,
-        bool dispatch,
         IValueFactory valueFactory,
-        bytes memory data
+        bytes memory data,
+        bool dispatch
     ) internal {
         vm.prank(owner);
         if (dispatch) {
             vm.expectEmit(true, true, true, true);
             emit ConditionalOrderCreated(owner, params);
         }
+
         composableCow.createWithContext(params, valueFactory, data, dispatch);
-        bytes32 orderHash = composableCow.hash(params);
         assertEq(composableCow.singleOrders(owner, keccak256(abi.encode(params))), true);
-        assertEq(composableCow.cabinet(owner, orderHash), abi.decode(data, (bytes32)));
     }
 
     /// @dev Removes a single order and checks state
