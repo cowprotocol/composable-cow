@@ -9,6 +9,8 @@ import "./ComposableCoW.base.t.sol";
 import "../src/types/twap/TWAP.sol";
 import {TWAPOrderMathLib} from "../src/types/twap/libraries/TWAPOrderMathLib.sol";
 
+import "../src/value_factories/CurrentBlockTimestampFactory.sol";
+
 uint256 constant SELL_AMOUNT = 24000e18;
 uint256 constant LIMIT_PRICE = 100e18;
 uint32 constant FREQUENCY = 1 hours;
@@ -22,6 +24,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
     TWAPOrder.Data defaultBundle;
     bytes32 defaultBundleHash;
     bytes defaultBundleBytes;
+    IValueFactory currentBlockTimestampFactory;
 
     mapping(bytes32 => uint256) public orderFills;
 
@@ -30,6 +33,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // deploy the TWAP handler
         twap = new TWAP(composableCow);
+
+        // deploy the current block timestamp factory
+        currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
 
         // Set a default bundle
         defaultBundle = _twapTestBundle(block.timestamp + 1 days);
@@ -223,6 +229,40 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+    }
+
+    function test_getTradeableOrder_e2e_fuzz_WithContext(uint32 _blockTimestamp, uint256 currentTime) public {
+        // guard against overflows
+        vm.assume(_blockTimestamp < type(uint32).max);
+        vm.assume(currentTime < type(uint32).max);
+        // guard against revert before start
+        vm.assume(_blockTimestamp < currentTime);
+        // guard against revert after expiry
+        vm.assume(currentTime < _blockTimestamp + (FREQUENCY * NUM_PARTS));
+        // guard against reversion outside of the span
+        vm.assume((currentTime - _blockTimestamp) % FREQUENCY < SPAN);
+
+        TWAPOrder.Data memory o = _twapTestBundle(0);
+
+        // Warp to the _blocktime
+        vm.warp(_blockTimestamp);
+
+        // Create the order - this signs the order and marks it a valid
+        IConditionalOrder.ConditionalOrderParams memory params =
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+
+        assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(_blockTimestamp)));
+
+        // This should not revert
+        (GPv2Order.Data memory part, bytes memory signature) =
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+
+        // Verify that the order is valid - this shouldn't revert
+        assertTrue(
+            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
+                GPv2Order.hash(part, settlement.domainSeparator()), signature
+            ) == ERC1271.isValidSignature.selector
+        );
     }
 
     /**
@@ -508,6 +548,21 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // create the order
         _create(address(safe), params, false);
+        // deal the sell token to the safe
+        deal(address(sellToken), address(safe), sellAmount);
+        // authorize the vault relayer to pull the sell token from the safe
+        vm.prank(address(safe));
+        sellToken.approve(address(relayer), sellAmount);
+    }
+
+    function createOrderWithContext(Safe safe, TWAPOrder.Data memory twapBundle, IERC20 sellToken, uint256 sellAmount, IValueFactory factory, bytes memory data)
+        internal
+        returns (IConditionalOrder.ConditionalOrderParams memory params)
+    {
+        params = super.createOrder(twap, keccak256("twap"), abi.encode(twapBundle));
+
+        // create the order
+        _createWithContext(address(safe), params, factory, data, false);
         // deal the sell token to the safe
         deal(address(sellToken), address(safe), sellAmount);
         // authorize the vault relayer to pull the sell token from the safe
