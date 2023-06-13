@@ -31,7 +31,7 @@ interface IConditionalOrder {
      * @param sender the `msg.sender` of the transaction
      * @param _hash the hash of the order
      * @param domainSeparator the domain separator used to sign the order
-     * @param ctx the context of the order (bytes32(0) if a merkle tree is used, otherwise H(params))
+     * @param ctx the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet
      * @param staticInput the static input for all discrete orders cut from this conditional order
      * @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order
      */
