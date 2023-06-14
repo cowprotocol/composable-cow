@@ -231,6 +231,56 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
+    function test_getTradeableOrder_FuzzRevertIfOrderBeforeBlockTimestamp(uint256 ctxBlockTimestamp, uint256 currentTime) public {
+        // guard against overflows
+        vm.assume(ctxBlockTimestamp < type(uint32).max);
+        vm.assume(currentTime < type(uint32).max);
+        // ram the current time to be before the block timestamp
+        vm.assume(currentTime < ctxBlockTimestamp);
+        TWAPOrder.Data memory o = _twapTestBundle(0);
+
+        // Warp to the ctxBlockTimestamp
+        vm.warp(ctxBlockTimestamp);
+
+        // Create the order - this signs the order and marks it as valid
+        IConditionalOrder.ConditionalOrderParams memory params = 
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+
+        assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
+
+        // Warp to the current time
+        vm.warp(currentTime);
+
+        // The below should revert
+        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+    }
+
+    function test_getTradeableOrder_FuzzRevertIfOrderAfterBlocktimestampValidity(uint256 ctxBlockTimestamp, uint256 currentTime) public {
+        // guard against overflows
+        vm.assume(ctxBlockTimestamp < type(uint32).max);
+        vm.assume(currentTime < type(uint32).max);
+        // ram the current time to be after the blocktimestamp + numParts * frequency
+        vm.assume(currentTime > ctxBlockTimestamp + (FREQUENCY * NUM_PARTS));
+        TWAPOrder.Data memory o = _twapTestBundle(0);
+
+        // Warp to the ctxBlockTimestamp
+        vm.warp(ctxBlockTimestamp);
+
+        // Create the order - this signs the order and marks it as valid
+        IConditionalOrder.ConditionalOrderParams memory params = 
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+
+        assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
+
+        // Warp to the current time
+        vm.warp(currentTime);
+
+        // The below should revert
+        vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+    }
+
     function test_getTradeableOrder_e2e_fuzz_WithContext(uint32 _blockTimestamp, uint256 currentTime) public {
         // guard against overflows
         vm.assume(_blockTimestamp < type(uint32).max);
