@@ -231,7 +231,10 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
-    function test_getTradeableOrder_FuzzRevertIfOrderBeforeBlockTimestamp(uint256 ctxBlockTimestamp, uint256 currentTime) public {
+    function test_getTradeableOrder_FuzzRevertIfOrderBeforeBlockTimestamp(
+        uint256 ctxBlockTimestamp,
+        uint256 currentTime
+    ) public {
         // guard against overflows
         vm.assume(ctxBlockTimestamp < type(uint32).max);
         vm.assume(currentTime < type(uint32).max);
@@ -243,8 +246,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(ctxBlockTimestamp);
 
         // Create the order - this signs the order and marks it as valid
-        IConditionalOrder.ConditionalOrderParams memory params = 
-            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
+            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
+        );
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
 
@@ -256,7 +260,10 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
-    function test_getTradeableOrder_FuzzRevertIfOrderAfterBlocktimestampValidity(uint256 ctxBlockTimestamp, uint256 currentTime) public {
+    function test_getTradeableOrder_FuzzRevertIfOrderAfterBlocktimestampValidity(
+        uint256 ctxBlockTimestamp,
+        uint256 currentTime
+    ) public {
         // guard against overflows
         vm.assume(ctxBlockTimestamp < type(uint32).max);
         vm.assume(currentTime < type(uint32).max);
@@ -268,8 +275,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(ctxBlockTimestamp);
 
         // Create the order - this signs the order and marks it as valid
-        IConditionalOrder.ConditionalOrderParams memory params = 
-            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
+            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
+        );
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
 
@@ -298,8 +306,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(_blockTimestamp);
 
         // Create the order - this signs the order and marks it a valid
-        IConditionalOrder.ConditionalOrderParams memory params =
-            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes(""));
+        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
+            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
+        );
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(_blockTimestamp)));
 
@@ -605,10 +614,14 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         sellToken.approve(address(relayer), sellAmount);
     }
 
-    function createOrderWithContext(Safe safe, TWAPOrder.Data memory twapBundle, IERC20 sellToken, uint256 sellAmount, IValueFactory factory, bytes memory data)
-        internal
-        returns (IConditionalOrder.ConditionalOrderParams memory params)
-    {
+    function createOrderWithContext(
+        Safe safe,
+        TWAPOrder.Data memory twapBundle,
+        IERC20 sellToken,
+        uint256 sellAmount,
+        IValueFactory factory,
+        bytes memory data
+    ) internal returns (IConditionalOrder.ConditionalOrderParams memory params) {
         params = super.createOrder(twap, keccak256("twap"), abi.encode(twapBundle));
 
         // create the order
