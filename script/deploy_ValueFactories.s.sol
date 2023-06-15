@@ -3,8 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "forge-std/Script.sol";
 
-import "../src/ComposableCoW.sol";
-
 import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
 
 contract DeployValueFactories is Script {
