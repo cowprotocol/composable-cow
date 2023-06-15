@@ -30,18 +30,18 @@ A conditional order is a struct `ConditionalOrderParams`, consisting of:
 1. Collect all the conditional orders, which are multiple structs of `ConditionalOrderParams`.
 2. Populate a merkle tree with the leaves from (1), where each leaf is a double hashed of the ABI-encoded struct.
 3. Determine the merkle root of the tree and set this as the root, calling `ComposableCoW.setRoot`. The `proof` must be set, and currently:
-    a. Set a `location` of `0` for no proofs emitted.
-    b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpted as an array of proofs and indexed by the watch tower.
+   a. Set a `location` of `0` for no proofs emitted.
+   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpted as an array of proofs and indexed by the watch tower.
 
 #### Get Tradeable Order With Signature
 
 Conditional orders may generate one or many discrete orders depending on their implementation. To retrieve a discrete order that is valid at the current block:
 
 1. Call `ComposableCoW.getTradeableOrderWithSignature(address owner, ConditionalOrderParams params, bytes offchainInput, bytes32[] proof)` where:
-    * `owner`: smart contract / `Safe`
-    * `params`: mentioned above.
-    * `offchainInput` is any implementation specific offchain input for discrete order generation / validation.
-    * `proof`:  a zero length array if a single order, otherwise the merkle proof for the merkle root that's set for `owner`.
+   - `owner`: smart contract / `Safe`
+   - `params`: mentioned above.
+   - `offchainInput` is any implementation specific offchain input for discrete order generation / validation.
+   - `proof`: a zero length array if a single order, otherwise the merkle proof for the merkle root that's set for `owner`.
 2. Decoding the `GPv2Order`, use this data to populate a `POST` to the CoW Protocol API to create an order. Set the `signingScheme` to `eip1271` and the `signature` to that returned from the call in (1).
 3. Review the order on [CoW Explorer](https://explorer.cow.fi/).
 4. `getTradeableOrderWithSignature(address,ConditionalOrderParams,bytes,bytes32[])` may revert with one of the custom errors. This provides feedback for watch towers to modify their internal state.
@@ -61,8 +61,7 @@ Conditional orders may generate one or many discrete orders depending on their i
 
 ## Time-weighted average price (TWAP)
 
-A simple *time-weighted average price* trade may be thought of as `n` smaller trades happening every `t` time interval, commencing at time `t0`. Additionally, it is possible to limit a part's validity of the order to a certain `span` of time interval `t`.
-
+A simple _time-weighted average price_ trade may be thought of as `n` smaller trades happening every `t` time interval, commencing at time `t0`. Additionally, it is possible to limit a part's validity of the order to a certain `span` of time interval `t`.
 
 ### Data Structure
 
@@ -80,19 +79,19 @@ struct Data {
 }
 ```
 
-**NOTE:** No direction of trade is specified, as for TWAP it is assumed to be a *sell* order
+**NOTE:** No direction of trade is specified, as for TWAP it is assumed to be a _sell_ order
 
 Example: Alice wants to sell 12,000,000 DAI for at least 7500 WETH. She wants to do this using a TWAP, executing a part each day over a period of 30 days.
 
-* `sellToken` = DAI
-* `buytoken` = WETH
-* `receiver` = `address(0)`
-* `partSellAmount` = 12000000 / 30 = 400000 DAI
-* `minPartLimit` = 7500 / 30 = 250 WETH
-* `t0` = Nominated start time (unix epoch seconds)
-* `n` = 30 (number of parts)
-* `t` = 86400 (duration of each part, in seconds)
-* `span` = 0 (duration of `span`, in seconds, or `0` for entire interval)
+- `sellToken` = DAI
+- `buytoken` = WETH
+- `receiver` = `address(0)`
+- `partSellAmount` = 12000000 / 30 = 400000 DAI
+- `minPartLimit` = 7500 / 30 = 250 WETH
+- `t0` = Nominated start time (unix epoch seconds)
+- `n` = 30 (number of parts)
+- `t` = 86400 (duration of each part, in seconds)
+- `span` = 0 (duration of `span`, in seconds, or `0` for entire interval)
 
 If Alice also wanted to restrict the duration in which each part traded in each day, she may set `span` to a non-zero duration. For example, if Alice wanted to execute the TWAP, each day for 30 days, however only wanted to trade for the first 12 hours of each day, she would set `span` to `43200` (ie. `60 * 60 * 12`).
 
@@ -103,9 +102,9 @@ Using `span` allows for use cases such as weekend or week-day only trading.
 To create a TWAP order:
 
 1. ABI-Encode the `IConditionalOrder.ConditionalOrderParams` struct with:
-    * `handler`: set to the `TWAP` smart contract deployment.
-    * `salt`: set to a unique value.
-    * `staticInput`: the ABI-encoded `TWAP.Data` struct.
+   - `handler`: set to the `TWAP` smart contract deployment.
+   - `salt`: set to a unique value.
+   - `staticInput`: the ABI-encoded `TWAP.Data` struct.
 2. Use the `struct` from (1) as either a Merkle leaf, or with `ComposableCoW.create` to create a single conditional order.
 3. Approve `GPv2VaultRelayer` to trade `n x partSellAmount` of the safe's `sellToken` tokens (in the example above, `GPv2VaultRelayer` would receive approval for spending 12,000,000 DAI tokens).
 
@@ -151,16 +150,16 @@ Commands:
    ```bash
    yarn ts-node cli/cli.ts set-fallback-handler -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> -r <RPC_URL> --handler <EXTENSIBLE_FALLBACK_HANDLER>
    ```
-   
+
    Check your safe's transaction queue and you should see the newly created transaction.
-   
+
 2. Setting an `ExtensibleFallbackHandler`-enabled Safe's `domainVerifier` for `GPv2Settlement`:
 
-    ```bash
-    yarn ts-node cli.ts set-domain-verifier -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> -r <RPC_URL>
-    ```
+   ```bash
+   yarn ts-node cli.ts set-domain-verifier -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> -r <RPC_URL>
+   ```
 
-2. Creating a TWAP order
+3. Creating a TWAP order
 
    The CLI utility will automatically do some math for you. All order creation is from the perspective of _totals_. By specifying the `--sell-token`, `--buy-token`, `--total-sell-amount`, and `--total-min-buyamount`, the CLI will automatically determine the number of decimals, parse the values, and divide the totals by the number of parts (`-n`), using the results as the basis for the TWAP order.
 
@@ -172,14 +171,13 @@ Commands:
 
    **NOTE:** When creating TWAP orders, the `--total-sell-amount` and `--total-min-buy-amount` are specified in whole units of the respective ERC20 token. For example, if wanting to buy a total amount of 1 WETH, specify `--total-min-buy-amount 1`. The CLI will automatically determine decimals and specify these appropriately.
 
-3. Cancelling a conditional order
+4. Cancelling a conditional order
 
-
-    **TODO**
+   **TODO**
 
 ## Tenderly Actions
 
-A watchdog has been implementing using [Tenderly Actions](https://docs.tenderly.co/web3-actions/intro-to-web3-actions). By means of *emitted Event* and new block monitoring, conditional orders can run autonomously. 
+A watchdog has been implementing using [Tenderly Actions](https://docs.tenderly.co/web3-actions/intro-to-web3-actions). By means of _emitted Event_ and new block monitoring, conditional orders can run autonomously.
 
 Notably, with the `CondtionalOrderCreated` and `MerkleRootSet` events, multiple conditional orders can be created for one safe - in doing so, the actions maintain a registry of:
 
@@ -214,23 +212,23 @@ tenderly actions deploy
 
 ### Requirements
 
-* `forge` ([Foundry](https://github.com/foundry-rs/foundry))
-* `node` (`>= v16.18.0`)
-* `yarn`
-* `npm`
-* `tenderly`
+- `forge` ([Foundry](https://github.com/foundry-rs/foundry))
+- `node` (`>= v16.18.0`)
+- `yarn`
+- `npm`
+- `tenderly`
 
 ### Deployed Contracts
 
 **WARNING: CONTRACTS ARE NOT AUDITED**
 
-| Contact Name | Ethereum Mainnet | Goerli | Gnosis Chain |
-| -------- | --- | --- | --- |
-| `ComposableCoW` | TBD | TBD | TBD |
-| `TWAP` | TBD | TBD | TBD |
-| `GoodAfterTime` | TBD | TBD | TBD |
-| `PerpetualStableSwap` | TBD | TBD | TBD |
-| `TradeAboveThreshold` | TBD | TBD | TBD |
+| Contact Name          | Ethereum Mainnet                                                                                                      | Goerli                                                                                                               | Gnosis Chain                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `ComposableCoW`       | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://etherscan.io/address/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://goerli.etherscan.io/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://gnosisscan.io/address/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) |
+| `TWAP`                | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://etherscan.io/address/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://goerli.etherscan.io/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://gnosisscan.io/address/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) |
+| `GoodAfterTime`       | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
+| `PerpetualStableSwap` | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
+| `TradeAboveThreshold` | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
 
 ### Environment setup
 
@@ -238,7 +236,7 @@ Copy the `.env.example` to `.env` and set the applicable configuration variables
 
 ### Testing
 
-Effort has been made to adhere as close as possible to [best practices](https://book.getfoundry.sh/tutorials/best-practices), with *unit*, *fuzzing* and *fork* tests being implemented.
+Effort has been made to adhere as close as possible to [best practices](https://book.getfoundry.sh/tutorials/best-practices), with _unit_, _fuzzing_ and _fork_ tests being implemented.
 
 **NOTE:** Fuzz tests also include a `simulate` that runs full end-to-end integration testing, including the ability to settle conditional orders. Fork testing simulates end-to-end against production ethereum mainnet contracts, and as such requires `ETH_RPC_URL` to be defined (this should correspond to an archive node).
 
@@ -275,9 +273,9 @@ For local integration testing, including the use of [Tenderly Actions](#Tenderly
    ```bash
    anvil --code-size-limit 50000 --block-time 5
    ```
-   
+
    **NOTE**: When deploying the full stack on `anvil`, the balancer vault may exceed contract code size limits necessitating the use of `--code-size-limit`.
-   
+
 2. Follow the previous deployment directions, with this time specifying `anvil` as the RPC-URL:
 
    ```bash
@@ -291,7 +289,7 @@ For local integration testing, including the use of [Tenderly Actions](#Tenderly
 
 3. To then simulate the creation of a single order:
 
-    ```bash
-    source .env
-    SAFE="address here" forge script script/submit_SingleOrder.s.sol:SubmitSingleOrder --rpc-url http://127.0.0.1:8545 --broadcast
-    ```
+   ```bash
+   source .env
+   SAFE="address here" forge script script/submit_SingleOrder.s.sol:SubmitSingleOrder --rpc-url http://127.0.0.1:8545 --broadcast
+   ```
