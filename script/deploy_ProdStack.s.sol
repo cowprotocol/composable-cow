@@ -23,15 +23,15 @@ contract DeployProdStack is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy ExtensibleFallbackHandler
-        new ExtensibleFallbackHandler();
+        new ExtensibleFallbackHandler{salt: "v1"}();
 
         // Deploy ComposableCoW
-        ComposableCoW composableCow = new ComposableCoW(settlement);
+        ComposableCoW composableCow = new ComposableCoW{salt: "v1"}(settlement);
 
         // Deploy order types
-        new TWAP(composableCow);
+        new TWAP{salt: "v1"}(composableCow);
 
         // Deploy value factories
-        new CurrentBlockTimestampFactory();
+        new CurrentBlockTimestampFactory{salt: "v1"}();
     }
 }
