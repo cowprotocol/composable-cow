@@ -43,7 +43,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
     function getTradeableOrder(
         address owner,
-        address settlement,
+        address,
         bytes32,
         bytes calldata staticInput,
         bytes calldata offchainInput
@@ -66,24 +66,13 @@ contract GoodAfterTime is BaseConditionalOrder {
         // Optionally check the price checker.
         if (data.priceCheckerPayload.length > 0) {
             // Decode the payload into the price checker parameters.
-            PriceCheckerPayload memory p = abi.decode(
-                data.priceCheckerPayload,
-                (PriceCheckerPayload)
-            );
+            PriceCheckerPayload memory p = abi.decode(data.priceCheckerPayload, (PriceCheckerPayload));
 
             // Get the expected out from the price checker.
-            uint256 _expectedOut = p.checker.getExpectedOut(
-                data.sellAmount,
-                data.sellToken,
-                data.buyToken,
-                p.payload
-            );
+            uint256 _expectedOut = p.checker.getExpectedOut(data.sellAmount, data.sellToken, data.buyToken, p.payload);
 
             // Don't allow the order to be placed if the sellAmount is less than the minimum out.
-            if (
-                !(buyAmount >=
-                    (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)
-            ) {
+            if (!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
                 revert IConditionalOrder.OrderNotValid();
             }
         }
