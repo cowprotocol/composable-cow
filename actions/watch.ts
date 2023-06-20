@@ -167,8 +167,8 @@ export const checkForAndPlaceOrder: ActionFn = async (
               );
           }
           printUnfilledOrders(conditionalOrder.orders);
-          console.log("Removing conditional order from registry");
-          conditionalOrders.delete(conditionalOrder);
+          //console.log("Removing conditional order from registry");
+          //conditionalOrders.delete(conditionalOrder);
         }
         console.log(`Unexpected error while processing order: ${e}`);
       }
@@ -220,17 +220,13 @@ async function placeOrder(order: any, api_url: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    if (!api_url.includes("localhost")) {
-      const { data } = await axios.post(`${api_url}/api/v1/orders`, postData, {
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-      });
-      console.log(`API response: ${data}`);
-    } else {
-      console.log(`API request: ${JSON.stringify(postData)}`);
-    }
+    const { data } = await axios.post(`${api_url}/api/v1/orders`, postData, {
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+    });
+    console.log(`API response: ${data}`);
   } catch (error: any) {
     if (error.response) {
       // The request was made and the server responded with a status code
@@ -314,6 +310,7 @@ class ChainContext {
   ): Promise<ChainContext> {
     const node_url = await context.secrets.get(`NODE_URL_${network}`);
     const provider = new ethers.providers.JsonRpcProvider(node_url);
+    console.log(`Using API ${apiUrl(network)}`)
     return new ChainContext(provider, apiUrl(network));
   }
 }
@@ -323,7 +320,7 @@ function apiUrl(network: string): string {
     case "1":
       return "https://api.cow.fi/mainnet";
     case "5":
-      return "https://api.cow.fi/goerli";
+      return "http://localhost:8080";
     case "100":
       return "https://api.cow.fi/xdai";
     case "31337":
