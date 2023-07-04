@@ -7,6 +7,12 @@ import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
 import "forge-std/console.sol";
 
+/**
+ * @title StopLoss conditional order
+ * Requires providing two price oracles (e.g. chainlink) and a strike price. If the sellToken price falls below the strike price, the order will be triggered
+ * @notice Both oracles need to be denominated in the same quote currency (e.g. GNO/ETH and USD/ETH for GNO/USD stop loss orders)
+ * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
+ */
 contract StopLoss is BaseConditionalOrder {
 
     /**
@@ -23,7 +29,6 @@ contract StopLoss is BaseConditionalOrder {
      * @param isSellOrder: Whether this is a sell or buy order
      * @param isPartiallyFillable: Whether solvers are allowed to only fill a fraction of the order (useful if exact sell or buy amount isn't know at time of placement)
      * @param validtyBucketSeconds: How long the order will be valid. E.g. if the validtyBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
-     * Note that this order type does not have any replay protection, meaning it may trigger again in the next validityBucker (e.g. 00:15-00:30)
      */
     struct Data {
         IERC20 sellToken;
@@ -37,7 +42,7 @@ contract StopLoss is BaseConditionalOrder {
         address receiver;
         bool isSellOrder;
         bool isPartiallyFillable;
-        int32 validtyBucketSeconds;
+        uint32 validtyBucketSeconds;
     }
 
     function getTradeableOrder(
@@ -55,7 +60,7 @@ contract StopLoss is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid();
         }
 
-        uint32 validTo = ((uint32(block.timestamp) / 15 minutes) * 15 minutes) + 15 minutes;
+        uint32 validTo = ((uint32(block.timestamp) / data.validtyBucketSeconds) * data.validtyBucketSeconds) + data.validtyBucketSeconds;
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,

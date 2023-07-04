@@ -135,17 +135,17 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validtyBucketSeconds: 15 minutes
+            validtyBucketSeconds: 1 hours
         });
 
-        // 25 June 2023 18:44:59
-        vm.warp(1687711499);
+        // 25 June 2023 18:59:59
+        vm.warp(1687712399);
         GPv2Order.Data memory order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
-        assertEq(order.validTo, 1687711500); // 25 June 2023 18:45:00
-
-        // 25 June 2023 18:45:00
-        vm.warp(1687711500);
-        order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
         assertEq(order.validTo, 1687712400); // 25 June 2023 19:00:00
+
+        // 25 June 2023 19:00:00
+        vm.warp(1687712400);
+        order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
+        assertEq(order.validTo, 1687716000); // 25 June 2023 20:00:00
     }
 }
