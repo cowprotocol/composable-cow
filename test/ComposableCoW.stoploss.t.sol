@@ -48,7 +48,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validtyBucketSeconds: 15 minutes
+            validityBucketSeconds: 15 minutes
         });
 
         createOrder(stopLoss, 0x0, abi.encode(data));
@@ -76,7 +76,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validtyBucketSeconds: 15 minutes
+            validityBucketSeconds: 15 minutes
         });
         
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
@@ -101,7 +101,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validtyBucketSeconds: 15 minutes
+            validityBucketSeconds: 15 minutes
         });
 
         // 25 June 2023 18:40:51
@@ -135,7 +135,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validtyBucketSeconds: 1 hours
+            validityBucketSeconds: 1 hours
         });
 
         // 25 June 2023 18:59:59
