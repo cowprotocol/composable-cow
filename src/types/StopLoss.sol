@@ -5,7 +5,6 @@ import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 
 import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
-import "forge-std/console.sol";
 
 /**
  * @title StopLoss conditional order
@@ -28,7 +27,7 @@ contract StopLoss is BaseConditionalOrder {
      * @param receiver: The account that should receive the proceeds of the trade
      * @param isSellOrder: Whether this is a sell or buy order
      * @param isPartiallyFillable: Whether solvers are allowed to only fill a fraction of the order (useful if exact sell or buy amount isn't know at time of placement)
-     * @param validtyBucketSeconds: How long the order will be valid. E.g. if the validtyBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
+     * @param validityBucketSeconds: How long the order will be valid. E.g. if the validityBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
      */
     struct Data {
         IERC20 sellToken;
@@ -42,7 +41,7 @@ contract StopLoss is BaseConditionalOrder {
         address receiver;
         bool isSellOrder;
         bool isPartiallyFillable;
-        uint32 validtyBucketSeconds;
+        uint32 validityBucketSeconds;
     }
 
     function getTradeableOrder(
@@ -60,7 +59,7 @@ contract StopLoss is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid();
         }
 
-        uint32 validTo = ((uint32(block.timestamp) / data.validtyBucketSeconds) * data.validtyBucketSeconds) + data.validtyBucketSeconds;
+        uint32 validTo = ((uint32(block.timestamp) / data.validityBucketSeconds) * data.validityBucketSeconds) + data.validityBucketSeconds;
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
