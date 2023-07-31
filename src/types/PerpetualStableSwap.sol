@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {SafeMath} from "@openzeppelin/utils/math/SafeMath.sol";
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 
 import "../BaseConditionalOrder.sol";
@@ -10,8 +9,6 @@ import "../BaseConditionalOrder.sol";
 // taking decimals into account (and adding specifiable spread)
 contract PerpetualStableSwap is BaseConditionalOrder {
     using GPv2Order for GPv2Order.Data;
-    using SafeMath for uint256;
-    using SafeMath for uint8;
 
     // /**
     //  * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
@@ -93,14 +90,14 @@ contract PerpetualStableSwap is BaseConditionalOrder {
                 sellToken: tokenA,
                 buyToken: tokenB,
                 sellAmount: balanceA,
-                buyAmount: convertAmount(tokenA, balanceA, tokenB).mul(BPS.add(data.halfSpreadBps)).div(BPS)
+                buyAmount: convertAmount(tokenA, balanceA, tokenB) * (BPS + data.halfSpreadBps) / BPS
             });
         } else {
             buySellData = BuySellData({
                 sellToken: tokenB,
                 buyToken: tokenA,
                 sellAmount: balanceB,
-                buyAmount: convertAmount(tokenB, balanceB, tokenA).mul(BPS.add(data.halfSpreadBps)).div(BPS)
+                buyAmount: convertAmount(tokenB, balanceB, tokenA) * (BPS + data.halfSpreadBps) / BPS
             });
         }
     }
@@ -114,9 +111,9 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         uint8 destDecimals = destToken.decimals();
 
         if (srcDecimals > destDecimals) {
-            destAmount = srcAmount.div(10 ** (srcDecimals.sub(destDecimals)));
+            destAmount = srcAmount / (10 ** (srcDecimals - destDecimals));
         } else {
-            destAmount = srcAmount.mul(10 ** (destDecimals.sub(srcDecimals)));
+            destAmount = srcAmount * (10 ** (destDecimals - srcDecimals));
         }
     }
 }
