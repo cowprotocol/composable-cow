@@ -12,7 +12,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
-        address target;
+        address receiver;
         uint256 threshold;
     }
 
@@ -35,7 +35,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
-            data.target,
+            data.receiver,
             balance,
             1, // 0 buy amount is not allowed
             currentTimeBucket + 900, // between 15 and 30 miunte validity

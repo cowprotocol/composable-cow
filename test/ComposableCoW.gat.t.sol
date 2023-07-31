@@ -97,6 +97,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
     function test_getTradeableOrder_FuzzContext(
         IERC20 buyToken,
         address owner,
+        address receiver,
         uint256 sellAmount,
         uint256 buyAmount,
         uint256 startTime,
@@ -110,6 +111,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         GoodAfterTime.Data memory o = GoodAfterTime.Data({
             sellToken: token0,
             buyToken: buyToken,
+            receiver: receiver,
             sellAmount: sellAmount,
             minSellBalance: 0,
             startTime: startTime,
@@ -131,7 +133,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         GPv2Order.Data memory comparison = GPv2Order.Data({
             sellToken: token0,
             buyToken: buyToken,
-            receiver: address(0),
+            receiver: receiver,
             sellAmount: sellAmount,
             buyAmount: buyAmount,
             validTo: uint32(endTime),
@@ -341,6 +343,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         return GoodAfterTime.Data({
             sellToken: token0,
             buyToken: token1,
+            receiver: address(0),
             sellAmount: 100e18,
             minSellBalance: 200e18,
             startTime: block.timestamp + 1 days,

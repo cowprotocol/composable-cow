@@ -23,6 +23,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
     struct Data {
         IERC20 tokenA;
         IERC20 tokenB;
+        // don't include a receiver as it will always be self (ie. owner of this order)
         uint32 validity;
         uint256 halfSpreadBps;
     }
@@ -64,7 +65,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         order = GPv2Order.Data(
             buySellData.sellToken,
             buySellData.buyToken,
-            owner,
+            address(0), // special case to refer to 'self' as the receiver per `GPv2Order.sol` library.
             buySellData.sellAmount,
             buySellData.buyAmount,
             currentTimeBucket + data.validity,
