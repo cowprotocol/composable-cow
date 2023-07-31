@@ -29,7 +29,7 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
         GPv2Order.Data memory generatedOrder = getTradeableOrder(owner, sender, ctx, staticInput, offchainInput);
 
         /// @dev Verify that the *generated* order is valid and matches the payload.
-        if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
+        if (!(_hash == GPv2Order.hash(generatedOrder, domainSeparator))) {
             revert IConditionalOrder.OrderNotValid();
         }
     }
