@@ -25,7 +25,7 @@ contract ComposableCoWForwarderTest is BaseComposableCoWTest {
         bytes32 badDigest = GPv2Order.hash(order, keccak256("deadbeef"));
 
         // should revert when substituting the hash with a bad one
-        vm.expectRevert("ERC1271Forwarder: invalid hash");
+        vm.expectRevert(ERC1271Forwarder.InvalidHash.selector);
         nonSafe.isValidSignature(badDigest, signature);
     }
 }

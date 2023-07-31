@@ -18,6 +18,9 @@ abstract contract ERC1271Forwarder is ERC1271 {
         composableCoW = _composableCoW;
     }
 
+    // When the pre-image doesn't match the hash, revert with this error.
+    error InvalidHash();
+
     /**
      * Re-arrange the request into something that ComposableCoW can understand
      * @param _hash GPv2Order.Data digest
@@ -27,7 +30,9 @@ abstract contract ERC1271Forwarder is ERC1271 {
         (GPv2Order.Data memory order, ComposableCoW.PayloadStruct memory payload) =
             abi.decode(signature, (GPv2Order.Data, ComposableCoW.PayloadStruct));
         bytes32 domainSeparator = composableCoW.domainSeparator();
-        require(GPv2Order.hash(order, composableCoW.domainSeparator()) == _hash, "ERC1271Forwarder: invalid hash");
+        if (!(GPv2Order.hash(order, domainSeparator) == _hash)) {
+            revert InvalidHash();
+        }
 
         return composableCoW.isValidSafeSignature(
             Safe(payable(address(this))), // owner
