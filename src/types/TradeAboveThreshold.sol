@@ -15,6 +15,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         IERC20 buyToken;
         address receiver;
         uint256 threshold;
+        bytes32 appData;
     }
 
     /**
@@ -45,8 +46,8 @@ contract TradeAboveThreshold is BaseConditionalOrder {
             data.receiver,
             balance,
             1, // 0 buy amount is not allowed
-            currentTimeBucket + 900, // between 15 and 30 miunte validity
-            keccak256("TradeAboveThreshold"),
+            currentTimeBucket + 900, // between 15 and 30 minute validity
+            data.appData,
             0,
             GPv2Order.KIND_SELL,
             false,

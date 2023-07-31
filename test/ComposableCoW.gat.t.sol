@@ -117,7 +117,8 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
             startTime: startTime,
             endTime: endTime,
             allowPartialFill: allowPartialFill,
-            priceCheckerPayload: bytes("")
+            priceCheckerPayload: bytes(""),
+            appData: keccak256("GoodAfterTime")
         });
 
         // Warp to the start time
@@ -349,7 +350,8 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
             startTime: block.timestamp + 1 days,
             endTime: block.timestamp + 2 days,
             allowPartialFill: false,
-            priceCheckerPayload: priceCheckerPayload
+            priceCheckerPayload: priceCheckerPayload,
+            appData: keccak256("GoodAfterTime")
         });
     }
 }

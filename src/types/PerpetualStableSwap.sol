@@ -24,6 +24,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         // don't include a receiver as it will always be self (ie. owner of this order)
         uint32 validity;
         uint256 halfSpreadBps;
+        bytes32 appData;
     }
 
     struct BuySellData {
@@ -70,7 +71,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
             buySellData.sellAmount,
             buySellData.buyAmount,
             currentTimeBucket + data.validity,
-            keccak256("PerpetualStableSwap"),
+            data.appData,
             0,
             GPv2Order.KIND_SELL,
             false,
