@@ -141,6 +141,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
      */
     function remove(bytes32 singleOrderHash) external {
         singleOrders[msg.sender][singleOrderHash] = false;
+        cabinet[msg.sender][singleOrderHash] = bytes32(0);
     }
 
     /**

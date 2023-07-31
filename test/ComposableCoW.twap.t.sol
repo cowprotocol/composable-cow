@@ -322,6 +322,10 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
                 GPv2Order.hash(part, settlement.domainSeparator()), signature
             ) == ERC1271.isValidSignature.selector
         );
+
+        // Now remove the order
+        vm.prank(address(safe1));
+        composableCow.remove(keccak256(abi.encode(params)));
     }
 
     /**
