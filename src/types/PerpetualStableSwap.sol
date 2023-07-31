@@ -50,7 +50,11 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         // Always sell whatever of the two tokens we have more of
         BuySellData memory buySellData = side(owner, data);
         // (IERC20 sellToken, IERC20 buyToken, uint256 sellAmount, uint256 buyAmount) = side(owner, data);
-        require(buySellData.sellAmount > 0, "not funded");
+
+        // Make sure the order is funded, otherwise it is not valid
+        if (!(buySellData.sellAmount > 0)) {
+            revert IConditionalOrder.OrderNotValid();
+        }
 
         // Unless spread is 0 (and there is no surplus), order collision is not an issue as sell and buy amounts should
         // increase for each subsequent order. We therefore set validity to a large time span

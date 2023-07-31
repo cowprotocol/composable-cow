@@ -28,7 +28,10 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         TradeAboveThreshold.Data memory data = abi.decode(staticInput, (Data));
 
         uint256 balance = data.sellToken.balanceOf(owner);
-        require(balance >= data.threshold, "Not enough balance");
+        // Don't allow the order to be placed if the balance is less than the threshold.
+        if (!(balance >= data.threshold)) {
+            revert IConditionalOrder.OrderNotValid();
+        }
         // ensures that orders queried shortly after one another result in the same hash (to avoid spamming the orderbook)
         // solhint-disable-next-line not-rely-on-time
         uint32 currentTimeBucket = ((uint32(block.timestamp) / 900) + 1) * 900;

@@ -20,6 +20,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
     error SingleOrderNotAuthed();
     error SwapGuardRestricted();
     error InvalidHandler();
+    error InvalidFallbackHandler();
     error InterfaceNotSupported();
 
     // --- types
@@ -243,7 +244,9 @@ contract ComposableCoW is ISafeSignatureVerifier {
         try ExtensibleFallbackHandler(owner).supportsInterface(type(ISignatureVerifierMuxer).interfaceId) returns (
             bool supported
         ) {
-            require(supported, "Invalid fallback handler");
+            if (!supported) {
+                revert InvalidFallbackHandler();
+            }
             signature = abi.encodeWithSignature(
                 "safeSignature(bytes32,bytes32,bytes,bytes)",
                 domainSeparator,
