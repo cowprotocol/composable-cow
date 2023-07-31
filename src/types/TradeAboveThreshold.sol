@@ -5,9 +5,10 @@ import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 
 import "../BaseConditionalOrder.sol";
 
-// @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
+/**
+ * @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
+ */
 contract TradeAboveThreshold is BaseConditionalOrder {
-    using GPv2Order for GPv2Order.Data;
 
     struct Data {
         IERC20 sellToken;
@@ -16,8 +17,11 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         uint256 threshold;
     }
 
-    // @dev If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance
-    // for `buyToken` at the current market price (no limit!).
+    /**
+     * @inheritdoc IConditionalOrderGenerator
+     * @dev If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance
+     * for `buyToken` at the current market price (no limit!).
+     */
     function getTradeableOrder(address owner, address, bytes32, bytes calldata staticInput, bytes calldata)
         public
         view

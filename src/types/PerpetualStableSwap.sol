@@ -5,17 +5,18 @@ import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.so
 
 import "../BaseConditionalOrder.sol";
 
-// @title A smart contract that is always willing to trade between tokenA and tokenB 1:1,
-// taking decimals into account (and adding specifiable spread)
+/**
+ * @title A smart contract that is always willing to trade between tokenA and tokenB 1:1,
+ * taking decimals into account (and adding specifiable spread)
+ */
 contract PerpetualStableSwap is BaseConditionalOrder {
-    using GPv2Order for GPv2Order.Data;
 
-    // /**
-    //  * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
-    //  * @param _tokenA One of the two tokens that can be perpetually swapped against one another
-    //  * @param _tokenB The other of the two tokens that can be perpetually swapped against one another
-    //  * @param _halfSpreadBps The markup to parity (ie 1:1 exchange rate) that is charged for each swap
-    //  */
+    /**
+     * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
+     * @param _tokenA One of the two tokens that can be perpetually swapped against one another
+     * @param _tokenB The other of the two tokens that can be perpetually swapped against one another
+     * @param _halfSpreadBps The markup to parity (ie 1:1 exchange rate) that is charged for each swap
+     */
 
     struct Data {
         IERC20 tokenA;
@@ -49,7 +50,6 @@ contract PerpetualStableSwap is BaseConditionalOrder {
 
         // Always sell whatever of the two tokens we have more of
         BuySellData memory buySellData = side(owner, data);
-        // (IERC20 sellToken, IERC20 buyToken, uint256 sellAmount, uint256 buyAmount) = side(owner, data);
 
         // Make sure the order is funded, otherwise it is not valid
         if (!(buySellData.sellAmount > 0)) {
