@@ -34,6 +34,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         uint256 endTime; // when the order expires
         bool allowPartialFill;
         bytes priceCheckerPayload;
+        bytes32 appData;
     }
 
     struct PriceCheckerPayload {
@@ -85,7 +86,7 @@ contract GoodAfterTime is BaseConditionalOrder {
             data.sellAmount,
             buyAmount,
             data.endTime.toUint32(),
-            keccak256("GoodAfterTime"),
+            data.appData,
             0, // use zero fee for limit orders
             GPv2Order.KIND_SELL,
             data.allowPartialFill,
