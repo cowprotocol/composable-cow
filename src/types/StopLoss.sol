@@ -55,7 +55,7 @@ contract StopLoss is BaseConditionalOrder {
         (, int256 latestSellPrice, , , ) = data.sellTokenPriceOracle.latestRoundData();
         (, int256 latestBuyPrice, , , ) = data.buyTokenPriceOracle.latestRoundData();
 
-        if (latestSellPrice/latestBuyPrice > data.strike) {
+        if (!(latestSellPrice/latestBuyPrice <= data.strike)) {
             revert IConditionalOrder.OrderNotValid();
         }
 
