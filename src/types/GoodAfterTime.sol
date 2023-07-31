@@ -72,7 +72,7 @@ contract GoodAfterTime is BaseConditionalOrder {
             // Get the expected out from the price checker.
             uint256 _expectedOut = p.checker.getExpectedOut(data.sellAmount, data.sellToken, data.buyToken, p.payload);
 
-            // Don't allow the order to be placed if the sellAmount is less than the minimum out.
+            // Don't allow the order to be placed if the buyAmount is less than the minimum out.
             if (!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
                 revert IConditionalOrder.OrderNotValid();
             }
