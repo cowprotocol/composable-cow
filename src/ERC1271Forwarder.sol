@@ -12,7 +12,7 @@ import "./ComposableCoW.sol";
  * @dev Designed to be extended from by a contract that wants to use ComposableCoW
  */
 abstract contract ERC1271Forwarder is ERC1271 {
-    ComposableCoW private immutable composableCoW;
+    ComposableCoW public immutable composableCoW;
 
     constructor(ComposableCoW _composableCoW) {
         composableCoW = _composableCoW;
