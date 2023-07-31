@@ -149,10 +149,16 @@ contract BaseComposableCoWTest is Base, Merkle {
 
     /// @dev Removes a single order and checks state
     function _remove(address owner, IConditionalOrder.ConditionalOrderParams memory params) internal {
-        vm.prank(owner);
+        vm.startPrank(owner);
         bytes32 orderHash = keccak256(abi.encode(params));
+        bytes32 ctx = composableCow.cabinet(owner, orderHash);
         composableCow.remove(orderHash);
         assertEq(composableCow.singleOrders(owner, orderHash), false);
+        if (ctx != bytes32(0)) {
+            // ensure that the context was cleared
+            assertEq(composableCow.cabinet(owner, orderHash), bytes32(0));
+        }
+        vm.stopPrank();
     }
 
     function getBlankOrder() internal pure returns (GPv2Order.Data memory order) {
