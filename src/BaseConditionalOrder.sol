@@ -14,6 +14,7 @@ import "./interfaces/IConditionalOrder.sol";
 abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
     /**
      * @inheritdoc IConditionalOrder
+     * @dev As an order generator, the `GPv2Order.Data` passed as a parameter is ignored / not validated.
      */
     function verify(
         address owner,
@@ -27,7 +28,7 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
     ) external view override {
         GPv2Order.Data memory generatedOrder = getTradeableOrder(owner, sender, ctx, staticInput, offchainInput);
 
-        /// @dev Verify that the order is valid and matches the payload.
+        /// @dev Verify that the *generated* order is valid and matches the payload.
         if (_hash != GPv2Order.hash(generatedOrder, domainSeparator)) {
             revert IConditionalOrder.OrderNotValid();
         }
