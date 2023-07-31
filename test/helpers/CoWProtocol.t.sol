@@ -147,7 +147,7 @@ abstract contract CoWProtocol is Test, Tokens {
         trades[0] = GPv2Trade.Data({
             sellTokenIndex: 0,
             buyTokenIndex: 1,
-            receiver: address(0),
+            receiver: order.receiver,
             sellAmount: order.sellAmount,
             buyAmount: order.buyAmount,
             validTo: order.validTo,

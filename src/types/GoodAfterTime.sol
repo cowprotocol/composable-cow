@@ -27,6 +27,7 @@ contract GoodAfterTime is BaseConditionalOrder {
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
+        address receiver;
         uint256 sellAmount; // buy amount comes from offchainInput
         uint256 minSellBalance;
         uint256 startTime; // when the order becomes valid
@@ -80,7 +81,7 @@ contract GoodAfterTime is BaseConditionalOrder {
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
-            address(0),
+            data.receiver,
             data.sellAmount,
             buyAmount,
             data.endTime.toUint32(),
