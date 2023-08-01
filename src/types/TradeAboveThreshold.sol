@@ -4,6 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 
 import "../BaseConditionalOrder.sol";
+import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 /**
  * @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
@@ -14,6 +15,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         IERC20 sellToken;
         IERC20 buyToken;
         address receiver;
+        uint32 validityBucketSeconds;
         uint256 threshold;
         bytes32 appData;
     }
@@ -38,15 +40,13 @@ contract TradeAboveThreshold is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid();
         }
         // ensures that orders queried shortly after one another result in the same hash (to avoid spamming the orderbook)
-        // solhint-disable-next-line not-rely-on-time
-        uint32 currentTimeBucket = ((uint32(block.timestamp) / 900) + 1) * 900;
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
             data.receiver,
             balance,
             1, // 0 buy amount is not allowed
-            currentTimeBucket + 900, // between 15 and 30 minute validity
+            Utils.validToBucket(data.validityBucketSeconds),
             data.appData,
             0,
             GPv2Order.KIND_SELL,

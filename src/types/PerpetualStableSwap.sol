@@ -14,16 +14,17 @@ contract PerpetualStableSwap is BaseConditionalOrder {
 
     /**
      * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
-     * @param _tokenA One of the two tokens that can be perpetually swapped against one another
-     * @param _tokenB The other of the two tokens that can be perpetually swapped against one another
-     * @param _halfSpreadBps The markup to parity (ie 1:1 exchange rate) that is charged for each swap
+     * @param tokenA One of the two tokens that can be perpetually swapped against one another
+     * @param tokenB The other of the two tokens that can be perpetually swapped against one another
+     * @param validityBucketSeconds The width of the validity bucket in seconds
+     * @param halfSpreadBps The markup to parity (ie 1:1 exchange rate) that is charged for each swap
+     * @param appData Arbitrary data that will be passed to the app when the order is settled
      */
-
     struct Data {
         IERC20 tokenA;
         IERC20 tokenB;
         // don't include a receiver as it will always be self (ie. owner of this order)
-        uint32 validity;
+        uint32 validityBucketSeconds;
         uint256 halfSpreadBps;
         bytes32 appData;
     }
@@ -58,17 +59,14 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         // Unless spread is 0 (and there is no surplus), order collision is not an issue as sell and buy amounts should
         // increase for each subsequent order. We therefore set validity to a large time span
         // Note, that reducing current block to a common start time is needed so that the order returned here
-        // does not change between the time it is queried and the time it is settled. Validity will be between 1 & 2 weeks.
-        // uint32 validity = 1 weeks;
-        // solhint-disable-next-line not-rely-on-time
-        uint32 currentTimeBucket = ((uint32(block.timestamp) / data.validity) + 1) * data.validity;
+        // does not change between the time it is queried and the time it is settled. Validity should be between 1 & 2 weeks.
         order = GPv2Order.Data(
             buySellData.sellToken,
             buySellData.buyToken,
             address(0), // special case to refer to 'self' as the receiver per `GPv2Order.sol` library.
             buySellData.sellAmount,
             buySellData.buyAmount,
-            currentTimeBucket + data.validity,
+            Utils.validToBucket(data.validityBucketSeconds),
             data.appData,
             0,
             GPv2Order.KIND_SELL,

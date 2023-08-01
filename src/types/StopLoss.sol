@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 
 import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
+import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 /**
  * @title StopLoss conditional order
@@ -59,14 +60,13 @@ contract StopLoss is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid();
         }
 
-        uint32 validTo = ((uint32(block.timestamp) / data.validityBucketSeconds) * data.validityBucketSeconds) + data.validityBucketSeconds;
         order = GPv2Order.Data(
             data.sellToken,
             data.buyToken,
             data.receiver,
             data.sellAmount,
             data.buyAmount,
-            validTo,
+            Utils.validToBucket(data.validityBucketSeconds),
             data.appData,
             0, // use zero fee for limit orders
             data.isSellOrder ? GPv2Order.KIND_SELL : GPv2Order.KIND_BUY,
