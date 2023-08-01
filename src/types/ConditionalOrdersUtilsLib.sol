@@ -15,5 +15,4 @@ library ConditionalOrdersUtilsLib {
     function validToBucket(uint32 validity) internal view returns (uint32 validTo) {
         validTo = ((uint32(block.timestamp) / validity) * validity) + validity;
     }
-
 }
