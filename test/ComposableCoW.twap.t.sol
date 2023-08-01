@@ -158,7 +158,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
      */
     function test_getTradeableOrder_FuzzRevertIfBeforeStart(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
-        vm.assume(startTime < type(uint32).max);
+        vm.assume(startTime < (type(uint32).max - FREQUENCY));
         // force revert before start
         vm.assume(currentTime < startTime);
 
