@@ -6,6 +6,7 @@ import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 
 import "../vendored/Milkman.sol";
 import "../BaseConditionalOrder.sol";
+import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 /**
  * @title Good After Time (GAT) Conditional Order - with Milkman price checkers
@@ -20,8 +21,6 @@ import "../BaseConditionalOrder.sol";
  */
 contract GoodAfterTime is BaseConditionalOrder {
     using SafeCast for uint256;
-
-    uint256 private constant MAX_BPS = 10000;
 
     // --- types
     struct Data {
@@ -74,7 +73,7 @@ contract GoodAfterTime is BaseConditionalOrder {
             uint256 _expectedOut = p.checker.getExpectedOut(data.sellAmount, data.sellToken, data.buyToken, p.payload);
 
             // Don't allow the order to be placed if the buyAmount is less than the minimum out.
-            if (!(buyAmount >= (_expectedOut * (MAX_BPS - p.allowedSlippage)) / MAX_BPS)) {
+            if (!(buyAmount >= (_expectedOut * (Utils.MAX_BPS - p.allowedSlippage)) / Utils.MAX_BPS)) {
                 revert IConditionalOrder.OrderNotValid();
             }
         }
