@@ -11,7 +11,6 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * taking decimals into account (and adding specifiable spread)
  */
 contract PerpetualStableSwap is BaseConditionalOrder {
-
     /**
      * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
      * @param tokenA One of the two tokens that can be perpetually swapped against one another

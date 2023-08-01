@@ -10,7 +10,6 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
  */
 contract TradeAboveThreshold is BaseConditionalOrder {
-
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;

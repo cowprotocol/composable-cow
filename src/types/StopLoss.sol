@@ -14,7 +14,6 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
  */
 contract StopLoss is BaseConditionalOrder {
-
     /**
      * Defines the parameters of a StopLoss order
      * @param sellToken: the token to be sold
@@ -45,18 +44,17 @@ contract StopLoss is BaseConditionalOrder {
         uint32 validityBucketSeconds;
     }
 
-    function getTradeableOrder(
-        address,
-        address,
-        bytes32,
-        bytes calldata staticInput,
-        bytes calldata
-    ) public view override returns (GPv2Order.Data memory order) {
+    function getTradeableOrder(address, address, bytes32, bytes calldata staticInput, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory order)
+    {
         Data memory data = abi.decode(staticInput, (Data));
-        (, int256 latestSellPrice, , , ) = data.sellTokenPriceOracle.latestRoundData();
-        (, int256 latestBuyPrice, , , ) = data.buyTokenPriceOracle.latestRoundData();
+        (, int256 latestSellPrice,,,) = data.sellTokenPriceOracle.latestRoundData();
+        (, int256 latestBuyPrice,,,) = data.buyTokenPriceOracle.latestRoundData();
 
-        if (!(latestSellPrice/latestBuyPrice <= data.strike)) {
+        if (!(latestSellPrice / latestBuyPrice <= data.strike)) {
             revert IConditionalOrder.OrderNotValid();
         }
 
@@ -70,7 +68,7 @@ contract StopLoss is BaseConditionalOrder {
             data.appData,
             0, // use zero fee for limit orders
             data.isSellOrder ? GPv2Order.KIND_SELL : GPv2Order.KIND_BUY,
-            data.isPartiallyFillable, 
+            data.isPartiallyFillable,
             GPv2Order.BALANCE_ERC20,
             GPv2Order.BALANCE_ERC20
         );

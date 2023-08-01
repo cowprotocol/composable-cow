@@ -25,14 +25,11 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
     function priceToAddress(int256 price) internal returns (address) {
         return address(uint160(int160(price)));
-    } 
+    }
 
     function mockOracle(address mock, int256 price) internal returns (IAggregatorV3Interface iface) {
         iface = IAggregatorV3Interface(mock);
-        vm.mockCall(mock, 
-            abi.encodeWithSelector(iface.latestRoundData.selector),
-            abi.encode(0, price, 0, 0, 0)
-        );
+        vm.mockCall(mock, abi.encodeWithSelector(iface.latestRoundData.selector), abi.encode(0, price, 0, 0, 0));
     }
 
     function test_strikePriceNotMet_concrete() public {
@@ -55,15 +52,16 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
-        
     }
 
-    function test_strikePriceNotMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike) public {
+    function test_strikePriceNotMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike)
+        public
+    {
         vm.assume(buyTokenOraclePrice > 0);
         vm.assume(sellTokenOraclePrice > 0);
         vm.assume(strike > 0);
-        vm.assume(sellTokenOraclePrice/buyTokenOraclePrice > strike);
-        
+        vm.assume(sellTokenOraclePrice / buyTokenOraclePrice > strike);
+
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: SELL_TOKEN,
             buyToken: BUY_TOKEN,
@@ -78,7 +76,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes
         });
-        
+
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
@@ -87,8 +85,8 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         vm.assume(buyTokenOraclePrice > 0);
         vm.assume(sellTokenOraclePrice > 0);
         vm.assume(strike > 0);
-        vm.assume(sellTokenOraclePrice/buyTokenOraclePrice <= strike);
-        
+        vm.assume(sellTokenOraclePrice / buyTokenOraclePrice <= strike);
+
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: SELL_TOKEN,
             buyToken: BUY_TOKEN,
@@ -107,7 +105,8 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         // 25 June 2023 18:40:51
         vm.warp(1687718451);
 
-        GPv2Order.Data memory order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
+        GPv2Order.Data memory order =
+            stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
         assertEq(address(order.sellToken), address(SELL_TOKEN));
         assertEq(address(order.buyToken), address(BUY_TOKEN));
         assertEq(order.sellAmount, 1 ether);
@@ -140,7 +139,8 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         // 25 June 2023 18:59:59
         vm.warp(1687712399);
-        GPv2Order.Data memory order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
+        GPv2Order.Data memory order =
+            stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
         assertEq(order.validTo, 1687712400); // 25 June 2023 19:00:00
 
         // 25 June 2023 19:00:00
