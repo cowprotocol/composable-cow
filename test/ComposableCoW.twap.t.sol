@@ -325,7 +325,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // Now remove the order
         vm.prank(address(safe1));
-        composableCow.remove(keccak256(abi.encode(params)));
+        bytes32 paramsHash = keccak256(abi.encode(params));
+        composableCow.remove(paramsHash);
+        assertEq(composableCow.cabinet(address(safe1), paramsHash), bytes32(0));
     }
 
     /**
