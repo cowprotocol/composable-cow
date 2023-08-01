@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 
 import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
@@ -32,9 +33,6 @@ contract StopLoss is BaseConditionalOrder {
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
-        IAggregatorV3Interface sellTokenPriceOracle;
-        IAggregatorV3Interface buyTokenPriceOracle;
-        int256 strike;
         uint256 sellAmount;
         uint256 buyAmount;
         bytes32 appData;
@@ -42,6 +40,10 @@ contract StopLoss is BaseConditionalOrder {
         bool isSellOrder;
         bool isPartiallyFillable;
         uint32 validityBucketSeconds;
+        IAggregatorV3Interface sellTokenPriceOracle;
+        IAggregatorV3Interface buyTokenPriceOracle;
+        int256 strike;
+        uint256 heartBeatInterval;
     }
 
     function getTradeableOrder(address, address, bytes32, bytes calldata staticInput, bytes calldata)
@@ -51,11 +53,33 @@ contract StopLoss is BaseConditionalOrder {
         returns (GPv2Order.Data memory order)
     {
         Data memory data = abi.decode(staticInput, (Data));
-        (, int256 latestSellPrice,,,) = data.sellTokenPriceOracle.latestRoundData();
-        (, int256 latestBuyPrice,,,) = data.buyTokenPriceOracle.latestRoundData();
+        // scope variables to avoid stack too deep error
+        {
+            (, int256 basePrice,,uint256 sellUpdatedAt,) = data.sellTokenPriceOracle.latestRoundData();
+            (, int256 quotePrice,,uint256 buyUpdatedAt,) = data.buyTokenPriceOracle.latestRoundData();
 
-        if (!(latestSellPrice / latestBuyPrice <= data.strike)) {
-            revert IConditionalOrder.OrderNotValid();
+            /// @dev Guard against invalid price data
+            if (!(basePrice > 0 && quotePrice > 0)) {
+                revert IConditionalOrder.OrderNotValid();
+            }
+
+            /// @dev Guard against stale data at a user-specified interval. The heartbeat interval should at least exceed the both oracles' update intervals.
+            if(!(sellUpdatedAt >= block.timestamp - data.heartBeatInterval && buyUpdatedAt >= block.timestamp - data.heartBeatInterval)) {
+                revert IConditionalOrder.OrderNotValid();
+            }
+
+            uint8 oracleSellTokenDecimals = data.sellTokenPriceOracle.decimals();
+            uint8 oracleBuyTokenDecimals = data.buyTokenPriceOracle.decimals();
+            uint8 erc20SellTokenDecimals = IERC20Metadata(address(data.sellToken)).decimals();
+            uint8 erc20BuyTokenDecimals = IERC20Metadata(address(data.buyToken)).decimals();
+
+            // Normalize the basePrice and quotePrice.
+            basePrice = scalePrice(basePrice, oracleSellTokenDecimals, erc20SellTokenDecimals);
+            quotePrice = scalePrice(quotePrice, oracleBuyTokenDecimals, erc20BuyTokenDecimals);
+
+            if (!(basePrice / quotePrice <= data.strike)) {
+                revert IConditionalOrder.OrderNotValid();
+            }
         }
 
         order = GPv2Order.Data(
@@ -72,5 +96,24 @@ contract StopLoss is BaseConditionalOrder {
             GPv2Order.BALANCE_ERC20,
             GPv2Order.BALANCE_ERC20
         );
+    }
+
+    /**
+     * Given a price returned by a chainlink-like oracle, scale it to the erc20 decimals
+     * @param oraclePrice return by a chainlink-like oracle
+     * @param oracleDecimals the decimals the oracle returns
+     * @param erc20Decimals the decimals of the erc20 token
+     */
+    function scalePrice(
+        int256 oraclePrice,
+        uint8 oracleDecimals,
+        uint8 erc20Decimals
+    ) internal pure returns (int256) {
+        if (oracleDecimals < erc20Decimals) {
+            return oraclePrice * int256(10 ** uint256(erc20Decimals - oracleDecimals));
+        } else if (oracleDecimals > erc20Decimals) {
+            return oraclePrice / int256(10 ** uint256(oracleDecimals - erc20Decimals));
+        }
+        return oraclePrice;
     }
 }
