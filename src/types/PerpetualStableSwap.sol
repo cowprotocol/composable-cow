@@ -4,6 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 
 import "../BaseConditionalOrder.sol";
+import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 /**
  * @title A smart contract that is always willing to trade between tokenA and tokenB 1:1,
@@ -33,9 +34,6 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         uint256 sellAmount;
         uint256 buyAmount;
     }
-
-    // There are 10k basis points in a unit
-    uint256 private constant BPS = 10_000;
 
     /**
      * @inheritdoc IConditionalOrderGenerator
@@ -95,14 +93,14 @@ contract PerpetualStableSwap is BaseConditionalOrder {
                 sellToken: tokenA,
                 buyToken: tokenB,
                 sellAmount: balanceA,
-                buyAmount: convertAmount(tokenA, balanceA, tokenB) * (BPS + data.halfSpreadBps) / BPS
+                buyAmount: convertAmount(tokenA, balanceA, tokenB) * (Utils.MAX_BPS + data.halfSpreadBps) / Utils.MAX_BPS
             });
         } else {
             buySellData = BuySellData({
                 sellToken: tokenB,
                 buyToken: tokenA,
                 sellAmount: balanceB,
-                buyAmount: convertAmount(tokenB, balanceB, tokenA) * (BPS + data.halfSpreadBps) / BPS
+                buyAmount: convertAmount(tokenB, balanceB, tokenA) * (Utils.MAX_BPS + data.halfSpreadBps) / Utils.MAX_BPS
             });
         }
     }
