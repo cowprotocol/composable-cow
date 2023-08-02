@@ -64,7 +64,7 @@ contract StopLoss is BaseConditionalOrder {
                 revert IConditionalOrder.OrderNotValid();
             }
 
-            /// @dev Guard against stale data at a user-specified interval. The heartbeat interval should at least exceed the both oracles' update intervals.
+            /// @dev Guard against stale data at a user-specified interval. The maxTimeSinceLastOracleUpdate should at least exceed the both oracles' update intervals.
             if (
                 !(
                     sellUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
