@@ -29,7 +29,10 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         return address(uint160(int160(price)));
     }
 
-    function mockOracle(address mock, int256 price, uint256 updatedAt, uint8 decimals) internal returns (IAggregatorV3Interface iface) {
+    function mockOracle(address mock, int256 price, uint256 updatedAt, uint8 decimals)
+        internal
+        returns (IAggregatorV3Interface iface)
+    {
         iface = IAggregatorV3Interface(mock);
         vm.mockCall(mock, abi.encodeWithSelector(iface.latestRoundData.selector), abi.encode(0, price, 0, updatedAt, 0));
         vm.mockCall(mock, abi.encodeWithSelector(iface.decimals.selector), abi.encode(decimals));
@@ -66,9 +69,13 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
-    function test_RevertStrikePriceNotMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike, uint256 currentTime, uint256 staleTime)
-        public
-    {
+    function test_RevertStrikePriceNotMet_fuzz(
+        int256 sellTokenOraclePrice,
+        int256 buyTokenOraclePrice,
+        int256 strike,
+        uint256 currentTime,
+        uint256 staleTime
+    ) public {
         vm.assume(buyTokenOraclePrice > 0);
         vm.assume(sellTokenOraclePrice > 0);
         vm.assume(strike > 0);
@@ -97,8 +104,12 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
-
-    function test_OracleNormalisesPrice_fuzz(uint8 sellTokenERC20Decimals, uint8 buyTokenERC20Decimals, uint8 sellTokenOracleDecimals, uint8 buyTokenOracleDecimals) public {
+    function test_OracleNormalisesPrice_fuzz(
+        uint8 sellTokenERC20Decimals,
+        uint8 buyTokenERC20Decimals,
+        uint8 sellTokenOracleDecimals,
+        uint8 buyTokenOracleDecimals
+    ) public {
         // guard against overflow.
         // given the use of the decimals in exponentiation, supporting type(uint8).max
         // is not possible as the result of the exponentiation would overflow uint256.
@@ -114,9 +125,20 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, sellTokenERC20Decimals),
             buyToken: mockToken(BUY_TOKEN, buyTokenERC20Decimals),
-            sellTokenPriceOracle: mockOracle(SELL_ORACLE, int256(1834 * (10**sellTokenOracleDecimals)), block.timestamp, sellTokenOracleDecimals),
-            buyTokenPriceOracle: mockOracle(BUY_ORACLE, int256(1 * (10**buyTokenOracleDecimals)), block.timestamp, buyTokenOracleDecimals),
-            strike: int256(1900 * (sellTokenERC20Decimals > buyTokenERC20Decimals ? (10**(sellTokenERC20Decimals - buyTokenERC20Decimals)) : (10**(buyTokenERC20Decimals - sellTokenERC20Decimals)))), // Strike price is atomic units, base / quote. ie. 1900_000_000_000_000_000_000 / 1_000_000 = 1900 USDC/ETH
+            sellTokenPriceOracle: mockOracle(
+                SELL_ORACLE, int256(1834 * (10 ** sellTokenOracleDecimals)), block.timestamp, sellTokenOracleDecimals
+                ),
+            buyTokenPriceOracle: mockOracle(
+                BUY_ORACLE, int256(1 * (10 ** buyTokenOracleDecimals)), block.timestamp, buyTokenOracleDecimals
+                ),
+            strike: int256(
+                1900
+                    * (
+                        sellTokenERC20Decimals > buyTokenERC20Decimals
+                            ? (10 ** (sellTokenERC20Decimals - buyTokenERC20Decimals))
+                            : (10 ** (buyTokenERC20Decimals - sellTokenERC20Decimals))
+                    )
+                ), // Strike price is atomic units, base / quote. ie. 1900_000_000_000_000_000_000 / 1_000_000 = 1900 USDC/ETH
             sellAmount: 1 ether,
             buyAmount: 1,
             appData: APP_DATA,
@@ -179,7 +201,9 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
     }
 
-    function test_OracleRevertOnStalePrice_fuzz(uint256 currentTime, uint256 heartBeatInterval, uint256 updatedAt) public {
+    function test_OracleRevertOnStalePrice_fuzz(uint256 currentTime, uint256 heartBeatInterval, uint256 updatedAt)
+        public
+    {
         // guard against underflow
         vm.assume(currentTime > heartBeatInterval);
         vm.assume(currentTime < type(uint32).max);
