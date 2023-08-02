@@ -50,7 +50,9 @@ library TWAPOrder {
      */
     function validate(Data memory self) internal pure {
         if (!(self.sellToken != self.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
-        if (!(address(self.sellToken) != address(0) && address(self.buyToken) != address(0))) revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
+        if (!(address(self.sellToken) != address(0) && address(self.buyToken) != address(0))) {
+            revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
+        }
         if (!(self.partSellAmount > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PART_SELL_AMOUNT);
         if (!(self.minPartLimit > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
         if (!(self.t0 < type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_START_TIME);

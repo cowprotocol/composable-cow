@@ -235,9 +235,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // should revert as the order hash mismatches
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_HASH)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_HASH));
         composableCow.isValidSafeSignature(
             Safe(payable(address(alice.addr))),
             address(0),
