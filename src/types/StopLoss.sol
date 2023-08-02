@@ -15,6 +15,15 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
  */
 contract StopLoss is BaseConditionalOrder {
+    // --- errors
+
+    /// @dev Invalid price data returned by the oracle
+    error OracleInvalidPrice();
+    /// @dev The oracle has returned stale data
+    error OracleStalePrice();
+    /// @dev The strike price has not been reached
+    error StrikeNotReached();
+
     /**
      * Defines the parameters of a StopLoss order
      * @param sellToken: the token to be sold
@@ -61,7 +70,7 @@ contract StopLoss is BaseConditionalOrder {
 
             /// @dev Guard against invalid price data
             if (!(basePrice > 0 && quotePrice > 0)) {
-                revert IConditionalOrder.OrderNotValid();
+                revert IConditionalOrder.OrderNotValid(OracleInvalidPrice.selector);
             }
 
             /// @dev Guard against stale data at a user-specified interval. The heartbeat interval should at least exceed the both oracles' update intervals.
@@ -71,7 +80,7 @@ contract StopLoss is BaseConditionalOrder {
                         && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
                 )
             ) {
-                revert IConditionalOrder.OrderNotValid();
+                revert IConditionalOrder.OrderNotValid(OracleStalePrice.selector);
             }
 
             uint8 oracleSellTokenDecimals = data.sellTokenPriceOracle.decimals();
@@ -84,7 +93,7 @@ contract StopLoss is BaseConditionalOrder {
             quotePrice = scalePrice(quotePrice, oracleBuyTokenDecimals, erc20BuyTokenDecimals);
 
             if (!(basePrice / quotePrice <= data.strike)) {
-                revert IConditionalOrder.OrderNotValid();
+                revert IConditionalOrder.OrderNotValid(StrikeNotReached.selector);
             }
         }
 

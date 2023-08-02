@@ -12,6 +12,10 @@ import "./interfaces/IConditionalOrder.sol";
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
 abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
+    /// @dev This error is returned by the `verify` function if the *generated* order hash does not match
+    ///      the hash passed as a parameter.
+    error InvalidHash();
+
     /**
      * @inheritdoc IConditionalOrder
      * @dev As an order generator, the `GPv2Order.Data` passed as a parameter is ignored / not validated.
@@ -30,7 +34,7 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
 
         /// @dev Verify that the *generated* order is valid and matches the payload.
         if (!(_hash == GPv2Order.hash(generatedOrder, domainSeparator))) {
-            revert IConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid(InvalidHash.selector);
         }
     }
 
