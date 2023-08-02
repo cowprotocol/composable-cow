@@ -22,7 +22,17 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
 contract GoodAfterTime is BaseConditionalOrder {
     using SafeCast for uint256;
 
+    // --- errors
+
+    /// @dev If the trade is called before the time it becomes valid.
+    error TooEarly();
+    /// @dev If the sell token balance is below the minimum.
+    error BalanceInsufficient();
+    /// @dev If the price checker fails.
+    error PriceCheckerFailed();
+
     // --- types
+
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
@@ -54,12 +64,12 @@ contract GoodAfterTime is BaseConditionalOrder {
 
         // Don't allow the order to be placed before it becomes valid.
         if (!(block.timestamp >= data.startTime)) {
-            revert IConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid(TooEarly.selector);
         }
 
         // Require that the sell token balance is above the minimum.
         if (!(data.sellToken.balanceOf(owner) >= data.minSellBalance)) {
-            revert IConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid(BalanceInsufficient.selector);
         }
 
         uint256 buyAmount = abi.decode(offchainInput, (uint256));
@@ -74,7 +84,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
             // Don't allow the order to be placed if the buyAmount is less than the minimum out.
             if (!(buyAmount >= (_expectedOut * (Utils.MAX_BPS - p.allowedSlippage)) / Utils.MAX_BPS)) {
-                revert IConditionalOrder.OrderNotValid();
+                revert IConditionalOrder.OrderNotValid(PriceCheckerFailed.selector);
             }
         }
 
