@@ -8,6 +8,15 @@ import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
+// --- error strings
+
+/// @dev Invalid price data returned by the oracle
+string constant ORACLE_INVALID_PRICE = "oracle invalid price";
+/// @dev The oracle has returned stale data
+string constant ORACLE_STALE_PRICE = "oracle stale price";
+/// @dev The strike price has not been reached
+string constant STRIKE_NOT_REACHED = "strike not reached";
+
 /**
  * @title StopLoss conditional order
  * Requires providing two price oracles (e.g. chainlink) and a strike price. If the sellToken price falls below the strike price, the order will be triggered
@@ -15,15 +24,6 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
  */
 contract StopLoss is BaseConditionalOrder {
-    // --- errors
-
-    /// @dev Invalid price data returned by the oracle
-    error OracleInvalidPrice();
-    /// @dev The oracle has returned stale data
-    error OracleStalePrice();
-    /// @dev The strike price has not been reached
-    error StrikeNotReached();
-
     /**
      * Defines the parameters of a StopLoss order
      * @param sellToken: the token to be sold
@@ -70,7 +70,7 @@ contract StopLoss is BaseConditionalOrder {
 
             /// @dev Guard against invalid price data
             if (!(basePrice > 0 && quotePrice > 0)) {
-                revert IConditionalOrder.OrderNotValid(OracleInvalidPrice.selector);
+                revert IConditionalOrder.OrderNotValid(ORACLE_INVALID_PRICE);
             }
 
             /// @dev Guard against stale data at a user-specified interval. The maxTimeSinceLastOracleUpdate should at least exceed the both oracles' update intervals.
@@ -80,7 +80,7 @@ contract StopLoss is BaseConditionalOrder {
                         && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
                 )
             ) {
-                revert IConditionalOrder.OrderNotValid(OracleStalePrice.selector);
+                revert IConditionalOrder.OrderNotValid(ORACLE_STALE_PRICE);
             }
 
             uint8 oracleSellTokenDecimals = data.sellTokenPriceOracle.decimals();
@@ -93,7 +93,7 @@ contract StopLoss is BaseConditionalOrder {
             quotePrice = scalePrice(quotePrice, oracleBuyTokenDecimals, erc20BuyTokenDecimals);
 
             if (!(basePrice / quotePrice <= data.strike)) {
-                revert IConditionalOrder.OrderNotValid(StrikeNotReached.selector);
+                revert IConditionalOrder.OrderNotValid(STRIKE_NOT_REACHED);
             }
         }
 

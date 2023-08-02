@@ -11,8 +11,8 @@ import {IERC165} from "safe/interfaces/IERC165.sol";
  */
 interface IConditionalOrder {
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
-    ///      A parameter of `bytes4` type is included to allow the caller to specify the reason for the failure.
-    error OrderNotValid(bytes4);
+    ///      A parameter of `string` type is included to allow the caller to specify the reason for the failure.
+    error OrderNotValid(string);
 
     /**
      * @dev This struct is used to uniquely identify a conditional order for an owner.

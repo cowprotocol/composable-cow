@@ -14,7 +14,7 @@ import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {ComposableCoWLib} from "./libraries/ComposableCoWLib.t.sol";
 
-import {BaseConditionalOrder} from "../src/BaseConditionalOrder.sol";
+import "../src/BaseConditionalOrder.sol";
 import {BaseSwapGuard} from "../src/guards/BaseSwapGuard.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";

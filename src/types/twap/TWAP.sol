@@ -6,6 +6,11 @@ import "../../ComposableCoW.sol";
 import "../../BaseConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
+// --- error strings
+
+/// @dev The order is not within the TWAP bundle's span.
+string constant NOT_WITHIN_SPAN = "not within span";
+
 /**
  * @title TWAP Conditional Order
  * @author mfw78 <mfw78@rndlabs.xyz>
@@ -16,11 +21,6 @@ import {TWAPOrder} from "./libraries/TWAPOrder.sol";
  */
 contract TWAP is BaseConditionalOrder {
     ComposableCoW public immutable composableCow;
-
-    // --- errors
-
-    /// @dev The order is not within the TWAP bundle's span.
-    error NotWithinSpan();
 
     constructor(ComposableCoW _composableCow) {
         composableCow = _composableCow;
@@ -56,7 +56,7 @@ contract TWAP is BaseConditionalOrder {
 
         /// @dev Revert if the order is outside the TWAP bundle's span.
         if (!(block.timestamp <= order.validTo)) {
-            revert IConditionalOrder.OrderNotValid(NotWithinSpan.selector);
+            revert IConditionalOrder.OrderNotValid(NOT_WITHIN_SPAN);
         }
     }
 }
