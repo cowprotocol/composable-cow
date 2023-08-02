@@ -174,7 +174,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to current time
         vm.warp(currentTime);
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector)
+        );
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -199,7 +201,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to expiry
         vm.warp(currentTime);
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector)
+        );
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -256,7 +260,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // The below should revert
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector)
+        );
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
@@ -285,7 +291,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // The below should revert
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector)
+        );
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
