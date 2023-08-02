@@ -57,7 +57,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: 15 minutes
+            maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
         createOrder(stopLoss, 0x0, abi.encode(data));
@@ -90,7 +90,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: staleTime
+            maxTimeSinceLastOracleUpdate: staleTime
         });
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
@@ -114,7 +114,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: true,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: 15 minutes
+            maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
         GPv2Order.Data memory order =
@@ -155,7 +155,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: heartBeatInterval
+            maxTimeSinceLastOracleUpdate: heartBeatInterval
         });
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
@@ -184,7 +184,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: 15 minutes
+            maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
         vm.expectRevert(IConditionalOrder.OrderNotValid.selector);
@@ -221,7 +221,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            heartBeatInterval: 15 minutes
+            maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
         GPv2Order.Data memory order =
@@ -256,7 +256,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 1 hours,
-            heartBeatInterval: 15 minutes
+            maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
         // 25 June 2023 18:59:59
