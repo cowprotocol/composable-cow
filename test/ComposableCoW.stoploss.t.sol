@@ -97,6 +97,52 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
+
+    function test_OracleNormalisesPrice_fuzz(uint8 sellTokenERC20Decimals, uint8 buyTokenERC20Decimals, uint8 sellTokenOracleDecimals, uint8 buyTokenOracleDecimals) public {
+        // guard against overflow.
+        // given the use of the decimals in exponentiation, supporting type(uint8).max
+        // is not possible as the result of the exponentiation would overflow uint256.
+        // Most tokens have 18 decimals, though there is precendent for 45 decimals,
+        // such as the use of `rad` in the MakerDAO system.
+        vm.assume(sellTokenERC20Decimals <= 45);
+        vm.assume(buyTokenERC20Decimals <= 45);
+        vm.assume(sellTokenOracleDecimals <= 45);
+        vm.assume(buyTokenOracleDecimals <= 45);
+
+        vm.warp(1687718451);
+
+        StopLoss.Data memory data = StopLoss.Data({
+            sellToken: mockToken(SELL_TOKEN, sellTokenERC20Decimals),
+            buyToken: mockToken(BUY_TOKEN, buyTokenERC20Decimals),
+            sellTokenPriceOracle: mockOracle(SELL_ORACLE, int256(1834 * (10**sellTokenOracleDecimals)), block.timestamp, sellTokenOracleDecimals),
+            buyTokenPriceOracle: mockOracle(BUY_ORACLE, int256(1 * (10**buyTokenOracleDecimals)), block.timestamp, buyTokenOracleDecimals),
+            strike: int256(1900 * (sellTokenERC20Decimals > buyTokenERC20Decimals ? (10**(sellTokenERC20Decimals - buyTokenERC20Decimals)) : (10**(buyTokenERC20Decimals - sellTokenERC20Decimals)))), // Strike price is atomic units, base / quote. ie. 1900_000_000_000_000_000_000 / 1_000_000 = 1900 USDC/ETH
+            sellAmount: 1 ether,
+            buyAmount: 1,
+            appData: APP_DATA,
+            receiver: address(0x0),
+            isSellOrder: true,
+            isPartiallyFillable: false,
+            validityBucketSeconds: 15 minutes,
+            maxTimeSinceLastOracleUpdate: 15 minutes
+        });
+
+        GPv2Order.Data memory order =
+            stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
+        assertEq(address(order.sellToken), address(SELL_TOKEN));
+        assertEq(address(order.buyToken), address(BUY_TOKEN));
+        assertEq(order.sellAmount, 1 ether);
+        assertEq(order.buyAmount, 1);
+        assertEq(order.receiver, address(0x0));
+        assertEq(order.validTo, 1687718700);
+        assertEq(order.appData, APP_DATA);
+        assertEq(order.feeAmount, 0);
+        assertEq(order.kind, GPv2Order.KIND_SELL);
+        assertEq(order.partiallyFillable, false);
+        assertEq(order.sellTokenBalance, GPv2Order.BALANCE_ERC20);
+        assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
+    }
+
     function test_OracleNormalisesPrice_concrete() public {
         // 25 June 2023 18:40:51
         vm.warp(1687718451);
