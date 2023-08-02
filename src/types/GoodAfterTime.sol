@@ -8,6 +8,14 @@ import "../vendored/Milkman.sol";
 import "../BaseConditionalOrder.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
+// --- error strings
+/// @dev If the trade is called before the time it becomes valid.
+string constant TOO_EARLY = "too early";
+/// @dev If the sell token balance is below the minimum.
+string constant BALANCE_INSUFFICIENT = "balance insufficient";
+/// @dev If the price checker fails.
+string constant PRICE_CHECKER_FAILED = "price checker failed";
+
 /**
  * @title Good After Time (GAT) Conditional Order - with Milkman price checkers
  * @author mfw78 <mfw78@rndlabs.xyz>
@@ -21,15 +29,6 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  */
 contract GoodAfterTime is BaseConditionalOrder {
     using SafeCast for uint256;
-
-    // --- errors
-
-    /// @dev If the trade is called before the time it becomes valid.
-    error TooEarly();
-    /// @dev If the sell token balance is below the minimum.
-    error BalanceInsufficient();
-    /// @dev If the price checker fails.
-    error PriceCheckerFailed();
 
     // --- types
 
@@ -64,12 +63,12 @@ contract GoodAfterTime is BaseConditionalOrder {
 
         // Don't allow the order to be placed before it becomes valid.
         if (!(block.timestamp >= data.startTime)) {
-            revert IConditionalOrder.OrderNotValid(TooEarly.selector);
+            revert IConditionalOrder.OrderNotValid(TOO_EARLY);
         }
 
         // Require that the sell token balance is above the minimum.
         if (!(data.sellToken.balanceOf(owner) >= data.minSellBalance)) {
-            revert IConditionalOrder.OrderNotValid(BalanceInsufficient.selector);
+            revert IConditionalOrder.OrderNotValid(BALANCE_INSUFFICIENT);
         }
 
         uint256 buyAmount = abi.decode(offchainInput, (uint256));
@@ -84,7 +83,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
             // Don't allow the order to be placed if the buyAmount is less than the minimum out.
             if (!(buyAmount >= (_expectedOut * (Utils.MAX_BPS - p.allowedSlippage)) / Utils.MAX_BPS)) {
-                revert IConditionalOrder.OrderNotValid(PriceCheckerFailed.selector);
+                revert IConditionalOrder.OrderNotValid(PRICE_CHECKER_FAILED);
             }
         }
 

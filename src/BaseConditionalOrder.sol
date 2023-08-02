@@ -5,6 +5,11 @@ import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 
 import "./interfaces/IConditionalOrder.sol";
 
+// --- error strings
+/// @dev This error is returned by the `verify` function if the *generated* order hash does not match
+///      the hash passed as a parameter.
+string constant INVALID_HASH = "invalid hash";
+
 /**
  * @title Base logic for conditional orders.
  * @dev Enforces the order verification logic for conditional orders, allowing developers
@@ -12,10 +17,6 @@ import "./interfaces/IConditionalOrder.sol";
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
 abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
-    /// @dev This error is returned by the `verify` function if the *generated* order hash does not match
-    ///      the hash passed as a parameter.
-    error InvalidHash();
-
     /**
      * @inheritdoc IConditionalOrder
      * @dev As an order generator, the `GPv2Order.Data` passed as a parameter is ignored / not validated.
@@ -34,7 +35,7 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
 
         /// @dev Verify that the *generated* order is valid and matches the payload.
         if (!(_hash == GPv2Order.hash(generatedOrder, domainSeparator))) {
-            revert IConditionalOrder.OrderNotValid(InvalidHash.selector);
+            revert IConditionalOrder.OrderNotValid(INVALID_HASH);
         }
     }
 
