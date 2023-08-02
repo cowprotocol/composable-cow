@@ -19,9 +19,6 @@ contract StopLoss is BaseConditionalOrder {
      * Defines the parameters of a StopLoss order
      * @param sellToken: the token to be sold
      * @param buyToken: the token to be bought
-     * @param sellTokenPriceOracle: A chainlink-like oracle returning the current sell token price in a given numeraire
-     * @param buyTokenPriceOracle: A chainlink-like oracle returning the current buy token price in the same numeraire
-     * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below
      * @param sellAmount: In case of a sell order, the exact amount of tokens the order is willing to sell. In case of a buy order, the maximium amount of tokens it is willing to sell
      * @param buyAmount: In case of a sell order, the min amount of tokens the order is wants to receive. In case of a buy order, the exact amount of tokens it is willing to receive
      * @param appData: The IPFS hash of the appData associated with the order
@@ -29,6 +26,10 @@ contract StopLoss is BaseConditionalOrder {
      * @param isSellOrder: Whether this is a sell or buy order
      * @param isPartiallyFillable: Whether solvers are allowed to only fill a fraction of the order (useful if exact sell or buy amount isn't know at time of placement)
      * @param validityBucketSeconds: How long the order will be valid. E.g. if the validityBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
+     * @param sellTokenPriceOracle: A chainlink-like oracle returning the current sell token price in a given numeraire
+     * @param buyTokenPriceOracle: A chainlink-like oracle returning the current buy token price in the same numeraire
+     * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below
+     * @param maxTimeSinceLastOracleUpdate: The maximum time since the last oracle update. If the oracle hasn't been updated in this time, the order will be considered invalid
      */
     struct Data {
         IERC20 sellToken;
@@ -43,7 +44,7 @@ contract StopLoss is BaseConditionalOrder {
         IAggregatorV3Interface sellTokenPriceOracle;
         IAggregatorV3Interface buyTokenPriceOracle;
         int256 strike;
-        uint256 heartBeatInterval;
+        uint256 maxTimeSinceLastOracleUpdate;
     }
 
     function getTradeableOrder(address, address, bytes32, bytes calldata staticInput, bytes calldata)
@@ -64,7 +65,7 @@ contract StopLoss is BaseConditionalOrder {
             }
 
             /// @dev Guard against stale data at a user-specified interval. The heartbeat interval should at least exceed the both oracles' update intervals.
-            if(!(sellUpdatedAt >= block.timestamp - data.heartBeatInterval && buyUpdatedAt >= block.timestamp - data.heartBeatInterval)) {
+            if(!(sellUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate)) {
                 revert IConditionalOrder.OrderNotValid();
             }
 
