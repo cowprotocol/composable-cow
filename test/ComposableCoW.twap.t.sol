@@ -55,9 +55,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         o.sellToken = token0;
         o.buyToken = token0;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_SAME_TOKEN)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_SAME_TOKEN));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -69,17 +67,13 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.sellToken = IERC20(address(0));
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_TOKEN)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_TOKEN));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
 
         o.sellToken = token0;
         o.buyToken = IERC20(address(0));
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_TOKEN)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_TOKEN));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -91,9 +85,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.partSellAmount = 0;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_PART_SELL_AMOUNT)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_PART_SELL_AMOUNT));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -105,9 +97,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.minPartLimit = 0;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_MIN_PART_LIMIT)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_MIN_PART_LIMIT));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -120,9 +110,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(startTime);
         o.t0 = startTime;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_START_TIME)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_START_TIME));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -135,9 +123,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.n = numParts;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_NUM_PARTS)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_NUM_PARTS));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -149,9 +135,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
         o.t = frequency;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_FREQUENCY)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_FREQUENCY));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -166,9 +150,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         o.t = frequency;
         o.span = span;
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_SPAN)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_SPAN));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -193,9 +175,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to current time
         vm.warp(currentTime);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -220,9 +200,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to expiry
         vm.warp(currentTime);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -279,9 +257,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // The below should revert
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START));
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
@@ -310,9 +286,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // The below should revert
-        vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH));
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
 
