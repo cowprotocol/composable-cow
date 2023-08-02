@@ -205,14 +205,14 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
     }
 
-    function test_OracleRevertOnStalePrice_fuzz(uint256 currentTime, uint256 heartBeatInterval, uint256 updatedAt)
+    function test_OracleRevertOnStalePrice_fuzz(uint256 currentTime, uint256 maxTimeSinceLastOracleUpdate, uint256 updatedAt)
         public
     {
         // guard against underflow
-        vm.assume(currentTime > heartBeatInterval);
+        vm.assume(currentTime > maxTimeSinceLastOracleUpdate);
         vm.assume(currentTime < type(uint32).max);
         // enforce stale price
-        vm.assume(updatedAt < (currentTime - heartBeatInterval));
+        vm.assume(updatedAt < (currentTime - maxTimeSinceLastOracleUpdate));
 
         vm.warp(currentTime);
 
@@ -229,7 +229,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             isSellOrder: false,
             isPartiallyFillable: false,
             validityBucketSeconds: 15 minutes,
-            maxTimeSinceLastOracleUpdate: heartBeatInterval
+            maxTimeSinceLastOracleUpdate: maxTimeSinceLastOracleUpdate
         });
 
         vm.expectRevert(
