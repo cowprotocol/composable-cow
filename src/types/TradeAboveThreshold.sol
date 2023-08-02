@@ -6,15 +6,15 @@ import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 import "../BaseConditionalOrder.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
+// --- error strings
+
+/// @dev The sell token balance is below the threshold (ie. threshold not met).
+string constant BALANCE_INSUFFICIENT = "balance insufficient";
+
 /**
  * @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold
  */
 contract TradeAboveThreshold is BaseConditionalOrder {
-    // --- errors
-
-    /// @dev The sell token balance is below the threshold (ie. threshold not met).
-    error BalanceInsufficient();
-
     struct Data {
         IERC20 sellToken;
         IERC20 buyToken;
@@ -41,7 +41,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         uint256 balance = data.sellToken.balanceOf(owner);
         // Don't allow the order to be placed if the balance is less than the threshold.
         if (!(balance >= data.threshold)) {
-            revert IConditionalOrder.OrderNotValid(BalanceInsufficient.selector);
+            revert IConditionalOrder.OrderNotValid(BALANCE_INSUFFICIENT);
         }
         // ensures that orders queried shortly after one another result in the same hash (to avoid spamming the orderbook)
         order = GPv2Order.Data(

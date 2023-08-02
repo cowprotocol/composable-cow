@@ -7,7 +7,7 @@ import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 import "./ComposableCoW.base.t.sol";
 
 import "../src/types/twap/TWAP.sol";
-import {TWAPOrderMathLib} from "../src/types/twap/libraries/TWAPOrderMathLib.sol";
+import "../src/types/twap/libraries/TWAPOrderMathLib.sol";
 
 import "../src/value_factories/CurrentBlockTimestampFactory.sol";
 
@@ -175,7 +175,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector)
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START)
         );
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
@@ -202,7 +202,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector)
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH)
         );
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
@@ -231,7 +231,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to outside of the span
         vm.warp(currentTime);
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAP.NotWithinSpan.selector));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, NOT_WITHIN_SPAN));
         twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
@@ -261,7 +261,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // The below should revert
         vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.BeforeTWAPStart.selector)
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BEFORE_TWAP_START)
         );
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }
@@ -292,7 +292,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // The below should revert
         vm.expectRevert(
-            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TWAPOrderMathLib.AfterTWAPFinish.selector)
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH)
         );
         composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
     }

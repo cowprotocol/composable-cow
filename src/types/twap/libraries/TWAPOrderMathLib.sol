@@ -3,19 +3,19 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IConditionalOrder} from "../../../interfaces/IConditionalOrder.sol";
 
+// --- error strings
+
+/// @dev No discrete order is valid before the start of the TWAP conditional order.
+string constant BEFORE_TWAP_START = "before twap start";
+/// @dev No discrete order is valid after it's last part.
+string constant AFTER_TWAP_FINISH = "after twap finish";
+
 /**
  * @title CoWProtocol TWAP Order Math Library
  * @dev TWAP Math is separated to facilitate easier unit testing / SMT verification.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
 library TWAPOrderMathLib {
-    // --- errors
-
-    /// @dev No discrete order is valid before the start of the TWAP conditional order.
-    error BeforeTWAPStart();
-    /// @dev No discrete order is valid after it's last part.
-    error AfterTWAPFinish();
-
     /**
      * @dev Calculate the `validTo` timestamp for part of a TWAP order.
      * @param startTime The start time of the TWAP order.
@@ -39,7 +39,7 @@ library TWAPOrderMathLib {
 
         unchecked {
             /// @dev Order is not valid before the start (order commences at `t0`).
-            if (!(startTime <= block.timestamp)) revert IConditionalOrder.OrderNotValid(BeforeTWAPStart.selector);
+            if (!(startTime <= block.timestamp)) revert IConditionalOrder.OrderNotValid(BEFORE_TWAP_START);
 
             /**
              *  @dev Order is expired after the last part (`n` parts, running at `t` time length).
@@ -51,7 +51,7 @@ library TWAPOrderMathLib {
              * `type(uint32).max` so the sum of `startTime + (numParts * frequency)` is ≈ 2⁵⁵.
              */
             if (!(block.timestamp < startTime + (numParts * frequency))) {
-                revert IConditionalOrder.OrderNotValid(AfterTWAPFinish.selector);
+                revert IConditionalOrder.OrderNotValid(AFTER_TWAP_FINISH);
             }
 
             /**
