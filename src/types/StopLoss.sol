@@ -56,8 +56,8 @@ contract StopLoss is BaseConditionalOrder {
         Data memory data = abi.decode(staticInput, (Data));
         // scope variables to avoid stack too deep error
         {
-            (, int256 basePrice,,uint256 sellUpdatedAt,) = data.sellTokenPriceOracle.latestRoundData();
-            (, int256 quotePrice,,uint256 buyUpdatedAt,) = data.buyTokenPriceOracle.latestRoundData();
+            (, int256 basePrice,, uint256 sellUpdatedAt,) = data.sellTokenPriceOracle.latestRoundData();
+            (, int256 quotePrice,, uint256 buyUpdatedAt,) = data.buyTokenPriceOracle.latestRoundData();
 
             /// @dev Guard against invalid price data
             if (!(basePrice > 0 && quotePrice > 0)) {
@@ -65,7 +65,12 @@ contract StopLoss is BaseConditionalOrder {
             }
 
             /// @dev Guard against stale data at a user-specified interval. The heartbeat interval should at least exceed the both oracles' update intervals.
-            if(!(sellUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate)) {
+            if (
+                !(
+                    sellUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
+                        && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
+                )
+            ) {
                 revert IConditionalOrder.OrderNotValid();
             }
 
@@ -105,11 +110,7 @@ contract StopLoss is BaseConditionalOrder {
      * @param oracleDecimals the decimals the oracle returns
      * @param erc20Decimals the decimals of the erc20 token
      */
-    function scalePrice(
-        int256 oraclePrice,
-        uint8 oracleDecimals,
-        uint8 erc20Decimals
-    ) internal pure returns (int256) {
+    function scalePrice(int256 oraclePrice, uint8 oracleDecimals, uint8 erc20Decimals) internal pure returns (int256) {
         if (oracleDecimals < erc20Decimals) {
             return oraclePrice * int256(10 ** uint256(erc20Decimals - oracleDecimals));
         } else if (oracleDecimals > erc20Decimals) {
