@@ -11,6 +11,11 @@ import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.so
  * taking decimals into account (and adding specifiable spread)
  */
 contract PerpetualStableSwap is BaseConditionalOrder {
+    // --- errors
+
+    /// @dev The sell amount is insufficient (ie. not funded).
+    error NotFunded();
+
     /**
      * Creates a new perpetual swap order. All resulting swaps will be made from the target contract.
      * @param tokenA One of the two tokens that can be perpetually swapped against one another
@@ -52,7 +57,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
 
         // Make sure the order is funded, otherwise it is not valid
         if (!(buySellData.sellAmount > 0)) {
-            revert IConditionalOrder.OrderNotValid();
+            revert IConditionalOrder.OrderNotValid(NotFunded.selector);
         }
 
         // Unless spread is 0 (and there is no surplus), order collision is not an issue as sell and buy amounts should
