@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-import {IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 
 import "../BaseConditionalOrder.sol";
 import "../interfaces/IAggregatorV3Interface.sol";
