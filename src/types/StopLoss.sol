@@ -112,5 +112,4 @@ contract StopLoss is BaseConditionalOrder {
             GPv2Order.BALANCE_ERC20
         );
     }
-
 }
