@@ -24,6 +24,9 @@ string constant STRIKE_NOT_REACHED = "strike not reached";
  * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
  */
 contract StopLoss is BaseConditionalOrder {
+    /// @dev Scaling factor for the strike price
+    int256 constant SCALING_FACTOR = 10 ** 18;
+
     /**
      * Defines the parameters of a StopLoss order
      * @param sellToken: the token to be sold
@@ -37,7 +40,7 @@ contract StopLoss is BaseConditionalOrder {
      * @param validityBucketSeconds: How long the order will be valid. E.g. if the validityBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
      * @param sellTokenPriceOracle: A chainlink-like oracle returning the current sell token price in a given numeraire
      * @param buyTokenPriceOracle: A chainlink-like oracle returning the current buy token price in the same numeraire
-     * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below
+     * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below. Specified in base / quote with 18 decimals.
      * @param maxTimeSinceLastOracleUpdate: The maximum time since the last oracle update. If the oracle hasn't been updated in this time, the order will be considered invalid
      */
     struct Data {
@@ -83,16 +86,13 @@ contract StopLoss is BaseConditionalOrder {
                 revert IConditionalOrder.OrderNotValid(ORACLE_STALE_PRICE);
             }
 
-            uint8 oracleSellTokenDecimals = data.sellTokenPriceOracle.decimals();
-            uint8 oracleBuyTokenDecimals = data.buyTokenPriceOracle.decimals();
-            uint8 erc20SellTokenDecimals = IERC20Metadata(address(data.sellToken)).decimals();
-            uint8 erc20BuyTokenDecimals = IERC20Metadata(address(data.buyToken)).decimals();
+            // Normalize the decimals for basePrice and quotePrice, scaling them to 18 decimals
+            // Caution: Ensure that base and quote have the same numeraires (e.g. both are denominated in USD)
+            basePrice = Utils.scalePrice(basePrice, data.sellTokenPriceOracle.decimals(), 18);
+            quotePrice = Utils.scalePrice(quotePrice, data.buyTokenPriceOracle.decimals(), 18);
 
-            // Normalize the basePrice and quotePrice.
-            basePrice = scalePrice(basePrice, oracleSellTokenDecimals, erc20SellTokenDecimals);
-            quotePrice = scalePrice(quotePrice, oracleBuyTokenDecimals, erc20BuyTokenDecimals);
-
-            if (!(basePrice / quotePrice <= data.strike)) {
+            /// @dev Scale the strike price to 18 decimals.
+            if (!(basePrice * SCALING_FACTOR / quotePrice <= data.strike)) {
                 revert IConditionalOrder.OrderNotValid(STRIKE_NOT_REACHED);
             }
         }
@@ -113,18 +113,4 @@ contract StopLoss is BaseConditionalOrder {
         );
     }
 
-    /**
-     * Given a price returned by a chainlink-like oracle, scale it to the erc20 decimals
-     * @param oraclePrice return by a chainlink-like oracle
-     * @param oracleDecimals the decimals the oracle returns
-     * @param erc20Decimals the decimals of the erc20 token
-     */
-    function scalePrice(int256 oraclePrice, uint8 oracleDecimals, uint8 erc20Decimals) internal pure returns (int256) {
-        if (oracleDecimals < erc20Decimals) {
-            return oraclePrice * int256(10 ** uint256(erc20Decimals - oracleDecimals));
-        } else if (oracleDecimals > erc20Decimals) {
-            return oraclePrice / int256(10 ** uint256(oracleDecimals - erc20Decimals));
-        }
-        return oraclePrice;
-    }
 }
