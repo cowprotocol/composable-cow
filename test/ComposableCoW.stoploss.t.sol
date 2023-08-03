@@ -77,9 +77,9 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         uint256 staleTime
     ) public {
         vm.assume(buyTokenOraclePrice > 0);
-        vm.assume(sellTokenOraclePrice > 0);
+        vm.assume(sellTokenOraclePrice > 0 && sellTokenOraclePrice <= type(int256).max / 10 ** 18);
         vm.assume(strike > 0);
-        vm.assume(sellTokenOraclePrice / buyTokenOraclePrice > strike);
+        vm.assume(sellTokenOraclePrice * int256(10 ** 18) / buyTokenOraclePrice > strike);
         vm.assume(currentTime > staleTime);
 
         vm.warp(currentTime);
@@ -135,10 +135,10 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
                 1900
                     * (
                         sellTokenERC20Decimals > buyTokenERC20Decimals
-                            ? (10 ** (sellTokenERC20Decimals - buyTokenERC20Decimals))
-                            : (10 ** (buyTokenERC20Decimals - sellTokenERC20Decimals))
+                            ? (10 ** (sellTokenERC20Decimals - buyTokenERC20Decimals + 18))
+                            : (10 ** (buyTokenERC20Decimals - sellTokenERC20Decimals + 18))
                     )
-                ), // Strike price is atomic units, base / quote. ie. 1900_000_000_000_000_000_000 / 1_000_000 = 1900 USDC/ETH
+                ), // Strike price is to 18 decimals, base / quote. ie. 1900_000_000_000_000_000_000 = 1900 USDC/ETH
             sellAmount: 1 ether,
             buyAmount: 1,
             appData: APP_DATA,
@@ -174,7 +174,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             buyToken: mockToken(BUY_TOKEN, 6), // simulate USDC (using the USDC/USD chainlink)
             sellTokenPriceOracle: mockOracle(SELL_ORACLE, 183_449_235_095, block.timestamp, 8), // assume price is 1834.49235095 ETH/USD
             buyTokenPriceOracle: mockOracle(BUY_ORACLE, 100_000_000, block.timestamp, 8), // assume 1:1 USDC:USD
-            strike: 1900_000_000_000_000, // Strike price is atomic units, base / quote. ie. 1900_000_000_000_000_000_000 / 1_000_000 = 1900 USDC/ETH
+            strike: 1900_000_000_000_000_000_000, // Strike price is base / quote to 18 decimals. ie. 1900_000_000_000_000_000_000 = 1900 USDC/ETH
             sellAmount: 1 ether,
             buyAmount: 1,
             appData: APP_DATA,
@@ -273,9 +273,9 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
     function test_strikePriceMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike) public {
         vm.assume(buyTokenOraclePrice > 0);
-        vm.assume(sellTokenOraclePrice > 0);
+        vm.assume(sellTokenOraclePrice > 0 && sellTokenOraclePrice <= type(int256).max / 10 ** 18);
         vm.assume(strike > 0);
-        vm.assume(sellTokenOraclePrice / buyTokenOraclePrice <= strike);
+        vm.assume(sellTokenOraclePrice * int256(10 ** 18) / buyTokenOraclePrice <= strike);
 
         // 25 June 2023 18:40:51
         vm.warp(1687718451);
@@ -320,7 +320,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             buyToken: mockToken(BUY_TOKEN, 18),
             sellTokenPriceOracle: mockOracle(SELL_ORACLE, 99 ether, BLOCK_TIMESTAMP, DEFAULT_DECIMALS),
             buyTokenPriceOracle: mockOracle(BUY_ORACLE, 100 ether, BLOCK_TIMESTAMP, DEFAULT_DECIMALS),
-            strike: 1,
+            strike: 1e18, // required as the strike price has 18 decimals
             sellAmount: 1 ether,
             buyAmount: 1 ether,
             appData: APP_DATA,
