@@ -3,6 +3,7 @@ import assert = require("assert");
 
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
+import { OrderStatus } from "./register";
 
 const RPC_NETWORK_WITH_AUTH = ["100"];
 
@@ -55,5 +56,16 @@ export function apiUrl(network: string): string {
       return "http://localhost:3000";
     default:
       throw "Unsupported network";
+  }
+}
+
+export function formatStatus(status: OrderStatus) {
+  switch (status) {
+    case OrderStatus.FILLED:
+      return "FILLED";
+    case OrderStatus.SUBMITTED:
+      return "SUBMITTED";
+    default:
+      return "UNKNOWN";
   }
 }

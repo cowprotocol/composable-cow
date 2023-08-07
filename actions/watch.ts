@@ -15,10 +15,14 @@ import {
 import axios from "axios";
 
 import { BigNumber, ethers } from "ethers";
-import { ComposableCoW__factory, GPv2Settlement__factory } from "./types";
-import { Registry, OrderStatus } from "./register";
+import {
+  ComposableCoW,
+  ComposableCoW__factory,
+  GPv2Settlement__factory,
+} from "./types";
+import { Registry, OrderStatus, ConditionalOrder } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
-import { apiUrl, getProvider } from "./utils";
+import { apiUrl, formatStatus, getProvider } from "./utils";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
@@ -63,6 +67,24 @@ export const checkForSettlement: ActionFn = async (
   await registry.write();
 };
 
+async function getTradeableOrderWithSignature(
+  owner: string,
+  conditionalOrder: ConditionalOrder,
+  contract: ComposableCoW
+) {
+  return contract.callStatic
+    .getTradeableOrderWithSignature(
+      owner,
+      conditionalOrder.params,
+      "0x",
+      conditionalOrder.proof ? conditionalOrder.proof.path : []
+    )
+    .catch((e) => {
+      console.error('Error during "getTradeableOrderWithSignature" call', e);
+      throw e;
+    });
+}
+
 /**
  * Watch for new blocks and check for orders to place
  * @param context tenderly context
@@ -75,97 +97,123 @@ export const checkForAndPlaceOrder: ActionFn = async (
   const blockEvent = event as BlockEvent;
   const registry = await Registry.load(context, blockEvent.network);
   const chainContext = await ChainContext.create(context, blockEvent.network);
+  const { network } = blockEvent;
 
   // enumerate all the owners
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
+    const deletedOrders = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      console.log(`Checking params ${conditionalOrder.params}...`);
+      // console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
       );
-      try {
-        const { order, signature } =
-          await contract.callStatic.getTradeableOrderWithSignature(
-            owner,
-            conditionalOrder.params,
-            "0x",
-            conditionalOrder.proof ? conditionalOrder.proof.path : []
-          );
 
-        const orderToSubmit: Order = {
-          ...order,
-          kind: kindToString(order.kind),
-          sellTokenBalance: balanceToString(order.sellTokenBalance),
-          buyTokenBalance: balanceToString(order.buyTokenBalance),
-        };
+      const { deleteConditionalOrder } = await _checkForAndPlaceOrder(
+        owner,
+        network,
+        conditionalOrder,
+        contract,
+        chainContext
+      );
 
-        // calculate the orderUid
-        const orderUid = computeOrderUid(
-          {
-            name: "Gnosis Protocol",
-            version: "v2",
-            chainId: blockEvent.network,
-            verifyingContract: GPV2SETTLEMENT,
-          },
-          {
-            ...orderToSubmit,
-            receiver:
-              orderToSubmit.receiver === ethers.constants.AddressZero
-                ? undefined
-                : orderToSubmit.receiver,
-          },
-          owner
-        );
-
-        // if the orderUid has not been submitted, or filled, then place the order
-        if (!conditionalOrder.orders.has(orderUid)) {
-          console.log(
-            `Placing orderuid ${orderUid} with Order: ${JSON.stringify(order)}`
-          );
-
-          await placeOrder(
-            { ...orderToSubmit, from: owner, signature },
-            chainContext.api_url
-          );
-
-          conditionalOrder.orders.set(orderUid, OrderStatus.SUBMITTED);
-        } else {
-          console.log(
-            `OrderUid ${orderUid} status: ${conditionalOrder.orders.get(
-              orderUid
-            )}`
-          );
-        }
-      } catch (e: any) {
-        if (e.code === Logger.errors.CALL_EXCEPTION) {
-          switch (e.errorName) {
-            case "OrderNotValid":
-              // The conditional order has not expired, or been cancelled, but the order is not valid
-              // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
-              continue;
-            case "SingleOrderNotAuthed":
-              console.log(
-                `Single order on safe ${owner} not authed. Unfilled orders:`
-              );
-            case "ProofNotAuthed":
-              console.log(
-                `Proof on safe ${owner} not authed. Unfilled orders:`
-              );
-          }
-          printUnfilledOrders(conditionalOrder.orders);
-          console.log("Removing conditional order from registry");
-          conditionalOrders.delete(conditionalOrder);
-        }
-        console.error(`Unexpected error while processing order: ${e}`);
+      if (deleteConditionalOrder) {
+        deletedOrders.push(conditionalOrder);
       }
     }
+
+    deletedOrders.forEach((conditionalOrder) =>
+      conditionalOrders.delete(conditionalOrder)
+    );
   }
 
   // Update the registry
   await registry.write();
 };
+
+async function _checkForAndPlaceOrder(
+  owner: string,
+  network: string,
+  conditionalOrder: ConditionalOrder,
+  contract: ComposableCoW,
+  chainContext: ChainContext
+): Promise<{ deleteConditionalOrder: boolean }> {
+  try {
+    const { order, signature } = await getTradeableOrderWithSignature(
+      owner,
+      conditionalOrder,
+      contract
+    );
+
+    const orderToSubmit: Order = {
+      ...order,
+      kind: kindToString(order.kind),
+      sellTokenBalance: balanceToString(order.sellTokenBalance),
+      buyTokenBalance: balanceToString(order.buyTokenBalance),
+    };
+
+    // calculate the orderUid
+    const orderUid = getOrderUid(network, orderToSubmit, owner);
+
+    // if the orderUid has not been submitted, or filled, then place the order
+    if (!conditionalOrder.orders.has(orderUid)) {
+      await placeOrder(
+        { ...orderToSubmit, from: owner, signature },
+        chainContext.api_url
+      );
+
+      conditionalOrder.orders.set(orderUid, OrderStatus.SUBMITTED);
+    } else {
+      const orderStatus = conditionalOrder.orders.get(orderUid);
+      console.log(
+        `OrderUid ${orderUid} status: ${
+          orderStatus ? formatStatus(orderStatus) : "Not found"
+        }`
+      );
+    }
+  } catch (e: any) {
+    if (e.code === Logger.errors.CALL_EXCEPTION) {
+      switch (e.errorName) {
+        case "OrderNotValid":
+          // The conditional order has not expired, or been cancelled, but the order is not valid
+          // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
+          return { deleteConditionalOrder: false };
+        case "SingleOrderNotAuthed":
+          console.log(
+            `Single order on safe ${owner} not authed. Unfilled orders:`
+          );
+        case "ProofNotAuthed":
+          console.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
+      }
+      printUnfilledOrders(conditionalOrder.orders);
+      console.log("Removing conditional order from registry");
+      return { deleteConditionalOrder: true };
+    }
+    console.error(`Unexpected error while processing order: ${e?.message}`);
+  }
+
+  return { deleteConditionalOrder: false };
+}
+
+function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
+  return computeOrderUid(
+    {
+      name: "Gnosis Protocol",
+      version: "v2",
+      chainId: network,
+      verifyingContract: GPV2SETTLEMENT,
+    },
+    {
+      ...orderToSubmit,
+      receiver:
+        orderToSubmit.receiver === ethers.constants.AddressZero
+          ? undefined
+          : orderToSubmit.receiver,
+    },
+    owner
+  );
+}
 
 // --- Helpers ---
 
@@ -174,7 +222,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
  * @param orders All the orders that are being tracked
  */
 export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
-  console.log("Unfilled orders:");
+  console.log(`Unfilled orders (${orders.size}):`);
   for (const [orderUid, status] of orders.entries()) {
     if (status === OrderStatus.SUBMITTED) {
       console.log(orderUid);
@@ -185,9 +233,9 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
 /**
  * Place a new order
  * @param order to be placed on the cow protocol api
- * @param api_url rest api url
+ * @param apiUrl rest api url
  */
-async function placeOrder(order: any, api_url: string) {
+async function placeOrder(order: any, apiUrl: string) {
   try {
     const postData = {
       sellToken: order.sellToken,
@@ -208,25 +256,27 @@ async function placeOrder(order: any, api_url: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    if (!api_url.includes("localhost")) {
-      const { data } = await axios.post(`${api_url}/api/v1/orders`, postData, {
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-      });
-      console.log(`API response: ${data}`);
-    } else {
-      console.log(`API request: ${JSON.stringify(postData)}`);
+    console.log(`[placeOrder] API request with params:`, apiUrl, postData);
+    if (!apiUrl.includes("localhost")) {
+      const { status, data } = await axios.post(
+        `${apiUrl}/api/v1/orders`,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
+      console.log(`[placeOrder] API response`, { status, data });
     }
   } catch (error: any) {
-    const errorMessag = "Error placing order in API";
+    const errorMessag = "[placeOrder] Error placing order in API";
     if (error.response) {
+      const { status, data } = error.response;
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error(
-        `${errorMessag}. Result: ${JSON.stringify(error.response)}`
-      );
+      console.error(`${errorMessag}. Result: ${status}`, data);
     } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of

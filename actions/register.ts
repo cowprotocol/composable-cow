@@ -95,7 +95,7 @@ export const add = async (
   if (registry.ownerOrders.has(owner)) {
     const conditionalOrders = registry.ownerOrders.get(owner);
     console.log(
-      `Adding conditional order ${params} to already existing contract ${owner}`
+      `[register:add] Adding conditional order ${params} to already existing contract ${owner}`
     );
     let exists: boolean = false;
     // Iterate over the conditionalOrders to make sure that the params are not already in the registry
@@ -117,7 +117,9 @@ export const add = async (
       });
     }
   } else {
-    console.log(`Adding conditional order ${params} to new contract ${owner}`);
+    console.log(
+      `[register:add] Adding conditional order ${params} to new contract ${owner}`
+    );
     registry.ownerOrders.set(
       owner,
       new Set([{ params, proof, orders: new Map(), composableCow }])
