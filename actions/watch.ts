@@ -13,10 +13,12 @@ import {
 } from "@cowprotocol/contracts";
 
 import axios from "axios";
+
 import { BigNumber, ethers } from "ethers";
 import { ComposableCoW__factory, GPv2Settlement__factory } from "./types";
 import { Registry, OrderStatus } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
+import { apiUrl, getProvider } from "./utils";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
@@ -33,11 +35,6 @@ export const checkForSettlement: ActionFn = async (
   const iface = GPv2Settlement__factory.createInterface();
 
   const registry = await Registry.load(context, transactionEvent.network);
-  console.log(
-    `Current registry: ${JSON.stringify(
-      Array.from(registry.ownerOrders.entries())
-    )}`
-  );
 
   transactionEvent.logs.forEach((log) => {
     if (log.topics[0] === iface.getEventTopic("Trade")) {
@@ -56,18 +53,13 @@ export const checkForSettlement: ActionFn = async (
           // Check if the orderUid is in the conditionalOrder
           if (conditionalOrder.orders.has(orderUid)) {
             // Update the status of the orderUid to FILLED
+            console.log(`Update order ${orderUid} to status FILLED`);
             conditionalOrder.orders.set(orderUid, OrderStatus.FILLED);
           }
         });
       }
     }
   });
-
-  console.log(
-    `Updated registry: ${JSON.stringify(
-      Array.from(registry.ownerOrders.entries())
-    )}`
-  );
   await registry.write();
 };
 
@@ -84,12 +76,8 @@ export const checkForAndPlaceOrder: ActionFn = async (
   const registry = await Registry.load(context, blockEvent.network);
   const chainContext = await ChainContext.create(context, blockEvent.network);
 
-  console.log(`Processing block ${blockEvent.blockNumber}...`);
-
   // enumerate all the owners
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
-    console.log(`Checking ${owner}...`);
-
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
       console.log(`Checking params ${conditionalOrder.params}...`);
@@ -170,7 +158,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
           console.log("Removing conditional order from registry");
           conditionalOrders.delete(conditionalOrder);
         }
-        console.log(`Unexpected error while processing order: ${e}`);
+        console.error(`Unexpected error while processing order: ${e}`);
       }
     }
   }
@@ -232,20 +220,23 @@ async function placeOrder(order: any, api_url: string) {
       console.log(`API request: ${JSON.stringify(postData)}`);
     }
   } catch (error: any) {
+    const errorMessag = "Error placing order in API";
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.log(JSON.stringify(error.response));
+      console.error(
+        `${errorMessag}. Result: ${JSON.stringify(error.response)}`
+      );
     } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
-      console.log(error.request);
+      console.error(`${errorMessag}. Unresponsive API: ${error.request}`);
     } else if (error.message) {
       // Something happened in setting up the request that triggered an Error
-      console.log("Error", error.message);
+      console.error(`${errorMessag}. Internal Error: ${error.message}`);
     } else {
-      console.log(error);
+      console.error(`${errorMessag}. Unhandled Error: ${error.message}`);
     }
     throw error;
   }
@@ -312,23 +303,9 @@ class ChainContext {
     context: Context,
     network: string
   ): Promise<ChainContext> {
-    const node_url = await context.secrets.get(`NODE_URL_${network}`);
-    const provider = new ethers.providers.JsonRpcProvider(node_url);
-    return new ChainContext(provider, apiUrl(network));
-  }
-}
+    const provider = await getProvider(context, network);
 
-function apiUrl(network: string): string {
-  switch (network) {
-    case "1":
-      return "https://api.cow.fi/mainnet";
-    case "5":
-      return "https://api.cow.fi/goerli";
-    case "100":
-      return "https://api.cow.fi/xdai";
-    case "31337":
-      return "http://localhost:3000";
-    default:
-      throw "Unsupported network";
+    const providerNetwork = await provider.getNetwork();
+    return new ChainContext(provider, apiUrl(network));
   }
 }
