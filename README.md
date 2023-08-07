@@ -294,3 +294,24 @@ For local integration testing, including the use of [Tenderly Actions](#Tenderly
    source .env
    SAFE="address here" forge script script/submit_SingleOrder.s.sol:SubmitSingleOrder --rpc-url http://127.0.0.1:8545 --broadcast
    ```
+
+#### Local test for Tenderly Web3 Actions
+
+Make sure you setup the environment (so you have your own `.env` file).
+
+Decide in which network you want to run the actions and provide the additional parameters for that network. For example:
+
+```ini
+NETWORK=100
+NODE_URL_100=https://your-rpc-endpoint
+NODE_USER_100=optionally-provide-user-if-auth-is-required
+NODE_PASSWORD_100=optionally-provide-password-if-auth-is-required
+```
+
+```bash
+# Build Actions
+yarn build:actions
+
+# Run actions locally, so it starts to checking for new blocks, and executing the actions to create Composable Cow orders)
+yarn start:actions
+```
