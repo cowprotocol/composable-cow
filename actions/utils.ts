@@ -5,8 +5,6 @@ import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus } from "./register";
 
-const RPC_NETWORK_WITH_AUTH = ["100"];
-
 async function getSecret(key: string, context: Context): Promise<string> {
   const value = await context.secrets.get(key);
   assert(value, `${key} secret is required`);
@@ -19,23 +17,26 @@ export async function getProvider(
   network: string
 ): Promise<ethers.providers.Provider> {
   Logger.setLogLevel(Logger.levels.DEBUG);
-  const useAuth = RPC_NETWORK_WITH_AUTH.includes(network);
 
   const url = await getSecret(`NODE_URL_${network}`, context);
-  const providerConfig: ConnectionInfo = useAuth
-    ? {
-        url,
-        // TODO: This is a hack to make it work for HTTP endpoints (while we don't have a HTTPS one for Gnosis Chain), however I will delete once we have it
-        headers: {
-          Authorization: getAuthHeader({
-            user: await getSecret(`NODE_USER_${network}`, context),
-            password: await getSecret(`NODE_PASSWORD_${network}`, context),
-          }),
-        },
-        // user: await getSecret(`NODE_USER_${network}`, context),
-        // password: await getSecret(`NODE_PASSWORD_${network}`, context),
-      }
-    : { url };
+  const user = await getSecret(`NODE_USER_${network}`, context).catch(
+    () => undefined
+  );
+  const password = await getSecret(`NODE_PASSWORD_${network}`, context).catch(
+    () => undefined
+  );
+  const providerConfig: ConnectionInfo =
+    user && password
+      ? {
+          url,
+          // TODO: This is a hack to make it work for HTTP endpoints (while we don't have a HTTPS one for Gnosis Chain), however I will delete once we have it
+          headers: {
+            Authorization: getAuthHeader({ user, password }),
+          },
+          // user: await getSecret(`NODE_USER_${network}`, context),
+          // password: await getSecret(`NODE_PASSWORD_${network}`, context),
+        }
+      : { url };
 
   return new ethers.providers.JsonRpcProvider(providerConfig);
 }
