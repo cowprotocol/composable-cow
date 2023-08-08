@@ -220,16 +220,22 @@ tenderly actions deploy
 
 ### Deployed Contracts
 
-**WARNING: CONTRACTS ARE NOT AUDITED**
-
 | Contact Name                   | Ethereum Mainnet                                                                                                      | Goerli                                                                                                               | Gnosis Chain                                                                                                           |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `ComposableCoW`                | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://etherscan.io/address/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://goerli.etherscan.io/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) | [0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738](https://gnosisscan.io/address/0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738) |
-| `TWAP`                         | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://etherscan.io/address/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://goerli.etherscan.io/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) | [0x910d00a310f7Dc5B29FE73458F47f519be547D3d](https://gnosisscan.io/address/0x910d00a310f7Dc5B29FE73458F47f519be547D3d) |
-| `CurrentBlockTimestampFactory` | [0x0899c7DC280363d263Cc954506134F249CceC4a5](https://etherscan.io/address/0x0899c7DC280363d263Cc954506134F249CceC4a5) | [0x0899c7DC280363d263Cc954506134F249CceC4a5](https://goerli.etherscan.io/0x0899c7DC280363d263Cc954506134F249CceC4a5) | [0x0899c7DC280363d263Cc954506134F249CceC4a5](https://gnosisscan.io/address/0x0899c7DC280363d263Cc954506134F249CceC4a5) |
+| `ComposableCoW`                | [TBD](https://etherscan.io/address/TBD) | [TBD](https://goerli.etherscan.io/address/TBD) | [TBD](https://gnosisscan.io/address/TBD) |
+| `TWAP`                         | [TBD](https://etherscan.io/address/TBD) | [TBD](https://goerli.etherscan.io/TBD) | [TBD](https://gnosisscan.io/address/TBD) |
+| `CurrentBlockTimestampFactory` | [TBD](https://etherscan.io/address/TBD) | [TBD](https://goerli.etherscan.io/TBD) | [TBD](https://gnosisscan.io/address/TBD) |
 | `GoodAfterTime`                | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
 | `PerpetualStableSwap`          | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
 | `TradeAboveThreshold`          | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
+| `StopLoss`          | TBD                                                                                                                   | TBD                                                                                                                  | TBD                                                                                                                    |
+
+#### Audits
+
+The above deployed contracts have been audited by:
+
+- Ackee Blockchain: [CoW Protocol - `ComposableCoW` and `ExtensibleFallbackHandler`](./audits/ackee-blockchain-cow-protocol-composablecow-extensiblefallbackhandler-report-1.2.pdf)
+- Gnosis internal audit: [ComposableCoW - May/July 2023](./audits/gnosis-ComposableCoWMayJul2023.pdf)
 
 ### Environment setup
 
