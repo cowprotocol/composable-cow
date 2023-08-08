@@ -33,8 +33,6 @@ const main = async () => {
 
   // Get provider
   const provider = await getProvider(testRuntime.context, network);
-  const nodeUrl = process.env[`NODE_URL_${network}`];
-  new ethers.providers.JsonRpcProvider(nodeUrl);
   const { chainId } = await provider.getNetwork();
 
   provider.on("block", async (blockNumber) => {
