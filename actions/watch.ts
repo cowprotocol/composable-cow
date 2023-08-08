@@ -87,8 +87,8 @@ async function _checkForSettlement(
         });
       }
     }
-  } catch (error: any) {
-    console.error("Error checking for settlement", error);
+  } catch (e: any) {
+    console.error("Error checking for settlement" + e?.message, e);
 
     return { error: true };
   }
@@ -109,7 +109,10 @@ async function getTradeableOrderWithSignature(
       conditionalOrder.proof ? conditionalOrder.proof.path : []
     )
     .catch((e) => {
-      console.error('Error during "getTradeableOrderWithSignature" call', e);
+      console.error(
+        'Error during "getTradeableOrderWithSignature" call: ' + e?.message,
+        e
+      );
       throw e;
     });
 }
