@@ -159,6 +159,7 @@ async function _checkForAndPlaceOrder(
     // if the orderUid has not been submitted, or filled, then place the order
     if (!conditionalOrder.orders.has(orderUid)) {
       await placeOrder(
+        orderUid,
         { ...orderToSubmit, from: owner, signature },
         chainContext.api_url
       );
@@ -235,7 +236,7 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
  * @param order to be placed on the cow protocol api
  * @param apiUrl rest api url
  */
-async function placeOrder(order: any, apiUrl: string) {
+async function placeOrder(orderUid: string, order: any, apiUrl: string) {
   try {
     const postData = {
       sellToken: order.sellToken,
@@ -256,7 +257,11 @@ async function placeOrder(order: any, apiUrl: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    console.log(`[placeOrder] API request with params:`, apiUrl, postData);
+    console.log(
+      `[placeOrder] Post order ${orderUid} with params:`,
+      apiUrl,
+      postData
+    );
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
