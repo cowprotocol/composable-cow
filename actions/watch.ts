@@ -104,7 +104,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
     const deletedOrders = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      // console.log(`Checking params ${conditionalOrder.params}...`);
+      console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
