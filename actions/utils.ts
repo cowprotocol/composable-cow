@@ -66,6 +66,6 @@ export function formatStatus(status: OrderStatus) {
     case OrderStatus.SUBMITTED:
       return "SUBMITTED";
     default:
-      return "UNKNOWN";
+      return `UNKNOWN (${status})`;
   }
 }
