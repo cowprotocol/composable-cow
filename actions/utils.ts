@@ -3,7 +3,7 @@ import assert = require("assert");
 
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
-import { OrderStatus } from "./register";
+import { OrderStatus, Registry } from "./register";
 
 async function getSecret(key: string, context: Context): Promise<string> {
   const value = await context.secrets.get(key);
@@ -69,4 +69,20 @@ export function formatStatus(status: OrderStatus) {
     default:
       return `UNKNOWN (${status})`;
   }
+}
+
+function handlePromiseErrors<T>(
+  errorMessage: string,
+  promise: Promise<T>
+): Promise<boolean> {
+  return promise
+    .then(() => true)
+    .catch((error) => {
+      console.error(errorMessage, error);
+      return false;
+    });
+}
+
+export function writeRegistry(registry: Registry): Promise<boolean> {
+  return handlePromiseErrors("Error writing registry", registry.write());
 }
