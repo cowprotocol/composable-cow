@@ -26,9 +26,23 @@ export async function getProvider(
     () => undefined
   );
   const providerConfig: ConnectionInfo =
-    user && password ? { url, user, password } : { url };
+    user && password
+      ? {
+          url,
+          // TODO: This is a hack to make it work for HTTP endpoints (while we don't have a HTTPS one for Gnosis Chain), however I will delete once we have it
+          headers: {
+            Authorization: getAuthHeader({ user, password }),
+          },
+          // user: await getSecret(`NODE_USER_${network}`, context),
+          // password: await getSecret(`NODE_PASSWORD_${network}`, context),
+        }
+      : { url };
 
   return new ethers.providers.JsonRpcProvider(providerConfig);
+}
+
+function getAuthHeader({ user, password }: { user: string; password: string }) {
+  return "Basic " + Buffer.from(`${user}:${password}`).toString("base64");
 }
 
 export function apiUrl(network: string): string {
