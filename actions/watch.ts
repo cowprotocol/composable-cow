@@ -101,10 +101,10 @@ export const checkForAndPlaceOrder: ActionFn = async (
 
   // enumerate all the owners
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
-    const deletedOrders = [];
+    const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      console.log(`Checking params ${conditionalOrder.params}...`);
+      // console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
@@ -119,11 +119,11 @@ export const checkForAndPlaceOrder: ActionFn = async (
       );
 
       if (deleteConditionalOrder) {
-        deletedOrders.push(conditionalOrder);
+        ordersPendingDelete.push(conditionalOrder);
       }
     }
 
-    deletedOrders.forEach((conditionalOrder) =>
+    ordersPendingDelete.forEach((conditionalOrder) =>
       conditionalOrders.delete(conditionalOrder)
     );
   }
