@@ -36,52 +36,79 @@ const main = async () => {
   const { chainId } = await provider.getNetwork();
 
   provider.on("block", async (blockNumber) => {
-    // Block watcher for creating new orders
-    const testBlockEvent = new TestBlockEvent();
-    const block = await provider.getBlock(blockNumber);
-    testBlockEvent.blockNumber = blockNumber;
-    testBlockEvent.blockDifficulty = block.difficulty.toString();
-    testBlockEvent.blockHash = block.hash;
-    testBlockEvent.network = chainId.toString();
-
-    // run action
-    await testRuntime.execute(checkForAndPlaceOrder, testBlockEvent);
-
-    // Transaction watcher for adding new contracts
-    const blockWithTransactions = await provider.getBlockWithTransactions(
-      blockNumber
-    );
-    for (const transaction of blockWithTransactions.transactions) {
-      const receipt = await provider.getTransactionReceipt(transaction.hash);
-      if (receipt) {
-        const testTransactionEvent: TestTransactionEvent = {
-          blockHash: block.hash,
-          blockNumber: block.number,
-          from: transaction.from,
-          hash: transaction.hash,
-          network: chainId.toString(),
-          logs: receipt.logs,
-          input: "",
-          value: transaction.value.toString(),
-          nonce: transaction.nonce.toString(),
-          gas: transaction.gasLimit.toString(),
-          gasUsed: receipt.gasUsed.toString(),
-          cumulativeGasUsed: receipt.cumulativeGasUsed.toString(),
-          gasPrice: receipt.effectiveGasPrice.toString(),
-          gasTipCap: transaction.maxPriorityFeePerGas
-            ? transaction.maxPriorityFeePerGas.toString()
-            : "",
-          gasFeeCap: transaction.maxFeePerGas
-            ? transaction.maxFeePerGas.toString()
-            : "",
-          transactionHash: transaction.hash,
-        };
-
-        // run action
-        await testRuntime.execute(addContract, testTransactionEvent);
-      }
+    try {
+      processBlock(provider, blockNumber, chainId, testRuntime);
+    } catch (error) {
+      console.error("[run_local] Error in processBlock", error);
     }
   });
 };
+
+async function processBlock(
+  provider: ethers.providers.Provider,
+  blockNumber: number,
+  chainId: number,
+  testRuntime: TestRuntime
+) {
+  // Block watcher for creating new orders
+  const testBlockEvent = new TestBlockEvent();
+  const block = await provider.getBlock(blockNumber);
+  testBlockEvent.blockNumber = blockNumber;
+  testBlockEvent.blockDifficulty = block.difficulty.toString();
+  testBlockEvent.blockHash = block.hash;
+  testBlockEvent.network = chainId.toString();
+
+  // run action
+  await testRuntime
+    .execute(checkForAndPlaceOrder, testBlockEvent)
+    .catch((e) => {
+      console.log(
+        "[run_local] Error in checkForAndPlaceOrder processing block",
+        e
+      );
+    });
+
+  // Transaction watcher for adding new contracts
+  const blockWithTransactions = await provider.getBlockWithTransactions(
+    blockNumber
+  );
+  for (const transaction of blockWithTransactions.transactions) {
+    const receipt = await provider.getTransactionReceipt(transaction.hash);
+    if (receipt) {
+      const testTransactionEvent: TestTransactionEvent = {
+        blockHash: block.hash,
+        blockNumber: block.number,
+        from: transaction.from,
+        hash: transaction.hash,
+        network: chainId.toString(),
+        logs: receipt.logs,
+        input: "",
+        value: transaction.value.toString(),
+        nonce: transaction.nonce.toString(),
+        gas: transaction.gasLimit.toString(),
+        gasUsed: receipt.gasUsed.toString(),
+        cumulativeGasUsed: receipt.cumulativeGasUsed.toString(),
+        gasPrice: receipt.effectiveGasPrice.toString(),
+        gasTipCap: transaction.maxPriorityFeePerGas
+          ? transaction.maxPriorityFeePerGas.toString()
+          : "",
+        gasFeeCap: transaction.maxFeePerGas
+          ? transaction.maxFeePerGas.toString()
+          : "",
+        transactionHash: transaction.hash,
+      };
+
+      // run action
+      await testRuntime
+        .execute(addContract, testTransactionEvent)
+        .catch((e) => {
+          console.error(
+            "[run_local] Error in addContract processing transaction:",
+            e
+          );
+        });
+    }
+  }
+}
 
 (async () => await main())();

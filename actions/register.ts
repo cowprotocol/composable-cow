@@ -37,13 +37,12 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
     hasErrors ||= error;
   });
 
-  hasErrors ||= await writeRegistry(registry);
-
+  hasErrors ||= !(await writeRegistry(registry));
   // Notify error
   if (hasErrors) {
     // TODO notify error to slack
 
-    throw Error("Error while processing orders");
+    throw Error("Error adding contract for event" + JSON.stringify(event));
   }
 };
 

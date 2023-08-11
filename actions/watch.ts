@@ -49,13 +49,13 @@ export const checkForSettlement: ActionFn = async (
   });
 
   // Update the registry
-  hasErrors ||= await writeRegistry(registry);
+  hasErrors ||= !(await writeRegistry(registry));
 
   // Notify error
   if (hasErrors) {
     // TODO notify error to slack
 
-    throw Error("Error while processing orders");
+    throw Error("Error while checking the settlements");
   }
 };
 
@@ -164,7 +164,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
   }
 
   // Update the registry
-  hasErrors ||= await writeRegistry(registry);
+  hasErrors ||= await !writeRegistry(registry);
 
   // Notify error
   if (hasErrors) {

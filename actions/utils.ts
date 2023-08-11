@@ -71,6 +71,12 @@ export function formatStatus(status: OrderStatus) {
   }
 }
 
+/**
+ * Utility function to handle promise, so they are logged in case of an error. It will return a promise that resolves to true if the promise is successful
+ * @param errorMessage message to log in case of an error (together witht he original error)
+ * @param promise original promise
+ * @returns a promise that returns true if the original promise was successful
+ */
 function handlePromiseErrors<T>(
   errorMessage: string,
   promise: Promise<T>
@@ -79,10 +85,15 @@ function handlePromiseErrors<T>(
     .then(() => true)
     .catch((error) => {
       console.error(errorMessage, error);
-      return false;
+      return true;
     });
 }
 
+/**
+ * Convenient utility to log in case theres an error writing in the registry
+ * @param registry Tenderly registry
+ * @returns a promise that returns true if the registry write was successful
+ */
 export function writeRegistry(registry: Registry): Promise<boolean> {
   return handlePromiseErrors("Error writing registry", registry.write());
 }
