@@ -23,7 +23,13 @@ import {
 } from "./types";
 import { Registry, OrderStatus, ConditionalOrder } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
-import { apiUrl, formatStatus, getProvider, writeRegistry } from "./utils";
+import {
+  apiUrl,
+  formatStatus,
+  getProvider,
+  logger,
+  writeRegistry,
+} from "./utils";
 import { GPv2SettlementInterface } from "./types/GPv2Settlement";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
@@ -43,8 +49,14 @@ export const checkForSettlement: ActionFn = async (
   const registry = await Registry.load(context, transactionEvent.network);
 
   let hasErrors = false;
+
   transactionEvent.logs.forEach(async (log) => {
-    const { error } = await _checkForSettlement(log, settlement, registry);
+    const { error } = await _checkForSettlement(
+      transactionEvent.hash,
+      log,
+      settlement,
+      registry
+    );
     hasErrors ||= error;
   });
 
@@ -60,6 +72,7 @@ export const checkForSettlement: ActionFn = async (
 };
 
 async function _checkForSettlement(
+  tx: string,
   log: Log,
   settlement: GPv2SettlementInterface,
   registry: Registry
@@ -81,14 +94,16 @@ async function _checkForSettlement(
           // Check if the orderUid is in the conditionalOrder
           if (conditionalOrder.orders.has(orderUid)) {
             // Update the status of the orderUid to FILLED
-            console.log(`Update order ${orderUid} to status FILLED`);
+            logger.log(
+              `Update order ${orderUid} to status FILLED. Settlement Tx: ${tx}`
+            );
             conditionalOrder.orders.set(orderUid, OrderStatus.FILLED);
           }
         });
       }
     }
   } catch (e: any) {
-    console.error("Error checking for settlement" + e?.message, e);
+    logger.error("Error checking for settlement", e); // extractErrorMessage(e)
 
     return { error: true };
   }
@@ -109,9 +124,9 @@ async function getTradeableOrderWithSignature(
       conditionalOrder.proof ? conditionalOrder.proof.path : []
     )
     .catch((e) => {
-      console.error(
-        'Error during "getTradeableOrderWithSignature" call: ' + e?.message,
-        e
+      logger.error(
+        'Error during "getTradeableOrderWithSignature" call: ',
+        e //extractErrorMessage(e)
       );
       throw e;
     });
@@ -133,12 +148,18 @@ export const checkForAndPlaceOrder: ActionFn = async (
 
   // enumerate all the owners
   let hasErrors = false;
+  logger.log(
+    `[checkForAndPlaceOrder] Check un-posed orders in block ${blockEvent.blockNumber}`
+  );
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
     const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
       // FIXME: This is a useful log, but it is disabled since Tenderly shows a WARN and start to hide the logs "Logs are too large and have been remove". The effect is, that it hides the posting of the order! (so workaround is to disable)
-      // console.log(`Checking params ${conditionalOrder.params}...`);
+      logger.log(
+        `[checkForAndPlaceOrder] Check conditional order created in ${conditionalOrder.tx} with params:`,
+        conditionalOrder.params
+      );
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
@@ -159,9 +180,14 @@ export const checkForAndPlaceOrder: ActionFn = async (
       }
     }
 
-    ordersPendingDelete.forEach((conditionalOrder) =>
-      conditionalOrders.delete(conditionalOrder)
-    );
+    ordersPendingDelete.forEach((conditionalOrder) => {
+      const deleted = conditionalOrders.delete(conditionalOrder);
+      const action = deleted ? "Deleted" : "Fail to delete";
+      logger.log(
+        `[checkForAndPlaceOrder] ${action} conditional order with params:`,
+        conditionalOrder.params
+      );
+    });
   }
 
   // Update the registry
@@ -211,7 +237,7 @@ async function _checkForAndPlaceOrder(
       conditionalOrder.orders.set(orderUid, OrderStatus.SUBMITTED);
     } else {
       const orderStatus = conditionalOrder.orders.get(orderUid);
-      console.log(
+      logger.log(
         `OrderUid ${orderUid} status: ${
           orderStatus ? formatStatus(orderStatus) : "Not found"
         }`
@@ -226,17 +252,22 @@ async function _checkForAndPlaceOrder(
           // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
           return { deleteConditionalOrder: false, error };
         case "SingleOrderNotAuthed":
-          console.log(
+          logger.log(
             `Single order on safe ${owner} not authed. Unfilled orders:`
           );
         case "ProofNotAuthed":
-          console.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
+          logger.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
       }
       printUnfilledOrders(conditionalOrder.orders);
-      console.log("Removing conditional order from registry");
+      logger.log(
+        "Removing conditional order from registry due to CALL_EXCEPTION"
+      );
       return { deleteConditionalOrder: true, error };
     }
-    console.error(`Unexpected error while processing order: ${e?.message}`);
+    logger.error(
+      `Unexpected error while processing order:`,
+      e // extractErrorMessage(error)
+    );
   }
 
   return { deleteConditionalOrder: false, error };
@@ -268,11 +299,13 @@ function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
  * @param orders All the orders that are being tracked
  */
 export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
-  console.log(`Unfilled orders (${orders.size}):`);
-  for (const [orderUid, status] of orders.entries()) {
-    if (status === OrderStatus.SUBMITTED) {
-      console.log(orderUid);
-    }
+  const unfilledOrders = Array.from(orders.entries())
+    .filter(([_orderUid, status]) => status === OrderStatus.SUBMITTED)
+    .map(([orderUid, _status]) => orderUid)
+    .join(", ");
+
+  if (unfilledOrders) {
+    logger.log(`Unfilled Orders`, unfilledOrders);
   }
 };
 
@@ -281,7 +314,11 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
  * @param order to be placed on the cow protocol api
  * @param apiUrl rest api url
  */
-async function placeOrder(orderUid: string, order: any, apiUrl: string) {
+async function placeOrder(
+  orderUid: string,
+  order: any,
+  apiUrl: string
+): Promise<void> {
   try {
     const postData = {
       sellToken: order.sellToken,
@@ -302,7 +339,8 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    console.log(`[placeOrder] Post order ${orderUid}`, postData);
+    logger.log(`[placeOrder] Post order ${orderUid} to ${apiUrl}`);
+    logger.log(`[placeOrder] Order`, postData);
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
@@ -314,25 +352,34 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
           },
         }
       );
-      console.log(`[placeOrder] API response`, { status, data });
+      logger.log(`[placeOrder] API response`, { status, data });
     }
   } catch (error: any) {
     const errorMessage = "[placeOrder] Error placing order in API";
     if (error.response) {
       const { status, data } = error.response;
+
+      const { shouldThow } = handleOrderBookError(status, data);
+
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error(`${errorMessage}. Result: ${status}`, data);
+      const log = console[shouldThow ? "error" : "warn"];
+      log(`${errorMessage}. Result: ${status}`, data);
+
+      if (!shouldThow) {
+        log("All good! continuing with warnings...");
+        return;
+      }
     } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
-      console.error(`${errorMessage}. Unresponsive API: ${error.request}`);
+      logger.error(`${errorMessage}. Unresponsive API: ${error.request}`);
     } else if (error.message) {
       // Something happened in setting up the request that triggered an Error
-      console.error(`${errorMessage}. Internal Error: ${error.message}`);
+      logger.error(`${errorMessage}. Internal Error: ${error.message}`);
     } else {
-      console.error(`${errorMessage}. Unhandled Error: ${error.message}`);
+      logger.error(`${errorMessage}. Unhandled Error: ${error.message}`);
     }
     throw error;
   }
@@ -404,4 +451,12 @@ class ChainContext {
     const providerNetwork = await provider.getNetwork();
     return new ChainContext(provider, apiUrl(network));
   }
+}
+function handleOrderBookError(status: any, data: any): { shouldThow: boolean } {
+  if (status === 400 && data?.errorType === "DuplicatedOrder") {
+    // The order is in the OrderBook, all good :)
+    return { shouldThow: false };
+  }
+
+  return { shouldThow: true };
 }

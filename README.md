@@ -187,8 +187,6 @@ Notably, with the `CondtionalOrderCreated` and `MerkleRootSet` events, multiple 
 
 As orders expire, or are cancelled, they are removed from the registry to conserve storage space.
 
-**TODO:** Improvements to flag an `orderUid` as `SUBMITTED` if the API returns an error due to duplicate order submission. This would limit queries to the CoW Protocol API to the total number of watchtowers being run.
-
 ### Local testing
 
 This is asusming that you have followed the instructions for deploying the stack on `anvil` in [local deployment](#Local-deployment)

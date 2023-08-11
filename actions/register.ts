@@ -14,7 +14,7 @@ import type {
   IConditionalOrder,
 } from "./types/ComposableCoW";
 import { ComposableCoW__factory } from "./types/factories/ComposableCoW__factory";
-import { writeRegistry } from "./utils";
+import { logger, writeRegistry } from "./utils";
 
 /**
  * Listens to these events on the `ComposableCoW` contract:
@@ -25,6 +25,7 @@ import { writeRegistry } from "./utils";
  */
 export const addContract: ActionFn = async (context: Context, event: Event) => {
   const transactionEvent = event as TransactionEvent;
+  const tx = transactionEvent.hash;
   const composableCow = ComposableCoW__factory.createInterface();
 
   // Load the registry
@@ -33,7 +34,7 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
   // Process the logs
   let hasErrors = false;
   transactionEvent.logs.forEach((log) => {
-    const { error } = _addContract(log, composableCow, registry);
+    const { error } = _addContract(tx, log, composableCow, registry);
     hasErrors ||= error;
   });
 
@@ -47,6 +48,7 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
 };
 
 export function _addContract(
+  tx: string,
   log: Log,
   composableCow: ComposableCoWInterface,
   registry: Registry
@@ -63,7 +65,7 @@ export function _addContract(
       ) as [string, IConditionalOrder.ConditionalOrderParamsStruct];
 
       // Attempt to add the conditional order to the registry
-      add(owner, params, null, log.address, registry);
+      add(tx, owner, params, null, log.address, registry);
     } else if (log.topics[0] == composableCow.getEventTopic("MerkleRootSet")) {
       const [owner, root, proof] = composableCow.decodeEventLog(
         "MerkleRootSet",
@@ -92,6 +94,7 @@ export function _addContract(
           );
           // Attempt to add the conditional order to the registry
           add(
+            tx,
             owner,
             decodedOrder[1],
             { merkleRoot: root, path: decodedOrder[0] },
@@ -102,9 +105,9 @@ export function _addContract(
       }
     }
   } catch (error) {
-    console.error(
-      "[addContract] Error handling ConditionalOrderCreated/MerkleRootSet event",
-      error
+    logger.error(
+      "[addContract] Error handling ConditionalOrderCreated/MerkleRootSet event" +
+        error // extractErrorMessage(error)
     );
     return { error: true };
   }
@@ -114,6 +117,7 @@ export function _addContract(
 
 /**
  * Attempt to add an owner's conditional order to the registry
+ *
  * @param owner to add the conditional order to
  * @param params for the conditional order
  * @param proof for the conditional order (if it is part of a merkle root)
@@ -121,6 +125,7 @@ export function _addContract(
  * @param registry of all conditional orders
  */
 export const add = async (
+  tx: string,
   owner: Owner,
   params: IConditionalOrder.ConditionalOrderParamsStruct,
   proof: Proof | null,
@@ -129,7 +134,7 @@ export const add = async (
 ) => {
   if (registry.ownerOrders.has(owner)) {
     const conditionalOrders = registry.ownerOrders.get(owner);
-    console.log(
+    logger.log(
       `[register:add] Adding conditional order ${params} to already existing contract ${owner}`
     );
     let exists: boolean = false;
@@ -145,6 +150,7 @@ export const add = async (
     // If the params are not in the conditionalOrder, add them
     if (!exists) {
       conditionalOrders?.add({
+        tx,
         params,
         proof,
         orders: new Map(),
@@ -152,12 +158,12 @@ export const add = async (
       });
     }
   } else {
-    console.log(
+    logger.log(
       `[register:add] Adding conditional order ${params} to new contract ${owner}`
     );
     registry.ownerOrders.set(
       owner,
-      new Set([{ params, proof, orders: new Map(), composableCow }])
+      new Set([{ tx, params, proof, orders: new Map(), composableCow }])
     );
   }
 };
@@ -210,6 +216,8 @@ export type OrderUid = BytesLike;
 export type Owner = string;
 
 export type ConditionalOrder = {
+  tx: string; // the transaction hash that created the conditional order (useful for debugging purposes)
+
   // the parameters of the conditional order
   params: IConditionalOrder.ConditionalOrderParamsStruct;
   // the merkle proof if the conditional order is belonging to a merkle root

@@ -5,6 +5,8 @@ import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus, Registry } from "./register";
 
+const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
+
 async function getSecret(key: string, context: Context): Promise<string> {
   const value = await context.secrets.get(key);
   assert(value, `${key} secret is required`);
@@ -84,7 +86,7 @@ function handlePromiseErrors<T>(
   return promise
     .then(() => true)
     .catch((error) => {
-      console.error(errorMessage, error);
+      console.error(errorMessage, error /*extractErrorMessage(error)*/);
       return true;
     });
 }
@@ -97,3 +99,64 @@ function handlePromiseErrors<T>(
 export function writeRegistry(registry: Registry): Promise<boolean> {
   return handlePromiseErrors("Error writing registry", registry.write());
 }
+
+// /**
+//  * This util should not be needed, but tenderly has some annoying issues with the logs. They hide important logs, leaving us blind
+//  * I suspect, some of them is because we print errors which contain a tacktrace, and they think this is too big og a message
+//  *
+//  * Ideally this util shold not be used, ands we shoudl print the whole error
+//  *
+//  * @param obj
+//  * @returns
+//  */
+// export function extractErrorMessage(error: unknown): string {
+//   if (isErrorWithMesage(error)) {
+//     return error.message;
+//   }
+
+//   return "";
+// }
+
+// function isErrorWithMesage(obj: unknown): obj is { message: string } {
+//   return (
+//     typeof obj === "object" && obj !== null && "name" in obj && "age" in obj
+//   );
+// }
+
+/**
+ * Tenderly has a limit of 4Kb per log message. When you surpas this limit, the log is not printed any more making it super hard to debug anythnig
+ *
+ * This tool will print
+ *
+ * @param data T
+ */
+const logWithLimit =
+  (level: "log" | "warn" | "error" | "debug") =>
+  (...data: any[]) => {
+    const bigLogText = data
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+        return JSON.stringify(item, null, 2);
+      })
+      .join(" ");
+
+    const numChunks = Math.ceil(bigLogText.length / TENDERLY_LOG_LIMIT);
+
+    for (let i = 0; i < numChunks; i += 1) {
+      const chartStart = i * TENDERLY_LOG_LIMIT;
+      const prefix = numChunks > 1 ? `[${i + 1}/${numChunks}] ` : "";
+      console[level](
+        prefix +
+          bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT)
+      );
+    }
+  };
+
+export const logger = {
+  error: logWithLimit("warn"),
+  warn: logWithLimit("error"),
+  debug: logWithLimit("debug"),
+  log: logWithLimit("log"),
+};
