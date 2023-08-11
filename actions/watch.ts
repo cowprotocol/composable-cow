@@ -137,7 +137,8 @@ export const checkForAndPlaceOrder: ActionFn = async (
     const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      console.log(`Checking params ${conditionalOrder.params}...`);
+      // FIXME: This is a useful log, but it is disabled since Tenderly shows a WARN and start to hide the logs "Logs are too large and have been remove". The effect is, that it hides the posting of the order! (so workaround is to disable)
+      // console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
@@ -301,8 +302,7 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    console.log(`[placeOrder] Post order ${orderUid} with params:`, apiUrl);
-    console.log(`[placeOrder] Order:`, postData);
+    console.log(`[placeOrder] Post order ${orderUid}`, postData);
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
