@@ -23,11 +23,6 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
 
   // Load the registry
   const registry = await Registry.load(context, transactionEvent.network);
-  console.log(
-    `Current registry: ${JSON.stringify(
-      Array.from(registry.ownerOrders.entries())
-    )}`
-  );
 
   // Process the logs
   transactionEvent.logs.forEach((log) => {
@@ -79,11 +74,6 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
       }
     }
   });
-  console.log(
-    `Updated registry: ${JSON.stringify(
-      Array.from(registry.ownerOrders.entries())
-    )}`
-  );
   await registry.write();
 };
 
@@ -105,7 +95,7 @@ export const add = async (
   if (registry.ownerOrders.has(owner)) {
     const conditionalOrders = registry.ownerOrders.get(owner);
     console.log(
-      `adding conditional order ${params} to already existing contract ${owner}`
+      `[register:add] Adding conditional order ${params} to already existing contract ${owner}`
     );
     let exists: boolean = false;
     // Iterate over the conditionalOrders to make sure that the params are not already in the registry
@@ -127,7 +117,9 @@ export const add = async (
       });
     }
   } else {
-    console.log(`adding conditional order ${params} to new contract ${owner}`);
+    console.log(
+      `[register:add] Adding conditional order ${params} to new contract ${owner}`
+    );
     registry.ownerOrders.set(
       owner,
       new Set([{ params, proof, orders: new Map(), composableCow }])

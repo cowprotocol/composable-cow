@@ -6,19 +6,34 @@ import {
 import { checkForAndPlaceOrder } from "../watch";
 import { addContract } from "../register";
 import { ethers } from "ethers";
+import assert = require("assert");
+import { getProvider } from "../utils";
+
+require("dotenv").config();
 
 const main = async () => {
   const testRuntime = new TestRuntime();
 
-  const node_url = process.env["ETH_RPC_URL"];
-  if (!node_url) {
-    throw "Please specify your node url via the ETH_RPC_URL env variable";
+  // The web3 actions fetches the node url and computes the API based on the current chain id
+  const network = process.env.NETWORK;
+  assert(network, "network is required");
+
+  // Add secrets from local env (.env) for current network
+  const envNames = [
+    `NODE_URL_${network}`,
+    `NODE_USER_${network}`,
+    `NODE_PASSWORD_${network}`,
+  ];
+  for (const name of envNames) {
+    const envValue = process.env[name];
+    if (envValue) {
+      await testRuntime.context.secrets.put(name, envValue);
+    }
   }
 
-  // The web3 actions fetches the node url and computes the API based on the current chain id
-  const provider = new ethers.providers.JsonRpcProvider(node_url);
+  // Get provider
+  const provider = await getProvider(testRuntime.context, network);
   const { chainId } = await provider.getNetwork();
-  await testRuntime.context.secrets.put(`NODE_URL_${chainId}`, node_url);
 
   provider.on("block", async (blockNumber) => {
     // Block watcher for creating new orders
