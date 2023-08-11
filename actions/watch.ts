@@ -276,22 +276,22 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
       console.log(`[placeOrder] API response`, { status, data });
     }
   } catch (error: any) {
-    const errorMessag = "[placeOrder] Error placing order in API";
+    const errorMessage = "[placeOrder] Error placing order in API";
     if (error.response) {
       const { status, data } = error.response;
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error(`${errorMessag}. Result: ${status}`, data);
+      console.error(`${errorMessage}. Result: ${status}`, data);
     } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
-      console.error(`${errorMessag}. Unresponsive API: ${error.request}`);
+      console.error(`${errorMessage}. Unresponsive API: ${error.request}`);
     } else if (error.message) {
       // Something happened in setting up the request that triggered an Error
-      console.error(`${errorMessag}. Internal Error: ${error.message}`);
+      console.error(`${errorMessage}. Internal Error: ${error.message}`);
     } else {
-      console.error(`${errorMessag}. Unhandled Error: ${error.message}`);
+      console.error(`${errorMessage}. Unhandled Error: ${error.message}`);
     }
     throw error;
   }
