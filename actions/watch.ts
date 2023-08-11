@@ -137,7 +137,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
     const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      // console.log(`Checking params ${conditionalOrder.params}...`);
+      console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
@@ -301,11 +301,8 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    console.log(
-      `[placeOrder] Post order ${orderUid} with params:`,
-      apiUrl,
-      postData
-    );
+    console.log(`[placeOrder] Post order ${orderUid} with params:`, apiUrl);
+    console.log(`[placeOrder] Order:`, postData);
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
