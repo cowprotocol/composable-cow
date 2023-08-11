@@ -4,11 +4,17 @@ import {
   Event,
   TransactionEvent,
   Storage,
+  Log,
 } from "@tenderly/actions";
 import { BytesLike, ethers } from "ethers";
 
-import type { ComposableCoW, IConditionalOrder } from "./types/ComposableCoW";
+import type {
+  ComposableCoW,
+  ComposableCoWInterface,
+  IConditionalOrder,
+} from "./types/ComposableCoW";
 import { ComposableCoW__factory } from "./types/factories/ComposableCoW__factory";
+import { writeRegistry } from "./utils";
 
 /**
  * Listens to these events on the `ComposableCoW` contract:
@@ -19,16 +25,38 @@ import { ComposableCoW__factory } from "./types/factories/ComposableCoW__factory
  */
 export const addContract: ActionFn = async (context: Context, event: Event) => {
   const transactionEvent = event as TransactionEvent;
-  const iface = ComposableCoW__factory.createInterface();
+  const composableCow = ComposableCoW__factory.createInterface();
 
   // Load the registry
   const registry = await Registry.load(context, transactionEvent.network);
 
   // Process the logs
+  let hasErrors = false;
   transactionEvent.logs.forEach((log) => {
+    const { error } = _addContract(log, composableCow, registry);
+    hasErrors ||= error;
+  });
+
+  hasErrors ||= !(await writeRegistry(registry));
+  // Notify error
+  if (hasErrors) {
+    // TODO notify error to slack
+
+    throw Error("Error adding contract for event" + JSON.stringify(event));
+  }
+};
+
+export function _addContract(
+  log: Log,
+  composableCow: ComposableCoWInterface,
+  registry: Registry
+): { error: boolean } {
+  try {
     // Check if the log is a ConditionalOrderCreated event
-    if (log.topics[0] === iface.getEventTopic("ConditionalOrderCreated")) {
-      const [owner, params] = iface.decodeEventLog(
+    if (
+      log.topics[0] === composableCow.getEventTopic("ConditionalOrderCreated")
+    ) {
+      const [owner, params] = composableCow.decodeEventLog(
         "ConditionalOrderCreated",
         log.data,
         log.topics
@@ -36,8 +64,8 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
 
       // Attempt to add the conditional order to the registry
       add(owner, params, null, log.address, registry);
-    } else if (log.topics[0] == iface.getEventTopic("MerkleRootSet")) {
-      const [owner, root, proof] = iface.decodeEventLog(
+    } else if (log.topics[0] == composableCow.getEventTopic("MerkleRootSet")) {
+      const [owner, root, proof] = composableCow.decodeEventLog(
         "MerkleRootSet",
         log.data,
         log.topics
@@ -73,9 +101,16 @@ export const addContract: ActionFn = async (context: Context, event: Event) => {
         });
       }
     }
-  });
-  await registry.write();
-};
+  } catch (error) {
+    console.error(
+      "[addContract] Error handling ConditionalOrderCreated/MerkleRootSet event",
+      error
+    );
+    return { error: true };
+  }
+
+  return { error: false };
+}
 
 /**
  * Attempt to add an owner's conditional order to the registry

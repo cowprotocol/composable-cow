@@ -3,6 +3,7 @@ import {
   BlockEvent,
   Context,
   Event,
+  Log,
   TransactionEvent,
 } from "@tenderly/actions";
 import {
@@ -22,7 +23,8 @@ import {
 } from "./types";
 import { Registry, OrderStatus, ConditionalOrder } from "./register";
 import { BytesLike, Logger } from "ethers/lib/utils";
-import { apiUrl, formatStatus, getProvider } from "./utils";
+import { apiUrl, formatStatus, getProvider, writeRegistry } from "./utils";
+import { GPv2SettlementInterface } from "./types/GPv2Settlement";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
@@ -36,13 +38,35 @@ export const checkForSettlement: ActionFn = async (
   event: Event
 ) => {
   const transactionEvent = event as TransactionEvent;
-  const iface = GPv2Settlement__factory.createInterface();
+  const settlement = GPv2Settlement__factory.createInterface();
 
   const registry = await Registry.load(context, transactionEvent.network);
 
-  transactionEvent.logs.forEach((log) => {
-    if (log.topics[0] === iface.getEventTopic("Trade")) {
-      const [owner, , , , , , orderUid] = iface.decodeEventLog(
+  let hasErrors = false;
+  transactionEvent.logs.forEach(async (log) => {
+    const { error } = await _checkForSettlement(log, settlement, registry);
+    hasErrors ||= error;
+  });
+
+  // Update the registry
+  hasErrors ||= !(await writeRegistry(registry));
+
+  // Notify error
+  if (hasErrors) {
+    // TODO notify error to slack
+
+    throw Error("Error while checking the settlements");
+  }
+};
+
+async function _checkForSettlement(
+  log: Log,
+  settlement: GPv2SettlementInterface,
+  registry: Registry
+): Promise<{ error: boolean }> {
+  try {
+    if (log.topics[0] === settlement.getEventTopic("Trade")) {
+      const [owner, , , , , , orderUid] = settlement.decodeEventLog(
         "Trade",
         log.data,
         log.topics
@@ -63,9 +87,14 @@ export const checkForSettlement: ActionFn = async (
         });
       }
     }
-  });
-  await registry.write();
-};
+  } catch (e: any) {
+    console.error("Error checking for settlement" + e?.message, e);
+
+    return { error: true };
+  }
+
+  return { error: false };
+}
 
 async function getTradeableOrderWithSignature(
   owner: string,
@@ -80,7 +109,10 @@ async function getTradeableOrderWithSignature(
       conditionalOrder.proof ? conditionalOrder.proof.path : []
     )
     .catch((e) => {
-      console.error('Error during "getTradeableOrderWithSignature" call', e);
+      console.error(
+        'Error during "getTradeableOrderWithSignature" call: ' + e?.message,
+        e
+      );
       throw e;
     });
 }
@@ -100,23 +132,27 @@ export const checkForAndPlaceOrder: ActionFn = async (
   const { network } = blockEvent;
 
   // enumerate all the owners
+  let hasErrors = false;
   for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
     const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
+      // FIXME: This is a useful log, but it is disabled since Tenderly shows a WARN and start to hide the logs "Logs are too large and have been remove". The effect is, that it hides the posting of the order! (so workaround is to disable)
       // console.log(`Checking params ${conditionalOrder.params}...`);
       const contract = ComposableCoW__factory.connect(
         conditionalOrder.composableCow,
         chainContext.provider
       );
 
-      const { deleteConditionalOrder } = await _checkForAndPlaceOrder(
+      const { deleteConditionalOrder, error } = await _checkForAndPlaceOrder(
         owner,
         network,
         conditionalOrder,
         contract,
         chainContext
       );
+
+      hasErrors ||= error;
 
       if (deleteConditionalOrder) {
         ordersPendingDelete.push(conditionalOrder);
@@ -129,7 +165,14 @@ export const checkForAndPlaceOrder: ActionFn = async (
   }
 
   // Update the registry
-  await registry.write();
+  hasErrors ||= await !writeRegistry(registry);
+
+  // Notify error
+  if (hasErrors) {
+    // TODO notify error to slack
+
+    throw Error("Error while processing settlements");
+  }
 };
 
 async function _checkForAndPlaceOrder(
@@ -138,7 +181,8 @@ async function _checkForAndPlaceOrder(
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW,
   chainContext: ChainContext
-): Promise<{ deleteConditionalOrder: boolean }> {
+): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
+  let error = false;
   try {
     const { order, signature } = await getTradeableOrderWithSignature(
       owner,
@@ -174,12 +218,13 @@ async function _checkForAndPlaceOrder(
       );
     }
   } catch (e: any) {
+    error = true;
     if (e.code === Logger.errors.CALL_EXCEPTION) {
       switch (e.errorName) {
         case "OrderNotValid":
           // The conditional order has not expired, or been cancelled, but the order is not valid
           // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
-          return { deleteConditionalOrder: false };
+          return { deleteConditionalOrder: false, error };
         case "SingleOrderNotAuthed":
           console.log(
             `Single order on safe ${owner} not authed. Unfilled orders:`
@@ -189,12 +234,12 @@ async function _checkForAndPlaceOrder(
       }
       printUnfilledOrders(conditionalOrder.orders);
       console.log("Removing conditional order from registry");
-      return { deleteConditionalOrder: true };
+      return { deleteConditionalOrder: true, error };
     }
     console.error(`Unexpected error while processing order: ${e?.message}`);
   }
 
-  return { deleteConditionalOrder: false };
+  return { deleteConditionalOrder: false, error };
 }
 
 function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
@@ -257,11 +302,7 @@ async function placeOrder(orderUid: string, order: any, apiUrl: string) {
     };
 
     // if the api_url doesn't contain localhost, post
-    console.log(
-      `[placeOrder] Post order ${orderUid} with params:`,
-      apiUrl,
-      postData
-    );
+    console.log(`[placeOrder] Post order ${orderUid}`, postData);
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
