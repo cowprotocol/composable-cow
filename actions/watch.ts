@@ -27,7 +27,8 @@ import {
   apiUrl,
   formatStatus,
   getProvider,
-  logger,
+  handleExecutionError,
+  init,
   writeRegistry,
 } from "./utils";
 import { GPv2SettlementInterface } from "./types/GPv2Settlement";
@@ -43,15 +44,24 @@ export const checkForSettlement: ActionFn = async (
   context: Context,
   event: Event
 ) => {
+  return _checkForSettlement(context, event).catch(handleExecutionError);
+};
+
+/**
+ * Asyncronous version of checkForSettlement. It will process all the settlements, and will throw an error at the end if there was at least one error
+ */
+const _checkForSettlement: ActionFn = async (
+  context: Context,
+  event: Event
+) => {
   const transactionEvent = event as TransactionEvent;
   const settlement = GPv2Settlement__factory.createInterface();
 
-  const registry = await Registry.load(context, transactionEvent.network);
+  const { registry } = await init(transactionEvent.network, context);
 
   let hasErrors = false;
-
   transactionEvent.logs.forEach(async (log) => {
-    const { error } = await _checkForSettlement(
+    const { error } = await _processSettlement(
       transactionEvent.hash,
       log,
       settlement,
@@ -61,22 +71,21 @@ export const checkForSettlement: ActionFn = async (
   });
 
   // Update the registry
-  hasErrors ||= !(await writeRegistry(registry));
+  hasErrors ||= !(await writeRegistry());
 
-  // Notify error
+  // Throw execution error if there was at least one error
   if (hasErrors) {
-    // TODO notify error to slack
-
     throw Error("Error while checking the settlements");
   }
 };
 
-async function _checkForSettlement(
+async function _processSettlement(
   tx: string,
   log: Log,
   settlement: GPv2SettlementInterface,
   registry: Registry
 ): Promise<{ error: boolean }> {
+  const { ownerOrders } = registry;
   try {
     if (log.topics[0] === settlement.getEventTopic("Trade")) {
       const [owner, , , , , , orderUid] = settlement.decodeEventLog(
@@ -86,15 +95,15 @@ async function _checkForSettlement(
       ) as [string, string, string, BigNumber, BigNumber, BigNumber, string];
 
       // Check if the owner is in the registry
-      if (registry.ownerOrders.has(owner)) {
+      if (ownerOrders.has(owner)) {
         // Get the conditionalOrders for the owner
-        const conditionalOrders = registry.ownerOrders.get(owner);
+        const conditionalOrders = ownerOrders.get(owner);
         // Iterate over the conditionalOrders and update the status of the orderUid
         conditionalOrders?.forEach((conditionalOrder) => {
           // Check if the orderUid is in the conditionalOrder
           if (conditionalOrder.orders.has(orderUid)) {
             // Update the status of the orderUid to FILLED
-            logger.log(
+            console.log(
               `Update order ${orderUid} to status FILLED. Settlement Tx: ${tx}`
             );
             conditionalOrder.orders.set(orderUid, OrderStatus.FILLED);
@@ -103,7 +112,7 @@ async function _checkForSettlement(
       }
     }
   } catch (e: any) {
-    logger.error("Error checking for settlement", e); // extractErrorMessage(e)
+    console.error("Error checking for settlement", e);
 
     return { error: true };
   }
@@ -124,16 +133,14 @@ async function getTradeableOrderWithSignature(
       conditionalOrder.proof ? conditionalOrder.proof.path : []
     )
     .catch((e) => {
-      logger.error(
-        'Error during "getTradeableOrderWithSignature" call: ',
-        e //extractErrorMessage(e)
-      );
+      console.error('Error during "getTradeableOrderWithSignature" call: ', e);
       throw e;
     });
 }
 
 /**
  * Watch for new blocks and check for orders to place
+ *
  * @param context tenderly context
  * @param event block event
  */
@@ -141,22 +148,30 @@ export const checkForAndPlaceOrder: ActionFn = async (
   context: Context,
   event: Event
 ) => {
+  return _checkForAndPlaceOrder(context, event).catch(handleExecutionError);
+};
+
+/**
+ * Asyncronous version of checkForAndPlaceOrder. It will process all the orders, and will throw an error at the end if there was at least one error
+ */
+const _checkForAndPlaceOrder: ActionFn = async (
+  context: Context,
+  event: Event
+) => {
   const blockEvent = event as BlockEvent;
-  const registry = await Registry.load(context, blockEvent.network);
-  const chainContext = await ChainContext.create(context, blockEvent.network);
   const { network } = blockEvent;
+  const chainContext = await ChainContext.create(context, network);
+  const { registry } = await init(blockEvent.network, context);
+  const { ownerOrders } = registry;
 
   // enumerate all the owners
   let hasErrors = false;
-  logger.log(
-    `[checkForAndPlaceOrder] Check un-posed orders in block ${blockEvent.blockNumber}`
-  );
-  for (const [owner, conditionalOrders] of registry.ownerOrders.entries()) {
+  console.log(`[checkForAndPlaceOrder] New Block ${blockEvent.blockNumber}`);
+  for (const [owner, conditionalOrders] of ownerOrders.entries()) {
     const ordersPendingDelete = [];
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
-      // FIXME: This is a useful log, but it is disabled since Tenderly shows a WARN and start to hide the logs "Logs are too large and have been remove". The effect is, that it hides the posting of the order! (so workaround is to disable)
-      logger.log(
+      console.log(
         `[checkForAndPlaceOrder] Check conditional order created in ${conditionalOrder.tx} with params:`,
         conditionalOrder.params
       );
@@ -165,12 +180,13 @@ export const checkForAndPlaceOrder: ActionFn = async (
         chainContext.provider
       );
 
-      const { deleteConditionalOrder, error } = await _checkForAndPlaceOrder(
+      const { deleteConditionalOrder, error } = await _processConditionalOrder(
         owner,
         network,
         conditionalOrder,
         contract,
-        chainContext
+        chainContext,
+        context
       );
 
       hasErrors ||= error;
@@ -183,7 +199,7 @@ export const checkForAndPlaceOrder: ActionFn = async (
     ordersPendingDelete.forEach((conditionalOrder) => {
       const deleted = conditionalOrders.delete(conditionalOrder);
       const action = deleted ? "Deleted" : "Fail to delete";
-      logger.log(
+      console.log(
         `[checkForAndPlaceOrder] ${action} conditional order with params:`,
         conditionalOrder.params
       );
@@ -191,22 +207,21 @@ export const checkForAndPlaceOrder: ActionFn = async (
   }
 
   // Update the registry
-  hasErrors ||= await !writeRegistry(registry);
+  hasErrors ||= await !writeRegistry();
 
-  // Notify error
+  // Throw execution error if there was at least one error
   if (hasErrors) {
-    // TODO notify error to slack
-
     throw Error("Error while processing settlements");
   }
 };
 
-async function _checkForAndPlaceOrder(
+async function _processConditionalOrder(
   owner: string,
   network: string,
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW,
-  chainContext: ChainContext
+  chainContext: ChainContext,
+  context: Context
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
@@ -237,7 +252,7 @@ async function _checkForAndPlaceOrder(
       conditionalOrder.orders.set(orderUid, OrderStatus.SUBMITTED);
     } else {
       const orderStatus = conditionalOrder.orders.get(orderUid);
-      logger.log(
+      console.log(
         `OrderUid ${orderUid} status: ${
           orderStatus ? formatStatus(orderStatus) : "Not found"
         }`
@@ -252,22 +267,19 @@ async function _checkForAndPlaceOrder(
           // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
           return { deleteConditionalOrder: false, error };
         case "SingleOrderNotAuthed":
-          logger.log(
+          console.log(
             `Single order on safe ${owner} not authed. Unfilled orders:`
           );
         case "ProofNotAuthed":
-          logger.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
+          console.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
       }
       printUnfilledOrders(conditionalOrder.orders);
-      logger.log(
+      console.log(
         "Removing conditional order from registry due to CALL_EXCEPTION"
       );
       return { deleteConditionalOrder: true, error };
     }
-    logger.error(
-      `Unexpected error while processing order:`,
-      e // extractErrorMessage(error)
-    );
+    console.error(`Unexpected error while processing order:`, e);
   }
 
   return { deleteConditionalOrder: false, error };
@@ -305,7 +317,7 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
     .join(", ");
 
   if (unfilledOrders) {
-    logger.log(`Unfilled Orders`, unfilledOrders);
+    console.log(`Unfilled Orders: `, unfilledOrders);
   }
 };
 
@@ -339,8 +351,8 @@ async function placeOrder(
     };
 
     // if the api_url doesn't contain localhost, post
-    logger.log(`[placeOrder] Post order ${orderUid} to ${apiUrl}`);
-    logger.log(`[placeOrder] Order`, postData);
+    console.log(`[placeOrder] Post order ${orderUid} to ${apiUrl}`);
+    console.log(`[placeOrder] Order`, postData);
     if (!apiUrl.includes("localhost")) {
       const { status, data } = await axios.post(
         `${apiUrl}/api/v1/orders`,
@@ -352,7 +364,7 @@ async function placeOrder(
           },
         }
       );
-      logger.log(`[placeOrder] API response`, { status, data });
+      console.log(`[placeOrder] API response`, { status, data });
     }
   } catch (error: any) {
     const errorMessage = "[placeOrder] Error placing order in API";
@@ -374,12 +386,12 @@ async function placeOrder(
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
-      logger.error(`${errorMessage}. Unresponsive API: ${error.request}`);
+      console.error(`${errorMessage}. Unresponsive API: ${error.request}`);
     } else if (error.message) {
       // Something happened in setting up the request that triggered an Error
-      logger.error(`${errorMessage}. Internal Error: ${error.message}`);
+      console.error(`${errorMessage}. Internal Error: ${error.message}`);
     } else {
-      logger.error(`${errorMessage}. Unhandled Error: ${error.message}`);
+      console.error(`${errorMessage}. Unhandled Error: ${error.message}`);
     }
     throw error;
   }

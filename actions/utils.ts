@@ -4,8 +4,56 @@ import assert = require("assert");
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus, Registry } from "./register";
+import Slack = require("node-slack");
 
 const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
+const NOTIFICATION_WAIT_PERIOD = 1000 * 60 * 60 * 2; // 2h - Don't send more than one notification every 2h
+interface ExecutionContext {
+  registry: Registry;
+  slack: Slack;
+  notificationsEnabled: boolean;
+  context: Context;
+}
+
+let executionContext: ExecutionContext | undefined;
+
+export async function init(
+  network: string,
+  context: Context
+): Promise<ExecutionContext> {
+  // Init slack
+  const webhookUrl = await context.secrets
+    .get("SLACK_WEBHOOK_URL")
+    .catch(() => "");
+
+  // Init registry
+  const registry = await Registry.load(context, network);
+
+  const notificationsEnabled = await context.secrets
+    .get("NOTIFICATIONS_ENABLED")
+    .then((value) => (value ? value !== "false" : true))
+    .catch(() => true);
+
+  if (notificationsEnabled && !webhookUrl) {
+    throw new Error(
+      "SLACK_WEBHOOK_URL secret is required when NOTIFICATIONS_ENABLED is true"
+    );
+  }
+  const slack = new Slack(webhookUrl);
+
+  executionContext = {
+    registry,
+    slack,
+    notificationsEnabled,
+    context,
+  };
+
+  return executionContext;
+}
+
+export function getExecutionContext(): ExecutionContext | undefined {
+  return executionContext;
+}
 
 async function getSecret(key: string, context: Context): Promise<string> {
   const value = await context.secrets.get(key);
@@ -73,6 +121,26 @@ export function formatStatus(status: OrderStatus) {
   }
 }
 
+export function handleExecutionError(e: any) {
+  try {
+    const errorMessage = e?.message || "Unknown error";
+    const notified = sendSlack(
+      errorMessage +
+        ". More info https://dashboard.tenderly.co/devcow/project/actions"
+    );
+
+    if (notified && executionContext) {
+      executionContext.registry.lastNotifiedError = new Date();
+      writeRegistry();
+    }
+  } catch (error) {
+    consoleOriginal.error("Error sending slack notification", error);
+  }
+
+  // Re-throws the original error
+  throw e;
+}
+
 /**
  * Utility function to handle promise, so they are logged in case of an error. It will return a promise that resolves to true if the promise is successful
  * @param errorMessage message to log in case of an error (together witht he original error)
@@ -86,42 +154,32 @@ function handlePromiseErrors<T>(
   return promise
     .then(() => true)
     .catch((error) => {
-      console.error(errorMessage, error /*extractErrorMessage(error)*/);
+      console.error(errorMessage, error);
       return true;
     });
 }
 
 /**
- * Convenient utility to log in case theres an error writing in the registry
+ * Convenient utility to log in case theres an error writing in the registry and return a boolean with the result of the operation
+ *
  * @param registry Tenderly registry
  * @returns a promise that returns true if the registry write was successful
  */
-export function writeRegistry(registry: Registry): Promise<boolean> {
-  return handlePromiseErrors("Error writing registry", registry.write());
+export function writeRegistry(): Promise<boolean> {
+  return executionContext
+    ? handlePromiseErrors(
+        "Error writing registry",
+        executionContext?.registry.write()
+      )
+    : Promise.resolve(true);
 }
 
-// /**
-//  * This util should not be needed, but tenderly has some annoying issues with the logs. They hide important logs, leaving us blind
-//  * I suspect, some of them is because we print errors which contain a tacktrace, and they think this is too big og a message
-//  *
-//  * Ideally this util shold not be used, ands we shoudl print the whole error
-//  *
-//  * @param obj
-//  * @returns
-//  */
-// export function extractErrorMessage(error: unknown): string {
-//   if (isErrorWithMesage(error)) {
-//     return error.message;
-//   }
-
-//   return "";
-// }
-
-// function isErrorWithMesage(obj: unknown): obj is { message: string } {
-//   return (
-//     typeof obj === "object" && obj !== null && "name" in obj && "age" in obj
-//   );
-// }
+var consoleOriginal = {
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  debug: console.debug,
+};
 
 /**
  * Tenderly has a limit of 4Kb per log message. When you surpas this limit, the log is not printed any more making it super hard to debug anythnig
@@ -147,16 +205,51 @@ const logWithLimit =
     for (let i = 0; i < numChunks; i += 1) {
       const chartStart = i * TENDERLY_LOG_LIMIT;
       const prefix = numChunks > 1 ? `[${i + 1}/${numChunks}] ` : "";
-      console[level](
+      const message =
         prefix +
-          bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT)
-      );
+        bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT);
+      consoleOriginal[level](message);
+
+      // if (level === "error") {
+      //   sendSlack(message);
+      // }
+
+      // // Used to debug the Tender log Limit issues
+      // consoleOriginal[level](
+      //   prefix + "TEST for bigLogText of " + bigLogText.length + " bytes"
+      // );
     }
   };
 
-export const logger = {
-  error: logWithLimit("warn"),
-  warn: logWithLimit("error"),
-  debug: logWithLimit("debug"),
-  log: logWithLimit("log"),
-};
+// Override the log function since some internal libraries might print somnething and breaks Tendrly
+
+console.warn = logWithLimit("warn");
+console.error = logWithLimit("error");
+console.debug = logWithLimit("debug");
+console.log = logWithLimit("log");
+
+export function sendSlack(message: string): boolean {
+  if (!executionContext) {
+    consoleOriginal.warn("Slack not initialized, ignoring message", message);
+    return false;
+  }
+
+  const { slack, registry, notificationsEnabled } = executionContext;
+
+  // Notify IF
+  //  - notifications are enabled
+  //  - AND, Either there hasn't been any notification yet, or the last notification was more than NOTIFICATION_WAIT_PERIOD ago
+  if (
+    notificationsEnabled &&
+    (registry.lastNotifiedError === null ||
+      Date.now() - registry.lastNotifiedError.getTime() <
+        NOTIFICATION_WAIT_PERIOD)
+  ) {
+    return false;
+  }
+
+  slack.send({
+    text: message,
+  });
+  return true;
+}
