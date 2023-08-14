@@ -308,7 +308,9 @@ For local integration testing, including the use of [Tenderly Actions](#Tenderly
    SAFE="address here" forge script script/submit_SingleOrder.s.sol:SubmitSingleOrder --rpc-url http://127.0.0.1:8545 --broadcast
    ```
 
-#### Local test for Tenderly Web3 Actions
+#### Run Tenderly Web3 Actions locally
+
+> Useful for debugging locally the actions. Also could be used to create an order for an old block in case there was a failure of WatchTowers indexing it.
 
 Make sure you setup the environment (so you have your own `.env` file).
 
@@ -325,6 +327,13 @@ NODE_PASSWORD_100=optionally-provide-password-if-auth-is-required
 # Build Actions
 yarn build:actions
 
-# Run actions locally, so it starts to checking for new blocks, and executing the actions to create Composable Cow orders)
+# Run actions locally
+#   - It will starts watching and processing new blocks
+#   - As a result, new Composable Cow orders will be discovered and posted to the Orederbook API
+yarn start:actions
+
+# You can re-process an old block by:
+#   - Add an env BLOCK_NUMBER
+#   - Run actions locally
 yarn start:actions
 ```
