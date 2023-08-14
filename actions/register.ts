@@ -50,7 +50,9 @@ const _addContract: ActionFn = async (context: Context, event: Event) => {
   hasErrors ||= !(await writeRegistry());
   // Throw execution error if there was at least one error
   if (hasErrors) {
-    throw Error("Error adding contract for event" + JSON.stringify(event));
+    throw Error(
+      "[addContract] Error adding conditional order. Event: " + event
+    );
   }
 };
 
@@ -301,23 +303,21 @@ export class Registry {
   /**
    * Write the registry to storage.
    */
-  public async write() {
-    await this.storage.putStr(
+  public async write(): Promise<void> {
+    const writeOrders = this.storage.putStr(
       getOrdersStorageKey(this.network),
       JSON.stringify(this.ownerOrders, replacer)
     );
 
-    if (this.lastNotifiedError !== null) {
-      console.log(
-        "this.lastNotifiedError.toISOString()",
-        this.lastNotifiedError,
-        typeof this.lastNotifiedError
-      );
-      await this.storage.putStr(
-        LAST_NOTIFIED_ERROR_STORAGE_KEY,
-        this.lastNotifiedError.toISOString()
-      );
-    }
+    const writeLastNotifiedError =
+      this.lastNotifiedError !== null
+        ? this.storage.putStr(
+            LAST_NOTIFIED_ERROR_STORAGE_KEY,
+            this.lastNotifiedError.toISOString()
+          )
+        : Promise.resolve();
+
+    return Promise.all([writeOrders, writeLastNotifiedError]).then(() => {});
   }
 }
 

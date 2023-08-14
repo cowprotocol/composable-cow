@@ -75,7 +75,9 @@ const _checkForSettlement: ActionFn = async (
 
   // Throw execution error if there was at least one error
   if (hasErrors) {
-    throw Error("Error while checking the settlements");
+    throw Error(
+      "[checkForSettlement] Error while checking the settlements to mark orders as FILLED"
+    );
   }
 };
 
@@ -211,7 +213,9 @@ const _checkForAndPlaceOrder: ActionFn = async (
 
   // Throw execution error if there was at least one error
   if (hasErrors) {
-    throw Error("Error while processing settlements");
+    throw Error(
+      "[checkForAndPlaceOrder] Error while checking if conditional orders are ready to be placed in Orderbook API"
+    );
   }
 };
 

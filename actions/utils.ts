@@ -21,7 +21,7 @@ export async function init(
   network: string,
   context: Context
 ): Promise<ExecutionContext> {
-  // Init slack
+  // Get slack config
   const webhookUrl = await context.secrets
     .get("SLACK_WEBHOOK_URL")
     .catch(() => "");
@@ -29,6 +29,7 @@ export async function init(
   // Init registry
   const registry = await Registry.load(context, network);
 
+  // Get notifications config (enabled by default)
   const notificationsEnabled = await context.secrets
     .get("NOTIFICATIONS_ENABLED")
     .then((value) => (value ? value !== "false" : true))
@@ -155,7 +156,7 @@ function handlePromiseErrors<T>(
     .then(() => true)
     .catch((error) => {
       console.error(errorMessage, error);
-      return true;
+      return false;
     });
 }
 
@@ -165,13 +166,15 @@ function handlePromiseErrors<T>(
  * @param registry Tenderly registry
  * @returns a promise that returns true if the registry write was successful
  */
-export function writeRegistry(): Promise<boolean> {
-  return executionContext
-    ? handlePromiseErrors(
-        "Error writing registry",
-        executionContext?.registry.write()
-      )
-    : Promise.resolve(true);
+export async function writeRegistry(): Promise<boolean> {
+  if (executionContext) {
+    return handlePromiseErrors(
+      "Error writing registry",
+      executionContext.registry.write()
+    );
+  }
+
+  return true;
 }
 
 var consoleOriginal = {
@@ -230,22 +233,33 @@ console.log = logWithLimit("log");
 
 export function sendSlack(message: string): boolean {
   if (!executionContext) {
-    consoleOriginal.warn("Slack not initialized, ignoring message", message);
+    consoleOriginal.warn(
+      "[sendSlack] Slack not initialized, ignoring message",
+      message
+    );
     return false;
   }
 
   const { slack, registry, notificationsEnabled } = executionContext;
 
-  // Notify IF
-  //  - notifications are enabled
-  //  - AND, Either there hasn't been any notification yet, or the last notification was more than NOTIFICATION_WAIT_PERIOD ago
-  if (
-    notificationsEnabled &&
-    (registry.lastNotifiedError === null ||
-      Date.now() - registry.lastNotifiedError.getTime() <
-        NOTIFICATION_WAIT_PERIOD)
-  ) {
+  // Do not notify IF notifications are disabled
+  if (!notificationsEnabled) {
     return false;
+  }
+
+  if (registry.lastNotifiedError !== null) {
+    const nextErrorNotificationTime =
+      registry.lastNotifiedError.getTime() + NOTIFICATION_WAIT_PERIOD;
+    if (Date.now() < nextErrorNotificationTime) {
+      console.warn(
+        `[sendSlack] Last error notification happened earlier than ${
+          NOTIFICATION_WAIT_PERIOD / 60_000
+        } minutes ago. Next notification will happen after ${new Date(
+          nextErrorNotificationTime
+        )}`
+      );
+      return false;
+    }
   }
 
   slack.send({
