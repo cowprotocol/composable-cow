@@ -17,8 +17,7 @@
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",
     "solhint": "^3.4.1",
-    "solhint-plugin-prettier": "^0.0.5",
-    "@sentry/node": "^7.64.0"
+    "solhint-plugin-prettier": "^0.0.5"
   },
   "scripts": {
     "fmt": "yarn fmt:contracts && yarn fmt:actions && yarn fmt:cli",

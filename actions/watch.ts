@@ -57,7 +57,11 @@ const _checkForSettlement: ActionFn = async (
   const transactionEvent = event as TransactionEvent;
   const settlement = GPv2Settlement__factory.createInterface();
 
-  const { registry } = await init(transactionEvent.network, context);
+  const { registry } = await init(
+    "checkForSettlement",
+    transactionEvent.network,
+    context
+  );
 
   let hasErrors = false;
   transactionEvent.logs.forEach(async (log) => {
@@ -127,15 +131,49 @@ async function getTradeableOrderWithSignature(
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW
 ) {
+  const proof = conditionalOrder.proof ? conditionalOrder.proof.path : [];
+  const offchainInput = "0x";
+  contract.getTradeableOrderWithSignature;
+  const { to, data } =
+    await contract.populateTransaction.getTradeableOrderWithSignature(
+      owner,
+      conditionalOrder.params,
+      offchainInput,
+      proof
+    );
+
+  // await contract.provider
+  //   .estimateGas({
+  //     to: contract.address,
+  //     data,
+  //   })
+  //   .then((r) => {
+  //     console.log("[getTradeableOrderWithSignature:estimateGas] Success", r);
+  //   })
+  //   .catch((e) => {
+  //     console.error(
+  //       '[getTradeableOrderWithSignature:estimateGas] Error during "getTradeableOrderWithSignature" call: ',
+  //       e
+  //     );
+  //   });
+
+  console.log("[getTradeableOrderWithSignature] Simulate", {
+    to,
+    data,
+  });
+
   return contract.callStatic
     .getTradeableOrderWithSignature(
       owner,
       conditionalOrder.params,
-      "0x",
-      conditionalOrder.proof ? conditionalOrder.proof.path : []
+      offchainInput,
+      proof
     )
     .catch((e) => {
-      console.error('Error during "getTradeableOrderWithSignature" call: ', e);
+      console.error(
+        '[getTradeableOrderWithSignature] Error during "getTradeableOrderWithSignature" call: ',
+        e
+      );
       throw e;
     });
 }
@@ -163,7 +201,11 @@ const _checkForAndPlaceOrder: ActionFn = async (
   const blockEvent = event as BlockEvent;
   const { network } = blockEvent;
   const chainContext = await ChainContext.create(context, network);
-  const { registry } = await init(blockEvent.network, context);
+  const { registry } = await init(
+    "checkForAndPlaceOrder",
+    blockEvent.network,
+    context
+  );
   const { ownerOrders } = registry;
 
   // enumerate all the owners
@@ -174,7 +216,7 @@ const _checkForAndPlaceOrder: ActionFn = async (
     // enumerate all the `ConditionalOrder`s for a given owner
     for (const conditionalOrder of conditionalOrders) {
       console.log(
-        `[checkForAndPlaceOrder] Check conditional order created in ${conditionalOrder.tx} with params:`,
+        `[checkForAndPlaceOrder] Check conditional order created in TX ${conditionalOrder.tx} with params:`,
         conditionalOrder.params
       );
       const contract = ComposableCoW__factory.connect(
@@ -468,7 +510,10 @@ class ChainContext {
     return new ChainContext(provider, apiUrl(network));
   }
 }
-function handleOrderBookError(status: any, data: any): { shouldThrow: boolean } {
+function handleOrderBookError(
+  status: any,
+  data: any
+): { shouldThrow: boolean } {
   if (status === 400 && data?.errorType === "DuplicatedOrder") {
     // The order is in the OrderBook, all good :)
     return { shouldThrow: false };
