@@ -144,7 +144,7 @@ export function handleExecutionError(e: any) {
 
 /**
  * Utility function to handle promise, so they are logged in case of an error. It will return a promise that resolves to true if the promise is successful
- * @param errorMessage message to log in case of an error (together witht he original error)
+ * @param errorMessage message to log in case of an error (together with the original error)
  * @param promise original promise
  * @returns a promise that returns true if the original promise was successful
  */

@@ -354,7 +354,7 @@ async function placeOrder(
       from: order.from,
     };
 
-    // if the api_url doesn't contain localhost, post
+    // if the apiUrl doesn't contain localhost, post
     console.log(`[placeOrder] Post order ${orderUid} to ${apiUrl}`);
     console.log(`[placeOrder] Order`, postData);
     if (!apiUrl.includes("localhost")) {
