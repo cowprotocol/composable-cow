@@ -46,7 +46,6 @@ export async function init(
   // Init Sentry
   const sentryDsn = await context.secrets.get("SENTRY_DSN").catch(() => "");
   if (sentryDsn) {
-    console.warn("Sentry enabled ", sentryDsn);
     Sentry.init({
       dsn: sentryDsn,
       tracesSampleRate: 1.0, // Capture 100% of the transactions. Consider reducing in production.
