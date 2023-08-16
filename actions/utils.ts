@@ -4,6 +4,57 @@ import assert = require("assert");
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus, Registry } from "./register";
+import Slack = require("node-slack");
+
+const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
+const NOTIFICATION_WAIT_PERIOD = 1000 * 60 * 60 * 2; // 2h - Don't send more than one notification every 2h
+interface ExecutionContext {
+  registry: Registry;
+  slack: Slack;
+  notificationsEnabled: boolean;
+  context: Context;
+}
+
+let executionContext: ExecutionContext | undefined;
+
+export async function init(
+  network: string,
+  context: Context
+): Promise<ExecutionContext> {
+  // Get slack config
+  const webhookUrl = await context.secrets
+    .get("SLACK_WEBHOOK_URL")
+    .catch(() => "");
+
+  // Init registry
+  const registry = await Registry.load(context, network);
+
+  // Get notifications config (enabled by default)
+  const notificationsEnabled = await context.secrets
+    .get("NOTIFICATIONS_ENABLED")
+    .then((value) => (value ? value !== "false" : true))
+    .catch(() => true);
+
+  if (notificationsEnabled && !webhookUrl) {
+    throw new Error(
+      "SLACK_WEBHOOK_URL secret is required when NOTIFICATIONS_ENABLED is true"
+    );
+  }
+  const slack = new Slack(webhookUrl);
+
+  executionContext = {
+    registry,
+    slack,
+    notificationsEnabled,
+    context,
+  };
+
+  return executionContext;
+}
+
+export function getExecutionContext(): ExecutionContext | undefined {
+  return executionContext;
+}
 
 async function getSecret(key: string, context: Context): Promise<string> {
   const value = await context.secrets.get(key);
@@ -71,9 +122,29 @@ export function formatStatus(status: OrderStatus) {
   }
 }
 
+export function handleExecutionError(e: any) {
+  try {
+    const errorMessage = e?.message || "Unknown error";
+    const notified = sendSlack(
+      errorMessage +
+        ". More info https://dashboard.tenderly.co/devcow/project/actions"
+    );
+
+    if (notified && executionContext) {
+      executionContext.registry.lastNotifiedError = new Date();
+      writeRegistry();
+    }
+  } catch (error) {
+    consoleOriginal.error("Error sending slack notification", error);
+  }
+
+  // Re-throws the original error
+  throw e;
+}
+
 /**
  * Utility function to handle promise, so they are logged in case of an error. It will return a promise that resolves to true if the promise is successful
- * @param errorMessage message to log in case of an error (together witht he original error)
+ * @param errorMessage message to log in case of an error (together with the original error)
  * @param promise original promise
  * @returns a promise that returns true if the original promise was successful
  */
@@ -85,15 +156,114 @@ function handlePromiseErrors<T>(
     .then(() => true)
     .catch((error) => {
       console.error(errorMessage, error);
-      return true;
+      return false;
     });
 }
 
 /**
- * Convenient utility to log in case theres an error writing in the registry
+ * Convenient utility to log in case theres an error writing in the registry and return a boolean with the result of the operation
+ *
  * @param registry Tenderly registry
  * @returns a promise that returns true if the registry write was successful
  */
-export function writeRegistry(registry: Registry): Promise<boolean> {
-  return handlePromiseErrors("Error writing registry", registry.write());
+export async function writeRegistry(): Promise<boolean> {
+  if (executionContext) {
+    return handlePromiseErrors(
+      "Error writing registry",
+      executionContext.registry.write()
+    );
+  }
+
+  return true;
+}
+
+var consoleOriginal = {
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  debug: console.debug,
+};
+
+/**
+ * Tenderly has a limit of 4Kb per log message. When you surpass this limit, the log is not printed any more making it super hard to debug anything
+ *
+ * This tool will print
+ *
+ * @param data T
+ */
+const logWithLimit =
+  (level: "log" | "warn" | "error" | "debug") =>
+  (...data: any[]) => {
+    const bigLogText = data
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+        return JSON.stringify(item, null, 2);
+      })
+      .join(" ");
+
+    const numChunks = Math.ceil(bigLogText.length / TENDERLY_LOG_LIMIT);
+
+    for (let i = 0; i < numChunks; i += 1) {
+      const chartStart = i * TENDERLY_LOG_LIMIT;
+      const prefix = numChunks > 1 ? `[${i + 1}/${numChunks}] ` : "";
+      const message =
+        prefix +
+        bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT);
+      consoleOriginal[level](message);
+
+      // if (level === "error") {
+      //   sendSlack(message);
+      // }
+
+      // // Used to debug the Tenderly log Limit issues
+      // consoleOriginal[level](
+      //   prefix + "TEST for bigLogText of " + bigLogText.length + " bytes"
+      // );
+    }
+  };
+
+// Override the log function since some internal libraries might print something and breaks Tenderly
+
+console.warn = logWithLimit("warn");
+console.error = logWithLimit("error");
+console.debug = logWithLimit("debug");
+console.log = logWithLimit("log");
+
+export function sendSlack(message: string): boolean {
+  if (!executionContext) {
+    consoleOriginal.warn(
+      "[sendSlack] Slack not initialized, ignoring message",
+      message
+    );
+    return false;
+  }
+
+  const { slack, registry, notificationsEnabled } = executionContext;
+
+  // Do not notify IF notifications are disabled
+  if (!notificationsEnabled) {
+    return false;
+  }
+
+  if (registry.lastNotifiedError !== null) {
+    const nextErrorNotificationTime =
+      registry.lastNotifiedError.getTime() + NOTIFICATION_WAIT_PERIOD;
+    if (Date.now() < nextErrorNotificationTime) {
+      console.warn(
+        `[sendSlack] Last error notification happened earlier than ${
+          NOTIFICATION_WAIT_PERIOD / 60_000
+        } minutes ago. Next notification will happen after ${new Date(
+          nextErrorNotificationTime
+        )}`
+      );
+      return false;
+    }
+  }
+
+  slack.send({
+    text: message,
+  });
+  return true;
 }

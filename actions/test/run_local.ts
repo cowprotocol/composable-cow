@@ -23,9 +23,11 @@ const main = async () => {
     `NODE_URL_${network}`,
     `NODE_USER_${network}`,
     `NODE_PASSWORD_${network}`,
+    "SLACK_WEBHOOK_URL",
+    "NOTIFICATIONS_ENABLED",
   ];
   for (const name of envNames) {
-    const envValue = process.env[name];
+    const envValue = process.env[name]; // || "";
     if (envValue) {
       await testRuntime.context.secrets.put(name, envValue);
     }

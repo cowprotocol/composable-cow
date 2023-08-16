@@ -14,7 +14,14 @@ import type {
   IConditionalOrder,
 } from "./types/ComposableCoW";
 import { ComposableCoW__factory } from "./types/factories/ComposableCoW__factory";
-import { writeRegistry } from "./utils";
+import { handleExecutionError, init, writeRegistry } from "./utils";
+
+// Standardise the storage key
+const LAST_NOTIFIED_ERROR_STORAGE_KEY = "LAST_NOTIFIED_ERROR";
+
+export const getOrdersStorageKey = (network: string): string => {
+  return `CONDITIONAL_ORDER_REGISTRY_${network}`;
+};
 
 /**
  * Listens to these events on the `ComposableCoW` contract:
@@ -24,29 +31,33 @@ import { writeRegistry } from "./utils";
  * @param event transaction event
  */
 export const addContract: ActionFn = async (context: Context, event: Event) => {
-  const transactionEvent = event as TransactionEvent;
-  const composableCow = ComposableCoW__factory.createInterface();
+  return _addContract(context, event).catch(handleExecutionError);
+};
 
-  // Load the registry
-  const registry = await Registry.load(context, transactionEvent.network);
+const _addContract: ActionFn = async (context: Context, event: Event) => {
+  const transactionEvent = event as TransactionEvent;
+  const tx = transactionEvent.hash;
+  const composableCow = ComposableCoW__factory.createInterface();
+  const { registry } = await init(transactionEvent.network, context);
 
   // Process the logs
   let hasErrors = false;
   transactionEvent.logs.forEach((log) => {
-    const { error } = _addContract(log, composableCow, registry);
+    const { error } = _registerNewOrder(tx, log, composableCow, registry);
     hasErrors ||= error;
   });
 
-  hasErrors ||= !(await writeRegistry(registry));
-  // Notify error
+  hasErrors ||= !(await writeRegistry());
+  // Throw execution error if there was at least one error
   if (hasErrors) {
-    // TODO notify error to slack
-
-    throw Error("Error adding contract for event" + JSON.stringify(event));
+    throw Error(
+      "[addContract] Error adding conditional order. Event: " + event
+    );
   }
 };
 
-export function _addContract(
+export function _registerNewOrder(
+  tx: string,
   log: Log,
   composableCow: ComposableCoWInterface,
   registry: Registry
@@ -63,7 +74,7 @@ export function _addContract(
       ) as [string, IConditionalOrder.ConditionalOrderParamsStruct];
 
       // Attempt to add the conditional order to the registry
-      add(owner, params, null, log.address, registry);
+      add(tx, owner, params, null, log.address, registry);
     } else if (log.topics[0] == composableCow.getEventTopic("MerkleRootSet")) {
       const [owner, root, proof] = composableCow.decodeEventLog(
         "MerkleRootSet",
@@ -92,6 +103,7 @@ export function _addContract(
           );
           // Attempt to add the conditional order to the registry
           add(
+            tx,
             owner,
             decodedOrder[1],
             { merkleRoot: root, path: decodedOrder[0] },
@@ -103,8 +115,8 @@ export function _addContract(
     }
   } catch (error) {
     console.error(
-      "[addContract] Error handling ConditionalOrderCreated/MerkleRootSet event",
-      error
+      "[addContract] Error handling ConditionalOrderCreated/MerkleRootSet event" +
+        error
     );
     return { error: true };
   }
@@ -114,6 +126,7 @@ export function _addContract(
 
 /**
  * Attempt to add an owner's conditional order to the registry
+ *
  * @param owner to add the conditional order to
  * @param params for the conditional order
  * @param proof for the conditional order (if it is part of a merkle root)
@@ -121,6 +134,7 @@ export function _addContract(
  * @param registry of all conditional orders
  */
 export const add = async (
+  tx: string,
   owner: Owner,
   params: IConditionalOrder.ConditionalOrderParamsStruct,
   proof: Proof | null,
@@ -130,7 +144,7 @@ export const add = async (
   if (registry.ownerOrders.has(owner)) {
     const conditionalOrders = registry.ownerOrders.get(owner);
     console.log(
-      `[register:add] Adding conditional order ${params} to already existing contract ${owner}`
+      `[register:add] Adding conditional order ${params} to already existing contract ${owner}. Tx: ${tx}`
     );
     let exists: boolean = false;
     // Iterate over the conditionalOrders to make sure that the params are not already in the registry
@@ -145,6 +159,7 @@ export const add = async (
     // If the params are not in the conditionalOrder, add them
     if (!exists) {
       conditionalOrders?.add({
+        tx,
         params,
         proof,
         orders: new Map(),
@@ -153,11 +168,11 @@ export const add = async (
     }
   } else {
     console.log(
-      `[register:add] Adding conditional order ${params} to new contract ${owner}`
+      `[register:add] Adding conditional order ${params} to new contract ${owner} . Tx: ${tx}`
     );
     registry.ownerOrders.set(
       owner,
-      new Set([{ params, proof, orders: new Map(), composableCow }])
+      new Set([{ tx, params, proof, orders: new Map(), composableCow }])
     );
   }
 };
@@ -210,6 +225,8 @@ export type OrderUid = BytesLike;
 export type Owner = string;
 
 export type ConditionalOrder = {
+  tx: string; // the transaction hash that created the conditional order (useful for debugging purposes)
+
   // the parameters of the conditional order
   params: IConditionalOrder.ConditionalOrderParamsStruct;
   // the merkle proof if the conditional order is belonging to a merkle root
@@ -222,12 +239,14 @@ export type ConditionalOrder = {
 };
 
 /**
- * A registry is a map of owners to conditional orders.
+ * Models the state beteween executions.
+ * Contains a map of owners to conditional orders and the last time we sent an error.
  */
 export class Registry {
   ownerOrders: Map<Owner, Set<ConditionalOrder>>;
   storage: Storage;
   network: string;
+  lastNotifiedError: Date | null;
 
   /**
    * Instantiates a registry.
@@ -238,11 +257,13 @@ export class Registry {
   constructor(
     ownerOrders: Map<Owner, Set<ConditionalOrder>>,
     storage: Storage,
-    network: string
+    network: string,
+    lastNotifiedError: Date | null
   ) {
     this.ownerOrders = ownerOrders;
     this.storage = storage;
     this.network = network;
+    this.lastNotifiedError = lastNotifiedError;
   }
 
   /**
@@ -255,27 +276,48 @@ export class Registry {
     context: Context,
     network: string
   ): Promise<Registry> {
-    const str = await context.storage.getStr(storageKey(network));
+    const str = await context.storage.getStr(getOrdersStorageKey(network));
+    const lastNotifiedError = await context.storage
+      .getStr(LAST_NOTIFIED_ERROR_STORAGE_KEY)
+      .then((isoDate) => (isoDate ? new Date(isoDate) : null))
+      .catch(() => null);
+
     if (str === null || str === undefined || str === "") {
       return new Registry(
         new Map<Owner, Set<ConditionalOrder>>(),
         context.storage,
-        network
+        network,
+        lastNotifiedError
       );
     }
 
     const ownerOrders = JSON.parse(str, reviver);
-    return new Registry(ownerOrders, context.storage, network);
+    return new Registry(
+      ownerOrders,
+      context.storage,
+      network,
+      lastNotifiedError
+    );
   }
 
   /**
    * Write the registry to storage.
    */
-  public async write() {
-    await this.storage.putStr(
-      storageKey(this.network),
+  public async write(): Promise<void> {
+    const writeOrders = this.storage.putStr(
+      getOrdersStorageKey(this.network),
       JSON.stringify(this.ownerOrders, replacer)
     );
+
+    const writeLastNotifiedError =
+      this.lastNotifiedError !== null
+        ? this.storage.putStr(
+            LAST_NOTIFIED_ERROR_STORAGE_KEY,
+            this.lastNotifiedError.toISOString()
+          )
+        : Promise.resolve();
+
+    return Promise.all([writeOrders, writeLastNotifiedError]).then(() => {});
   }
 }
 
@@ -308,8 +350,3 @@ export function reviver(_key: any, value: any) {
   }
   return value;
 }
-
-// Standardise the storage key
-export const storageKey = (network: string): string => {
-  return `CONDITIONAL_ORDER_REGISTRY_${network}`;
-};

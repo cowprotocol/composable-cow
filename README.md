@@ -187,8 +187,6 @@ Notably, with the `CondtionalOrderCreated` and `MerkleRootSet` events, multiple 
 
 As orders expire, or are cancelled, they are removed from the registry to conserve storage space.
 
-**TODO:** Improvements to flag an `orderUid` as `SUBMITTED` if the API returns an error due to duplicate order submission. This would limit queries to the CoW Protocol API to the total number of watchtowers being run.
-
 ### Local testing
 
 This is asusming that you have followed the instructions for deploying the stack on `anvil` in [local deployment](#Local-deployment)
@@ -207,6 +205,14 @@ If running your own watch tower, or deploying for production:
 ```bash
 tenderly actions deploy
 ```
+
+Make sure you configure the secrets in Tenderly:
+
+- `SLACK_WEBHOOK_URL`: Slack Webhook
+- `NOTIFICATIONS_ENABLED`: (default `true`) Set to `false` to disable Slack notifications
+- `NODE_URL_${network}`: RPC Node URL
+- `NODE_USER_${network}`: (optional) RPC Node user name for basic auth.
+- `NODE_PASSWORD_${network}`: (optional) RPC Node password name for basic auth.
 
 ## Developers
 
