@@ -185,7 +185,7 @@ var consoleOriginal = {
 };
 
 /**
- * Tenderly has a limit of 4Kb per log message. When you surpas this limit, the log is not printed any more making it super hard to debug anythnig
+ * Tenderly has a limit of 4Kb per log message. When you surpass this limit, the log is not printed any more making it super hard to debug anything
  *
  * This tool will print
  *
