@@ -27,7 +27,7 @@ const main = async () => {
     "NOTIFICATIONS_ENABLED",
   ];
   for (const name of envNames) {
-    const envValue = process.env[name]; // || "";
+    const envValue = process.env[name];
     if (envValue) {
       await testRuntime.context.secrets.put(name, envValue);
     }
