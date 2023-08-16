@@ -329,7 +329,7 @@ yarn build:actions
 
 # Run actions locally
 #   - It will start watching and processing new blocks
-#   - As a result, new Composable Cow orders will be discovered and posted to the Orederbook API
+#   - As a result, new Composable Cow orders will be discovered and posted to the OrderBook API
 yarn start:actions
 
 # You can re-process an old block by:
