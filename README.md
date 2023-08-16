@@ -213,7 +213,7 @@ Make sure you configure the secrets in Tenderly:
 - `NODE_PASSWORD_${network}`: (optional) RPC Node password name for basic auth.
 - `NOTIFICATIONS_ENABLED`: (default `true`) Set to `false` to disable Slack notifications
 - `SLACK_WEBHOOK_URL`: Slack Webhook (required only if notifications are enabled)
-- `SENTRY_DSN`: ()optional Sentry DSN code. If present, it will enable Sentry notifications
+- `SENTRY_DSN`: (optional) Sentry DSN code. If present, it will enable Sentry notifications
 
 ## Developers
 

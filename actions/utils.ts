@@ -55,11 +55,6 @@ export async function init(
     console.warn("SENTRY_DSN secret is not set. Sentry will be disabled");
   }
 
-  const transaction = Sentry.startTransaction({
-    op: "test",
-    name: "My First Test Transaction",
-  });
-
   executionContext = {
     registry,
     slack,
