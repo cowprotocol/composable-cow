@@ -37,7 +37,7 @@ const main = async () => {
   const provider = await getProvider(testRuntime.context, network);
   const { chainId } = await provider.getNetwork();
 
-  // Provides a way to process an specific block p
+  // Provides a way to process a specific block p
   const blockNumber = process.env.BLOCK_NUMBER;
 
   const onNewBlock = async (blockNumber: number) => {
@@ -50,7 +50,7 @@ const main = async () => {
 
   if (process.env.BLOCK_NUMBER) {
     const blockNumber = Number(process.env.BLOCK_NUMBER);
-    console.log(`[run_local] Processing an specicfic block ${blockNumber}...`);
+    console.log(`[run_local] Processing specific block ${blockNumber}...`);
     await onNewBlock(blockNumber).catch(console.error);
     console.log(`[run_local] Block ${blockNumber} has been processed.`);
   } else {

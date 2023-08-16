@@ -328,7 +328,7 @@ NODE_PASSWORD_100=optionally-provide-password-if-auth-is-required
 yarn build:actions
 
 # Run actions locally
-#   - It will starts watching and processing new blocks
+#   - It will start watching and processing new blocks
 #   - As a result, new Composable Cow orders will be discovered and posted to the Orederbook API
 yarn start:actions
 
