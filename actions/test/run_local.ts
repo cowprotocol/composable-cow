@@ -27,7 +27,7 @@ const main = async () => {
     "NOTIFICATIONS_ENABLED",
   ];
   for (const name of envNames) {
-    const envValue = process.env[name]; // || "";
+    const envValue = process.env[name];
     if (envValue) {
       await testRuntime.context.secrets.put(name, envValue);
     }
@@ -37,13 +37,27 @@ const main = async () => {
   const provider = await getProvider(testRuntime.context, network);
   const { chainId } = await provider.getNetwork();
 
-  provider.on("block", async (blockNumber) => {
+  // Provides a way to process a specific block p
+  const blockNumber = process.env.BLOCK_NUMBER;
+
+  const onNewBlock = async (blockNumber: number) => {
     try {
       processBlock(provider, blockNumber, chainId, testRuntime);
     } catch (error) {
       console.error("[run_local] Error in processBlock", error);
     }
-  });
+  };
+
+  if (process.env.BLOCK_NUMBER) {
+    const blockNumber = Number(process.env.BLOCK_NUMBER);
+    console.log(`[run_local] Processing specific block ${blockNumber}...`);
+    await onNewBlock(blockNumber).catch(console.error);
+    console.log(`[run_local] Block ${blockNumber} has been processed.`);
+  } else {
+    // Watch for new blocks
+    console.log(`[run_local] Subscribe to new blocks for network ${network}`);
+    provider.on("block", onNewBlock);
+  }
 };
 
 async function processBlock(
@@ -52,23 +66,7 @@ async function processBlock(
   chainId: number,
   testRuntime: TestRuntime
 ) {
-  // Block watcher for creating new orders
-  const testBlockEvent = new TestBlockEvent();
   const block = await provider.getBlock(blockNumber);
-  testBlockEvent.blockNumber = blockNumber;
-  testBlockEvent.blockDifficulty = block.difficulty.toString();
-  testBlockEvent.blockHash = block.hash;
-  testBlockEvent.network = chainId.toString();
-
-  // run action
-  await testRuntime
-    .execute(checkForAndPlaceOrder, testBlockEvent)
-    .catch((e) => {
-      console.log(
-        "[run_local] Error in checkForAndPlaceOrder processing block",
-        e
-      );
-    });
 
   // Transaction watcher for adding new contracts
   const blockWithTransactions = await provider.getBlockWithTransactions(
@@ -111,6 +109,23 @@ async function processBlock(
         });
     }
   }
+
+  // Block watcher for creating new orders
+  const testBlockEvent = new TestBlockEvent();
+  testBlockEvent.blockNumber = blockNumber;
+  testBlockEvent.blockDifficulty = block.difficulty.toString();
+  testBlockEvent.blockHash = block.hash;
+  testBlockEvent.network = chainId.toString();
+
+  // run action
+  await testRuntime
+    .execute(checkForAndPlaceOrder, testBlockEvent)
+    .catch((e) => {
+      console.log(
+        "[run_local] Error in checkForAndPlaceOrder processing block",
+        e
+      );
+    });
 }
 
 (async () => await main())();
