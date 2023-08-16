@@ -4,6 +4,8 @@ import assert = require("assert");
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus, Registry } from "./register";
+
+const Sentry = require("@sentry/node");
 import Slack = require("node-slack");
 
 const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
@@ -21,11 +23,6 @@ export async function init(
   network: string,
   context: Context
 ): Promise<ExecutionContext> {
-  // Get slack config
-  const webhookUrl = await context.secrets
-    .get("SLACK_WEBHOOK_URL")
-    .catch(() => "");
-
   // Init registry
   const registry = await Registry.load(context, network);
 
@@ -35,12 +32,33 @@ export async function init(
     .then((value) => (value ? value !== "false" : true))
     .catch(() => true);
 
+  // Init slack
+  const webhookUrl = await context.secrets
+    .get("SLACK_WEBHOOK_URL")
+    .catch(() => "");
   if (notificationsEnabled && !webhookUrl) {
     throw new Error(
       "SLACK_WEBHOOK_URL secret is required when NOTIFICATIONS_ENABLED is true"
     );
   }
   const slack = new Slack(webhookUrl);
+
+  // Init Sentry
+  const sentryDsn = await context.secrets.get("SENTRY_DSN").catch(() => "");
+  if (sentryDsn) {
+    console.warn("Sentry enabled ", sentryDsn);
+    Sentry.init({
+      dsn: sentryDsn,
+      tracesSampleRate: 1.0, // Capture 100% of the transactions. Consider reducing in production.
+    });
+  } else {
+    console.warn("SENTRY_DSN secret is not set. Sentry will be disabled");
+  }
+
+  const transaction = Sentry.startTransaction({
+    op: "test",
+    name: "My First Test Transaction",
+  });
 
   executionContext = {
     registry,

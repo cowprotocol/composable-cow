@@ -23,7 +23,8 @@
     "ethers": "^5.7.2",
     "node-fetch": "2",
     "node-slack": "^0.0.7",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@sentry/node": "^7.64.0"
   },
   "private": true
 }
