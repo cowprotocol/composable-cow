@@ -217,14 +217,14 @@ const logWithLimit =
       //   sendSlack(message);
       // }
 
-      // // Used to debug the Tender log Limit issues
+      // // Used to debug the Tenderly log Limit issues
       // consoleOriginal[level](
       //   prefix + "TEST for bigLogText of " + bigLogText.length + " bytes"
       // );
     }
   };
 
-// Override the log function since some internal libraries might print somnething and breaks Tendrly
+// Override the log function since some internal libraries might print something and breaks Tenderly
 
 console.warn = logWithLimit("warn");
 console.error = logWithLimit("error");

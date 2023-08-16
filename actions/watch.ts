@@ -48,7 +48,7 @@ export const checkForSettlement: ActionFn = async (
 };
 
 /**
- * Asyncronous version of checkForSettlement. It will process all the settlements, and will throw an error at the end if there was at least one error
+ * Asynchronous version of checkForSettlement. It will process all the settlements, and will throw an error at the end if there was at least one error
  */
 const _checkForSettlement: ActionFn = async (
   context: Context,
@@ -316,7 +316,7 @@ function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
  */
 export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
   const unfilledOrders = Array.from(orders.entries())
-    .filter(([_orderUid, status]) => status === OrderStatus.SUBMITTED)
+    .filter(([_orderUid, status]) => status === OrderStatus.SUBMITTED) // as SUBMITTED != FILLED
     .map(([orderUid, _status]) => orderUid)
     .join(", ");
 
@@ -375,14 +375,14 @@ async function placeOrder(
     if (error.response) {
       const { status, data } = error.response;
 
-      const { shouldThow } = handleOrderBookError(status, data);
+      const { shouldThrow } = handleOrderBookError(status, data);
 
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      const log = console[shouldThow ? "error" : "warn"];
+      const log = console[shouldThrow ? "error" : "warn"];
       log(`${errorMessage}. Result: ${status}`, data);
 
-      if (!shouldThow) {
+      if (!shouldThrow) {
         log("All good! continuing with warnings...");
         return;
       }
@@ -468,11 +468,11 @@ class ChainContext {
     return new ChainContext(provider, apiUrl(network));
   }
 }
-function handleOrderBookError(status: any, data: any): { shouldThow: boolean } {
+function handleOrderBookError(status: any, data: any): { shouldThrow: boolean } {
   if (status === 400 && data?.errorType === "DuplicatedOrder") {
     // The order is in the OrderBook, all good :)
-    return { shouldThow: false };
+    return { shouldThrow: false };
   }
 
-  return { shouldThow: true };
+  return { shouldThrow: true };
 }
