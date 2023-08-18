@@ -38,7 +38,11 @@ const _addContract: ActionFn = async (context: Context, event: Event) => {
   const transactionEvent = event as TransactionEvent;
   const tx = transactionEvent.hash;
   const composableCow = ComposableCoW__factory.createInterface();
-  const { registry } = await init(transactionEvent.network, context);
+  const { registry } = await init(
+    "addContract",
+    transactionEvent.network,
+    context
+  );
 
   // Process the logs
   let hasErrors = false;
@@ -141,10 +145,12 @@ export const add = async (
   composableCow: string,
   registry: Registry
 ) => {
+  const { handler, salt, staticInput } = params;
   if (registry.ownerOrders.has(owner)) {
     const conditionalOrders = registry.ownerOrders.get(owner);
     console.log(
-      `[register:add] Adding conditional order ${params} to already existing contract ${owner}. Tx: ${tx}`
+      `[register:add] Adding conditional order to already existing owner contract ${owner}`,
+      { tx, handler, salt, staticInput }
     );
     let exists: boolean = false;
     // Iterate over the conditionalOrders to make sure that the params are not already in the registry
@@ -168,7 +174,8 @@ export const add = async (
     }
   } else {
     console.log(
-      `[register:add] Adding conditional order ${params} to new contract ${owner} . Tx: ${tx}`
+      `[register:add] Adding conditional order to new owner contract ${owner}:`,
+      { tx, handler, salt, staticInput }
     );
     registry.ownerOrders.set(
       owner,

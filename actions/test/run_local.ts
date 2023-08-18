@@ -25,6 +25,7 @@ const main = async () => {
     `NODE_PASSWORD_${network}`,
     "SLACK_WEBHOOK_URL",
     "NOTIFICATIONS_ENABLED",
+    "SENTRY_DSN",
   ];
   for (const name of envNames) {
     const envValue = process.env[name];

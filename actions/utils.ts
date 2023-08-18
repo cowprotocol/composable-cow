@@ -4,47 +4,54 @@ import assert = require("assert");
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
 import { OrderStatus, Registry } from "./register";
+
 import Slack = require("node-slack");
+import {
+  init as sentryInit,
+  startTransaction as sentryStartTransaction,
+  Transaction as SentryTransaction,
+} from "@sentry/node";
+import { CaptureConsole as CaptureConsoleIntegration } from "@sentry/integrations";
+
+// const Sentry = require("@sentry/node");
 
 const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
 const NOTIFICATION_WAIT_PERIOD = 1000 * 60 * 60 * 2; // 2h - Don't send more than one notification every 2h
+
 interface ExecutionContext {
   registry: Registry;
-  slack: Slack;
   notificationsEnabled: boolean;
+  slack?: Slack;
+  sentryTransaction?: SentryTransaction;
   context: Context;
 }
 
 let executionContext: ExecutionContext | undefined;
 
 export async function init(
+  transactionName: string,
   network: string,
   context: Context
 ): Promise<ExecutionContext> {
-  // Get slack config
-  const webhookUrl = await context.secrets
-    .get("SLACK_WEBHOOK_URL")
-    .catch(() => "");
-
   // Init registry
   const registry = await Registry.load(context, network);
 
   // Get notifications config (enabled by default)
-  const notificationsEnabled = await context.secrets
-    .get("NOTIFICATIONS_ENABLED")
-    .then((value) => (value ? value !== "false" : true))
-    .catch(() => true);
+  const notificationsEnabled = await _getNotificationsEnabled(context);
 
-  if (notificationsEnabled && !webhookUrl) {
-    throw new Error(
-      "SLACK_WEBHOOK_URL secret is required when NOTIFICATIONS_ENABLED is true"
-    );
+  // Init slack
+  const slack = await _getSlack(notificationsEnabled, context);
+
+  // Init Sentry
+  const sentryTransaction = await _getSentry(transactionName, network, context);
+  if (!sentryTransaction) {
+    console.warn("SENTRY_DSN secret is not set. Sentry will be disabled");
   }
-  const slack = new Slack(webhookUrl);
 
   executionContext = {
     registry,
     slack,
+    sentryTransaction,
     notificationsEnabled,
     context,
   };
@@ -52,8 +59,70 @@ export async function init(
   return executionContext;
 }
 
-export function getExecutionContext(): ExecutionContext | undefined {
-  return executionContext;
+async function _getNotificationsEnabled(context: Context): Promise<boolean> {
+  // Get notifications config (enabled by default)
+  return context.secrets
+    .get("NOTIFICATIONS_ENABLED")
+    .then((value) => (value ? value !== "false" : true))
+    .catch(() => true);
+}
+
+async function _getSlack(
+  notificationsEnabled: boolean,
+  context: Context
+): Promise<Slack | undefined> {
+  if (executionContext) {
+    return executionContext?.slack;
+  }
+
+  // Init slack
+  let slack;
+  const webhookUrl = await context.secrets
+    .get("SLACK_WEBHOOK_URL")
+    .catch(() => "");
+  if (!notificationsEnabled) {
+    return undefined;
+  }
+
+  if (!webhookUrl) {
+    throw new Error(
+      "SLACK_WEBHOOK_URL secret is required when NOTIFICATIONS_ENABLED is true"
+    );
+  }
+
+  return new Slack(webhookUrl);
+}
+
+async function _getSentry(
+  transactionName: string,
+  network: string,
+  context: Context
+): Promise<SentryTransaction | undefined> {
+  // Init Sentry
+  if (!executionContext) {
+    const sentryDsn = await context.secrets.get("SENTRY_DSN").catch(() => "");
+    sentryInit({
+      dsn: sentryDsn,
+      debug: false,
+      tracesSampleRate: 1.0, // Capture 100% of the transactions. Consider reducing in production.
+      integrations: [
+        new CaptureConsoleIntegration({
+          levels: ["error", "warn", "log", "info"],
+        }),
+      ],
+      initialScope: {
+        tags: {
+          network,
+        },
+      },
+    });
+  }
+
+  // Return transaction
+  return sentryStartTransaction({
+    name: transactionName,
+    op: "action",
+  });
 }
 
 async function getSecret(key: string, context: Context): Promise<string> {
@@ -243,7 +312,7 @@ export function sendSlack(message: string): boolean {
   const { slack, registry, notificationsEnabled } = executionContext;
 
   // Do not notify IF notifications are disabled
-  if (!notificationsEnabled) {
+  if (!notificationsEnabled || !slack) {
     return false;
   }
 
