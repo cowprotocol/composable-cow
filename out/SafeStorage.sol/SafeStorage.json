@@ -1,0 +1,500 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220cddb47ba94a676364bebb8b463ab2d29251ce07c4a74acd730e82f356fe53e8c64736f6c63430008130033",
+    "sourceMap": "298:563:124:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052600080fdfea2646970667358221220cddb47ba94a676364bebb8b463ab2d29251ce07c4a74acd730e82f356fe53e8c64736f6c63430008130033",
+    "sourceMap": "298:563:124:-:0;;;;;",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"author\":\"Richard Meissner - @rmeissner\",\"details\":\"Should be always the first base contract of a library that is used with a Safe.\",\"kind\":\"dev\",\"methods\":{},\"title\":\"SafeStorage - Storage layout of the Safe contracts to be used in libraries.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/safe/contracts/libraries/SafeStorage.sol\":\"SafeStorage\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/safe/contracts/libraries/SafeStorage.sol\":{\"keccak256\":\"0xae0c704f3e4ec6b1436bbbd10b153feaa665ac36e556ccc4f2155e4c02f5c46a\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://f2c67b22791022356f5ca85533ecdda740aa8d5c9ed263d0c2761f2560dd1b87\",\"dweb:/ipfs/QmYf6gm89StvSTgZGR83UgSmUgJGjhGbBRRNvmxwywfiMc\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/safe/contracts/libraries/SafeStorage.sol": "SafeStorage"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/safe/contracts/libraries/SafeStorage.sol": {
+        "keccak256": "0xae0c704f3e4ec6b1436bbbd10b153feaa665ac36e556ccc4f2155e4c02f5c46a",
+        "urls": [
+          "bzz-raw://f2c67b22791022356f5ca85533ecdda740aa8d5c9ed263d0c2761f2560dd1b87",
+          "dweb:/ipfs/QmYf6gm89StvSTgZGR83UgSmUgJGjhGbBRRNvmxwywfiMc"
+        ],
+        "license": "LGPL-3.0-only"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/safe/contracts/libraries/SafeStorage.sol",
+    "id": 52454,
+    "exportedSymbols": {
+      "SafeStorage": [
+        52453
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "42:820:124",
+    "nodes": [
+      {
+        "id": 52423,
+        "nodeType": "PragmaDirective",
+        "src": "42:31:124",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.7",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 52453,
+        "nodeType": "ContractDefinition",
+        "src": "298:563:124",
+        "nodes": [
+          {
+            "id": 52426,
+            "nodeType": "VariableDeclaration",
+            "src": "359:26:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "singleton",
+            "nameLocation": "376:9:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 52425,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "359:7:124",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52430,
+            "nodeType": "VariableDeclaration",
+            "src": "429:44:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "modules",
+            "nameLocation": "466:7:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+              "typeString": "mapping(address => address)"
+            },
+            "typeName": {
+              "id": 52429,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 52427,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "437:7:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "429:27:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                "typeString": "mapping(address => address)"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 52428,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "448:7:124",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52434,
+            "nodeType": "VariableDeclaration",
+            "src": "516:43:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "owners",
+            "nameLocation": "553:6:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+              "typeString": "mapping(address => address)"
+            },
+            "typeName": {
+              "id": 52433,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 52431,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "524:7:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "516:27:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                "typeString": "mapping(address => address)"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 52432,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "535:7:124",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52436,
+            "nodeType": "VariableDeclaration",
+            "src": "565:27:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "ownerCount",
+            "nameLocation": "582:10:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 52435,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "565:7:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52438,
+            "nodeType": "VariableDeclaration",
+            "src": "598:26:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "threshold",
+            "nameLocation": "615:9:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 52437,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "598:7:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52440,
+            "nodeType": "VariableDeclaration",
+            "src": "653:22:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "nonce",
+            "nameLocation": "670:5:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 52439,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "653:7:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52442,
+            "nodeType": "VariableDeclaration",
+            "src": "681:43:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "_deprecatedDomainSeparator",
+            "nameLocation": "698:26:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 52441,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "681:7:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52446,
+            "nodeType": "VariableDeclaration",
+            "src": "730:51:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "signedMessages",
+            "nameLocation": "767:14:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_uint256_$",
+              "typeString": "mapping(bytes32 => uint256)"
+            },
+            "typeName": {
+              "id": 52445,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 52443,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "738:7:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "730:27:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_uint256_$",
+                "typeString": "mapping(bytes32 => uint256)"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 52444,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "749:7:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 52452,
+            "nodeType": "VariableDeclaration",
+            "src": "787:71:124",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "approvedHashes",
+            "nameLocation": "844:14:124",
+            "scope": 52453,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_mapping$_t_bytes32_$_t_uint256_$_$",
+              "typeString": "mapping(address => mapping(bytes32 => uint256))"
+            },
+            "typeName": {
+              "id": 52451,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 52447,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "795:7:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "787:47:124",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_mapping$_t_bytes32_$_t_uint256_$_$",
+                "typeString": "mapping(address => mapping(bytes32 => uint256))"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 52450,
+                "keyName": "",
+                "keyNameLocation": "-1:-1:-1",
+                "keyType": {
+                  "id": 52448,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "814:7:124",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "806:27:124",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_bytes32_$_t_uint256_$",
+                  "typeString": "mapping(bytes32 => uint256)"
+                },
+                "valueName": "",
+                "valueNameLocation": "-1:-1:-1",
+                "valueType": {
+                  "id": 52449,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "825:7:124",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                }
+              }
+            },
+            "visibility": "internal"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "SafeStorage",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 52424,
+          "nodeType": "StructuredDocumentation",
+          "src": "75:222:124",
+          "text": " @title SafeStorage - Storage layout of the Safe contracts to be used in libraries.\n @dev Should be always the first base contract of a library that is used with a Safe.\n @author Richard Meissner - @rmeissner"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          52453
+        ],
+        "name": "SafeStorage",
+        "nameLocation": "307:11:124",
+        "scope": 52454,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-only"
+  },
+  "id": 124
+}

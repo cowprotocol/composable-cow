@@ -1,0 +1,2935 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d3a4d61a8f73c46c20f251a561dd934ed88c839bce8893919912915060fc157264736f6c63430008130033",
+    "sourceMap": "273:5165:65:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;273:5165:65;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d3a4d61a8f73c46c20f251a561dd934ed88c839bce8893919912915060fc157264736f6c63430008130033",
+    "sourceMap": "273:5165:65:-:0;;;;;;;;",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"author\":\"Gnosis Developers\",\"kind\":\"dev\",\"methods\":{},\"title\":\"Gnosis Protocol v2 Trade Library.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/cowprotocol/src/contracts/libraries/GPv2Trade.sol\":\"GPv2Trade\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/@openzeppelin/contracts/interfaces/IERC20.sol\":{\"keccak256\":\"0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45\",\"dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq\"]},\"lib/@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5\",\"dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53\"]},\"lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol\":{\"keccak256\":\"0xea0afb5f00ece4de83adb6cf76629344dae3171db3040e50ed704e0650342ade\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://4d9d40de14b1bd8ce70a2f94aa43957e77d7c71b58973e5dcc7d5765ded6cae7\",\"dweb:/ipfs/QmaYLbc84vUtKjdvHjwkYVvnr2hP54Q1B7Jm5KW4iuxt4j\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Order.sol\":{\"keccak256\":\"0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d\",\"dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Trade.sol\":{\"keccak256\":\"0x416f67497b82e72e364c94f9322e89a3f993690751f061e55f9b33c135dc6c5a\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://246c6840d43acd6b64135ad7bf99e2a9c87dc9a7c43d14fd43097e8321a424db\",\"dweb:/ipfs/QmXmV7qxM7hmEc5Z5L2crsMzYb9t4GPes8KM5oLXsgxVR5\"]},\"lib/cowprotocol/src/contracts/mixins/GPv2Signing.sol\":{\"keccak256\":\"0x32351a830456c755d4f4c24180f5d54afc3141e7f1cedba575407ea7a96abdc0\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://e55fc7d29fb7d740181bc790f33308d810950854d357ee17e5c410cc2c273d92\",\"dweb:/ipfs/QmbBhUM8YFHYyEonG5Xa6WsFXkvGXpWceC7zTJeCUnSSe1\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/cowprotocol/src/contracts/libraries/GPv2Trade.sol": "GPv2Trade"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/@openzeppelin/contracts/interfaces/IERC20.sol": {
+        "keccak256": "0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45",
+        "urls": [
+          "bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45",
+          "dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq"
+        ],
+        "license": "MIT"
+      },
+      "lib/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305",
+        "urls": [
+          "bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5",
+          "dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53"
+        ],
+        "license": "MIT"
+      },
+      "lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol": {
+        "keccak256": "0xea0afb5f00ece4de83adb6cf76629344dae3171db3040e50ed704e0650342ade",
+        "urls": [
+          "bzz-raw://4d9d40de14b1bd8ce70a2f94aa43957e77d7c71b58973e5dcc7d5765ded6cae7",
+          "dweb:/ipfs/QmaYLbc84vUtKjdvHjwkYVvnr2hP54Q1B7Jm5KW4iuxt4j"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol": {
+        "keccak256": "0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f",
+        "urls": [
+          "bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d",
+          "dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Trade.sol": {
+        "keccak256": "0x416f67497b82e72e364c94f9322e89a3f993690751f061e55f9b33c135dc6c5a",
+        "urls": [
+          "bzz-raw://246c6840d43acd6b64135ad7bf99e2a9c87dc9a7c43d14fd43097e8321a424db",
+          "dweb:/ipfs/QmXmV7qxM7hmEc5Z5L2crsMzYb9t4GPes8KM5oLXsgxVR5"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/mixins/GPv2Signing.sol": {
+        "keccak256": "0x32351a830456c755d4f4c24180f5d54afc3141e7f1cedba575407ea7a96abdc0",
+        "urls": [
+          "bzz-raw://e55fc7d29fb7d740181bc790f33308d810950854d357ee17e5c410cc2c273d92",
+          "dweb:/ipfs/QmbBhUM8YFHYyEonG5Xa6WsFXkvGXpWceC7zTJeCUnSSe1"
+        ],
+        "license": "LGPL-3.0-or-later"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/cowprotocol/src/contracts/libraries/GPv2Trade.sol",
+    "id": 17550,
+    "exportedSymbols": {
+      "EIP1271Verifier": [
+        16898
+      ],
+      "GPv2EIP1271": [
+        16886
+      ],
+      "GPv2Order": [
+        17246
+      ],
+      "GPv2Signing": [
+        18699
+      ],
+      "GPv2Trade": [
+        17549
+      ],
+      "IERC20": [
+        670
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "46:5393:65",
+    "nodes": [
+      {
+        "id": 17318,
+        "nodeType": "PragmaDirective",
+        "src": "46:31:65",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 17319,
+        "nodeType": "ImportDirective",
+        "src": "79:55:65",
+        "nodes": [],
+        "absolutePath": "lib/@openzeppelin/contracts/interfaces/IERC20.sol",
+        "file": "@openzeppelin/contracts/interfaces/IERC20.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 17550,
+        "sourceUnit": 3,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 17320,
+        "nodeType": "ImportDirective",
+        "src": "135:35:65",
+        "nodes": [],
+        "absolutePath": "lib/cowprotocol/src/contracts/mixins/GPv2Signing.sol",
+        "file": "../mixins/GPv2Signing.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 17550,
+        "sourceUnit": 18700,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 17321,
+        "nodeType": "ImportDirective",
+        "src": "171:25:65",
+        "nodes": [],
+        "absolutePath": "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol",
+        "file": "./GPv2Order.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 17550,
+        "sourceUnit": 17247,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 17549,
+        "nodeType": "ContractDefinition",
+        "src": "273:5165:65",
+        "nodes": [
+          {
+            "id": 17326,
+            "nodeType": "UsingForDirective",
+            "src": "297:35:65",
+            "nodes": [],
+            "global": false,
+            "libraryName": {
+              "id": 17323,
+              "name": "GPv2Order",
+              "nameLocations": [
+                "303:9:65"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 17246,
+              "src": "303:9:65"
+            },
+            "typeName": {
+              "id": 17325,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 17324,
+                "name": "GPv2Order.Data",
+                "nameLocations": [
+                  "317:9:65",
+                  "327:4:65"
+                ],
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 17121,
+                "src": "317:14:65"
+              },
+              "referencedDeclaration": 17121,
+              "src": "317:14:65",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                "typeString": "struct GPv2Order.Data"
+              }
+            }
+          },
+          {
+            "id": 17329,
+            "nodeType": "UsingForDirective",
+            "src": "337:26:65",
+            "nodes": [],
+            "global": false,
+            "libraryName": {
+              "id": 17327,
+              "name": "GPv2Order",
+              "nameLocations": [
+                "343:9:65"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 17246,
+              "src": "343:9:65"
+            },
+            "typeName": {
+              "id": 17328,
+              "name": "bytes",
+              "nodeType": "ElementaryTypeName",
+              "src": "357:5:65",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes_storage_ptr",
+                "typeString": "bytes"
+              }
+            }
+          },
+          {
+            "id": 17352,
+            "nodeType": "StructDefinition",
+            "src": "463:319:65",
+            "nodes": [],
+            "canonicalName": "GPv2Trade.Data",
+            "members": [
+              {
+                "constant": false,
+                "id": 17331,
+                "mutability": "mutable",
+                "name": "sellTokenIndex",
+                "nameLocation": "493:14:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "485:22:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17330,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "485:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17333,
+                "mutability": "mutable",
+                "name": "buyTokenIndex",
+                "nameLocation": "525:13:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "517:21:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17332,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "517:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17335,
+                "mutability": "mutable",
+                "name": "receiver",
+                "nameLocation": "556:8:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "548:16:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 17334,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "548:7:65",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17337,
+                "mutability": "mutable",
+                "name": "sellAmount",
+                "nameLocation": "582:10:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "574:18:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17336,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "574:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17339,
+                "mutability": "mutable",
+                "name": "buyAmount",
+                "nameLocation": "610:9:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "602:17:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17338,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "602:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17341,
+                "mutability": "mutable",
+                "name": "validTo",
+                "nameLocation": "636:7:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "629:14:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint32",
+                  "typeString": "uint32"
+                },
+                "typeName": {
+                  "id": 17340,
+                  "name": "uint32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "629:6:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17343,
+                "mutability": "mutable",
+                "name": "appData",
+                "nameLocation": "661:7:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "653:15:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 17342,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "653:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17345,
+                "mutability": "mutable",
+                "name": "feeAmount",
+                "nameLocation": "686:9:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "678:17:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17344,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "678:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17347,
+                "mutability": "mutable",
+                "name": "flags",
+                "nameLocation": "713:5:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "705:13:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17346,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "705:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17349,
+                "mutability": "mutable",
+                "name": "executedAmount",
+                "nameLocation": "736:14:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "728:22:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 17348,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "728:7:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 17351,
+                "mutability": "mutable",
+                "name": "signature",
+                "nameLocation": "766:9:65",
+                "nodeType": "VariableDeclaration",
+                "scope": 17352,
+                "src": "760:15:65",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes_storage_ptr",
+                  "typeString": "bytes"
+                },
+                "typeName": {
+                  "id": 17350,
+                  "name": "bytes",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "760:5:65",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_storage_ptr",
+                    "typeString": "bytes"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Data",
+            "nameLocation": "470:4:65",
+            "scope": 17549,
+            "visibility": "public"
+          },
+          {
+            "id": 17447,
+            "nodeType": "FunctionDefinition",
+            "src": "1128:759:65",
+            "nodes": [],
+            "body": {
+              "id": 17446,
+              "nodeType": "Block",
+              "src": "1313:574:65",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "id": 17376,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17369,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1323:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17371,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1329:9:65",
+                      "memberName": "sellToken",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17097,
+                      "src": "1323:15:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IERC20_$670",
+                        "typeString": "contract IERC20"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "baseExpression": {
+                        "id": 17372,
+                        "name": "tokens",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17360,
+                        "src": "1341:6:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_array$_t_contract$_IERC20_$670_$dyn_calldata_ptr",
+                          "typeString": "contract IERC20[] calldata"
+                        }
+                      },
+                      "id": 17375,
+                      "indexExpression": {
+                        "expression": {
+                          "id": 17373,
+                          "name": "trade",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17356,
+                          "src": "1348:5:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                            "typeString": "struct GPv2Trade.Data calldata"
+                          }
+                        },
+                        "id": 17374,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "1354:14:65",
+                        "memberName": "sellTokenIndex",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 17331,
+                        "src": "1348:20:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1341:28:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IERC20_$670",
+                        "typeString": "contract IERC20"
+                      }
+                    },
+                    "src": "1323:46:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC20_$670",
+                      "typeString": "contract IERC20"
+                    }
+                  },
+                  "id": 17377,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1323:46:65"
+                },
+                {
+                  "expression": {
+                    "id": 17385,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17378,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1379:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17380,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1385:8:65",
+                      "memberName": "buyToken",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17100,
+                      "src": "1379:14:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IERC20_$670",
+                        "typeString": "contract IERC20"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "baseExpression": {
+                        "id": 17381,
+                        "name": "tokens",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17360,
+                        "src": "1396:6:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_array$_t_contract$_IERC20_$670_$dyn_calldata_ptr",
+                          "typeString": "contract IERC20[] calldata"
+                        }
+                      },
+                      "id": 17384,
+                      "indexExpression": {
+                        "expression": {
+                          "id": 17382,
+                          "name": "trade",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17356,
+                          "src": "1403:5:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                            "typeString": "struct GPv2Trade.Data calldata"
+                          }
+                        },
+                        "id": 17383,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "1409:13:65",
+                        "memberName": "buyTokenIndex",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 17333,
+                        "src": "1403:19:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1396:27:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IERC20_$670",
+                        "typeString": "contract IERC20"
+                      }
+                    },
+                    "src": "1379:44:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC20_$670",
+                      "typeString": "contract IERC20"
+                    }
+                  },
+                  "id": 17386,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1379:44:65"
+                },
+                {
+                  "expression": {
+                    "id": 17392,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17387,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1433:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17389,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1439:8:65",
+                      "memberName": "receiver",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17102,
+                      "src": "1433:14:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17390,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1450:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17391,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1456:8:65",
+                      "memberName": "receiver",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17335,
+                      "src": "1450:14:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "1433:31:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 17393,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1433:31:65"
+                },
+                {
+                  "expression": {
+                    "id": 17399,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17394,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1474:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17396,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1480:10:65",
+                      "memberName": "sellAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17104,
+                      "src": "1474:16:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17397,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1493:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17398,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1499:10:65",
+                      "memberName": "sellAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17337,
+                      "src": "1493:16:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1474:35:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 17400,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1474:35:65"
+                },
+                {
+                  "expression": {
+                    "id": 17406,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17401,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1519:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17403,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1525:9:65",
+                      "memberName": "buyAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17106,
+                      "src": "1519:15:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17404,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1537:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17405,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1543:9:65",
+                      "memberName": "buyAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17339,
+                      "src": "1537:15:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1519:33:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 17407,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1519:33:65"
+                },
+                {
+                  "expression": {
+                    "id": 17413,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17408,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1562:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17410,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1568:7:65",
+                      "memberName": "validTo",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17108,
+                      "src": "1562:13:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint32",
+                        "typeString": "uint32"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17411,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1578:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17412,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1584:7:65",
+                      "memberName": "validTo",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17341,
+                      "src": "1578:13:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint32",
+                        "typeString": "uint32"
+                      }
+                    },
+                    "src": "1562:29:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "id": 17414,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1562:29:65"
+                },
+                {
+                  "expression": {
+                    "id": 17420,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17415,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1601:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17417,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1607:7:65",
+                      "memberName": "appData",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17110,
+                      "src": "1601:13:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17418,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1617:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17419,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1623:7:65",
+                      "memberName": "appData",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17343,
+                      "src": "1617:13:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      }
+                    },
+                    "src": "1601:29:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "id": 17421,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1601:29:65"
+                },
+                {
+                  "expression": {
+                    "id": 17427,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 17422,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17363,
+                        "src": "1640:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                          "typeString": "struct GPv2Order.Data memory"
+                        }
+                      },
+                      "id": 17424,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "1646:9:65",
+                      "memberName": "feeAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17112,
+                      "src": "1640:15:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 17425,
+                        "name": "trade",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17356,
+                        "src": "1658:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                          "typeString": "struct GPv2Trade.Data calldata"
+                        }
+                      },
+                      "id": 17426,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1664:9:65",
+                      "memberName": "feeAmount",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17345,
+                      "src": "1658:15:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1640:33:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 17428,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1640:33:65"
+                },
+                {
+                  "expression": {
+                    "id": 17444,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "components": [
+                        {
+                          "expression": {
+                            "id": 17429,
+                            "name": "order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17363,
+                            "src": "1697:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                              "typeString": "struct GPv2Order.Data memory"
+                            }
+                          },
+                          "id": 17431,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": true,
+                          "memberLocation": "1703:4:65",
+                          "memberName": "kind",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17114,
+                          "src": "1697:10:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 17432,
+                            "name": "order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17363,
+                            "src": "1721:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                              "typeString": "struct GPv2Order.Data memory"
+                            }
+                          },
+                          "id": 17433,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": true,
+                          "memberLocation": "1727:17:65",
+                          "memberName": "partiallyFillable",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17116,
+                          "src": "1721:23:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 17434,
+                            "name": "order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17363,
+                            "src": "1758:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                              "typeString": "struct GPv2Order.Data memory"
+                            }
+                          },
+                          "id": 17435,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": true,
+                          "memberLocation": "1764:16:65",
+                          "memberName": "sellTokenBalance",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17118,
+                          "src": "1758:22:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 17436,
+                            "name": "order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17363,
+                            "src": "1794:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                              "typeString": "struct GPv2Order.Data memory"
+                            }
+                          },
+                          "id": 17437,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": true,
+                          "memberLocation": "1800:15:65",
+                          "memberName": "buyTokenBalance",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17120,
+                          "src": "1794:21:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "id": 17438,
+                          "name": "signingScheme",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17367,
+                          "src": "1829:13:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Scheme_$18247",
+                            "typeString": "enum GPv2Signing.Scheme"
+                          }
+                        }
+                      ],
+                      "id": 17439,
+                      "isConstant": false,
+                      "isInlineArray": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "TupleExpression",
+                      "src": "1683:169:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_tuple$_t_bytes32_$_t_bool_$_t_bytes32_$_t_bytes32_$_t_enum$_Scheme_$18247_$",
+                        "typeString": "tuple(bytes32,bool,bytes32,bytes32,enum GPv2Signing.Scheme)"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "arguments": [
+                        {
+                          "expression": {
+                            "id": 17441,
+                            "name": "trade",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17356,
+                            "src": "1868:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                              "typeString": "struct GPv2Trade.Data calldata"
+                            }
+                          },
+                          "id": 17442,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "1874:5:65",
+                          "memberName": "flags",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17347,
+                          "src": "1868:11:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        ],
+                        "id": 17440,
+                        "name": "extractFlags",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17548,
+                        "src": "1855:12:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_pure$_t_uint256_$returns$_t_bytes32_$_t_bool_$_t_bytes32_$_t_bytes32_$_t_enum$_Scheme_$18247_$",
+                          "typeString": "function (uint256) pure returns (bytes32,bool,bytes32,bytes32,enum GPv2Signing.Scheme)"
+                        }
+                      },
+                      "id": 17443,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1855:25:65",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_tuple$_t_bytes32_$_t_bool_$_t_bytes32_$_t_bytes32_$_t_enum$_Scheme_$18247_$",
+                        "typeString": "tuple(bytes32,bool,bytes32,bytes32,enum GPv2Signing.Scheme)"
+                      }
+                    },
+                    "src": "1683:197:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 17445,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1683:197:65"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 17353,
+              "nodeType": "StructuredDocumentation",
+              "src": "788:335:65",
+              "text": "@dev Extracts the order data and signing scheme for the specified trade.\n @param trade The trade.\n @param tokens The list of tokens included in the settlement. The token\n indices in the trade parameters map to tokens in this array.\n @param order The memory location to extract the order data to."
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "extractOrder",
+            "nameLocation": "1137:12:65",
+            "parameters": {
+              "id": 17364,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17356,
+                  "mutability": "mutable",
+                  "name": "trade",
+                  "nameLocation": "1173:5:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17447,
+                  "src": "1159:19:65",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17352_calldata_ptr",
+                    "typeString": "struct GPv2Trade.Data"
+                  },
+                  "typeName": {
+                    "id": 17355,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 17354,
+                      "name": "Data",
+                      "nameLocations": [
+                        "1159:4:65"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17352,
+                      "src": "1159:4:65"
+                    },
+                    "referencedDeclaration": 17352,
+                    "src": "1159:4:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17352_storage_ptr",
+                      "typeString": "struct GPv2Trade.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17360,
+                  "mutability": "mutable",
+                  "name": "tokens",
+                  "nameLocation": "1206:6:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17447,
+                  "src": "1188:24:65",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_contract$_IERC20_$670_$dyn_calldata_ptr",
+                    "typeString": "contract IERC20[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 17358,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 17357,
+                        "name": "IERC20",
+                        "nameLocations": [
+                          "1188:6:65"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 670,
+                        "src": "1188:6:65"
+                      },
+                      "referencedDeclaration": 670,
+                      "src": "1188:6:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IERC20_$670",
+                        "typeString": "contract IERC20"
+                      }
+                    },
+                    "id": 17359,
+                    "nodeType": "ArrayTypeName",
+                    "src": "1188:8:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_contract$_IERC20_$670_$dyn_storage_ptr",
+                      "typeString": "contract IERC20[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17363,
+                  "mutability": "mutable",
+                  "name": "order",
+                  "nameLocation": "1244:5:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17447,
+                  "src": "1222:27:65",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                    "typeString": "struct GPv2Order.Data"
+                  },
+                  "typeName": {
+                    "id": 17362,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 17361,
+                      "name": "GPv2Order.Data",
+                      "nameLocations": [
+                        "1222:9:65",
+                        "1232:4:65"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17121,
+                      "src": "1222:14:65"
+                    },
+                    "referencedDeclaration": 17121,
+                    "src": "1222:14:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                      "typeString": "struct GPv2Order.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1149:106:65"
+            },
+            "returnParameters": {
+              "id": 17368,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17367,
+                  "mutability": "mutable",
+                  "name": "signingScheme",
+                  "nameLocation": "1298:13:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17447,
+                  "src": "1279:32:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_Scheme_$18247",
+                    "typeString": "enum GPv2Signing.Scheme"
+                  },
+                  "typeName": {
+                    "id": 17366,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 17365,
+                      "name": "GPv2Signing.Scheme",
+                      "nameLocations": [
+                        "1279:11:65",
+                        "1291:6:65"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 18247,
+                      "src": "1279:18:65"
+                    },
+                    "referencedDeclaration": 18247,
+                    "src": "1279:18:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_Scheme_$18247",
+                      "typeString": "enum GPv2Signing.Scheme"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1278:34:65"
+            },
+            "scope": 17549,
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 17548,
+            "nodeType": "FunctionDefinition",
+            "src": "4234:1202:65",
+            "nodes": [],
+            "body": {
+              "id": 17547,
+              "nodeType": "Block",
+              "src": "4515:921:65",
+              "nodes": [],
+              "statements": [
+                {
+                  "condition": {
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 17468,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 17466,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "id": 17464,
+                        "name": "flags",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17450,
+                        "src": "4529:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "&",
+                      "rightExpression": {
+                        "hexValue": "30783031",
+                        "id": 17465,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "4537:4:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_1_by_1",
+                          "typeString": "int_const 1"
+                        },
+                        "value": "0x01"
+                      },
+                      "src": "4529:12:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "==",
+                    "rightExpression": {
+                      "hexValue": "30",
+                      "id": 17467,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "4545:1:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "4529:17:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": {
+                    "id": 17480,
+                    "nodeType": "Block",
+                    "src": "4605:50:65",
+                    "statements": [
+                      {
+                        "expression": {
+                          "id": 17478,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "id": 17475,
+                            "name": "kind",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17453,
+                            "src": "4619:4:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "expression": {
+                              "id": 17476,
+                              "name": "GPv2Order",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17246,
+                              "src": "4626:9:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                "typeString": "type(library GPv2Order)"
+                              }
+                            },
+                            "id": 17477,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberLocation": "4636:8:65",
+                            "memberName": "KIND_BUY",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 17133,
+                            "src": "4626:18:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "src": "4619:25:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "id": 17479,
+                        "nodeType": "ExpressionStatement",
+                        "src": "4619:25:65"
+                      }
+                    ]
+                  },
+                  "id": 17481,
+                  "nodeType": "IfStatement",
+                  "src": "4525:130:65",
+                  "trueBody": {
+                    "id": 17474,
+                    "nodeType": "Block",
+                    "src": "4548:51:65",
+                    "statements": [
+                      {
+                        "expression": {
+                          "id": 17472,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "id": 17469,
+                            "name": "kind",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17453,
+                            "src": "4562:4:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "expression": {
+                              "id": 17470,
+                              "name": "GPv2Order",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17246,
+                              "src": "4569:9:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                "typeString": "type(library GPv2Order)"
+                              }
+                            },
+                            "id": 17471,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberLocation": "4579:9:65",
+                            "memberName": "KIND_SELL",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 17129,
+                            "src": "4569:19:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "src": "4562:26:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "id": 17473,
+                        "nodeType": "ExpressionStatement",
+                        "src": "4562:26:65"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "id": 17488,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 17482,
+                      "name": "partiallyFillable",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 17455,
+                      "src": "4664:17:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 17487,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 17485,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "id": 17483,
+                          "name": "flags",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17450,
+                          "src": "4684:5:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "&",
+                        "rightExpression": {
+                          "hexValue": "30783032",
+                          "id": 17484,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "4692:4:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_2_by_1",
+                            "typeString": "int_const 2"
+                          },
+                          "value": "0x02"
+                        },
+                        "src": "4684:12:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "!=",
+                      "rightExpression": {
+                        "hexValue": "30",
+                        "id": 17486,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "4700:1:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                      },
+                      "src": "4684:17:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "4664:37:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 17489,
+                  "nodeType": "ExpressionStatement",
+                  "src": "4664:37:65"
+                },
+                {
+                  "condition": {
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 17494,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 17492,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "id": 17490,
+                        "name": "flags",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17450,
+                        "src": "4715:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "&",
+                      "rightExpression": {
+                        "hexValue": "30783038",
+                        "id": 17491,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "4723:4:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_8_by_1",
+                          "typeString": "int_const 8"
+                        },
+                        "value": "0x08"
+                      },
+                      "src": "4715:12:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "==",
+                    "rightExpression": {
+                      "hexValue": "30",
+                      "id": 17493,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "4731:1:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "4715:17:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": {
+                    "condition": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 17505,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 17503,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "id": 17501,
+                          "name": "flags",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17450,
+                          "src": "4811:5:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "&",
+                        "rightExpression": {
+                          "hexValue": "30783034",
+                          "id": 17502,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "4819:4:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_4_by_1",
+                            "typeString": "int_const 4"
+                          },
+                          "value": "0x04"
+                        },
+                        "src": "4811:12:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "==",
+                      "rightExpression": {
+                        "hexValue": "30",
+                        "id": 17504,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "4827:1:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                      },
+                      "src": "4811:17:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "falseBody": {
+                      "id": 17517,
+                      "nodeType": "Block",
+                      "src": "4906:70:65",
+                      "statements": [
+                        {
+                          "expression": {
+                            "id": 17515,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "leftHandSide": {
+                              "id": 17512,
+                              "name": "sellTokenBalance",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17457,
+                              "src": "4920:16:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "nodeType": "Assignment",
+                            "operator": "=",
+                            "rightHandSide": {
+                              "expression": {
+                                "id": 17513,
+                                "name": "GPv2Order",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 17246,
+                                "src": "4939:9:65",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                  "typeString": "type(library GPv2Order)"
+                                }
+                              },
+                              "id": 17514,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "memberLocation": "4949:16:65",
+                              "memberName": "BALANCE_INTERNAL",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 17145,
+                              "src": "4939:26:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "src": "4920:45:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "id": 17516,
+                          "nodeType": "ExpressionStatement",
+                          "src": "4920:45:65"
+                        }
+                      ]
+                    },
+                    "id": 17518,
+                    "nodeType": "IfStatement",
+                    "src": "4807:169:65",
+                    "trueBody": {
+                      "id": 17511,
+                      "nodeType": "Block",
+                      "src": "4830:70:65",
+                      "statements": [
+                        {
+                          "expression": {
+                            "id": 17509,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "leftHandSide": {
+                              "id": 17506,
+                              "name": "sellTokenBalance",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17457,
+                              "src": "4844:16:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "nodeType": "Assignment",
+                            "operator": "=",
+                            "rightHandSide": {
+                              "expression": {
+                                "id": 17507,
+                                "name": "GPv2Order",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 17246,
+                                "src": "4863:9:65",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                  "typeString": "type(library GPv2Order)"
+                                }
+                              },
+                              "id": 17508,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "memberLocation": "4873:16:65",
+                              "memberName": "BALANCE_EXTERNAL",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 17141,
+                              "src": "4863:26:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "src": "4844:45:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "id": 17510,
+                          "nodeType": "ExpressionStatement",
+                          "src": "4844:45:65"
+                        }
+                      ]
+                    }
+                  },
+                  "id": 17519,
+                  "nodeType": "IfStatement",
+                  "src": "4711:265:65",
+                  "trueBody": {
+                    "id": 17500,
+                    "nodeType": "Block",
+                    "src": "4734:67:65",
+                    "statements": [
+                      {
+                        "expression": {
+                          "id": 17498,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "id": 17495,
+                            "name": "sellTokenBalance",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17457,
+                            "src": "4748:16:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "expression": {
+                              "id": 17496,
+                              "name": "GPv2Order",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17246,
+                              "src": "4767:9:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                "typeString": "type(library GPv2Order)"
+                              }
+                            },
+                            "id": 17497,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberLocation": "4777:13:65",
+                            "memberName": "BALANCE_ERC20",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 17137,
+                            "src": "4767:23:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "src": "4748:42:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "id": 17499,
+                        "nodeType": "ExpressionStatement",
+                        "src": "4748:42:65"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "condition": {
+                    "commonType": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    },
+                    "id": 17524,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "commonType": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "id": 17522,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "id": 17520,
+                        "name": "flags",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 17450,
+                        "src": "4989:5:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "&",
+                      "rightExpression": {
+                        "hexValue": "30783130",
+                        "id": 17521,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "4997:4:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_16_by_1",
+                          "typeString": "int_const 16"
+                        },
+                        "value": "0x10"
+                      },
+                      "src": "4989:12:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "==",
+                    "rightExpression": {
+                      "hexValue": "30",
+                      "id": 17523,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "5005:1:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "4989:17:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": {
+                    "id": 17536,
+                    "nodeType": "Block",
+                    "src": "5080:69:65",
+                    "statements": [
+                      {
+                        "expression": {
+                          "id": 17534,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "id": 17531,
+                            "name": "buyTokenBalance",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17459,
+                            "src": "5094:15:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "expression": {
+                              "id": 17532,
+                              "name": "GPv2Order",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17246,
+                              "src": "5112:9:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                "typeString": "type(library GPv2Order)"
+                              }
+                            },
+                            "id": 17533,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberLocation": "5122:16:65",
+                            "memberName": "BALANCE_INTERNAL",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 17145,
+                            "src": "5112:26:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "src": "5094:44:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "id": 17535,
+                        "nodeType": "ExpressionStatement",
+                        "src": "5094:44:65"
+                      }
+                    ]
+                  },
+                  "id": 17537,
+                  "nodeType": "IfStatement",
+                  "src": "4985:164:65",
+                  "trueBody": {
+                    "id": 17530,
+                    "nodeType": "Block",
+                    "src": "5008:66:65",
+                    "statements": [
+                      {
+                        "expression": {
+                          "id": 17528,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "id": 17525,
+                            "name": "buyTokenBalance",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17459,
+                            "src": "5022:15:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "expression": {
+                              "id": 17526,
+                              "name": "GPv2Order",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 17246,
+                              "src": "5040:9:65",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                                "typeString": "type(library GPv2Order)"
+                              }
+                            },
+                            "id": 17527,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberLocation": "5050:13:65",
+                            "memberName": "BALANCE_ERC20",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 17137,
+                            "src": "5040:23:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "src": "5022:41:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "id": 17529,
+                        "nodeType": "ExpressionStatement",
+                        "src": "5022:41:65"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "id": 17545,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 17538,
+                      "name": "signingScheme",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 17462,
+                      "src": "5383:13:65",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_enum$_Scheme_$18247",
+                        "typeString": "enum GPv2Signing.Scheme"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "arguments": [
+                        {
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 17543,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "id": 17541,
+                            "name": "flags",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17450,
+                            "src": "5418:5:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": ">>",
+                          "rightExpression": {
+                            "hexValue": "35",
+                            "id": 17542,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "5427:1:65",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_5_by_1",
+                              "typeString": "int_const 5"
+                            },
+                            "value": "5"
+                          },
+                          "src": "5418:10:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        ],
+                        "expression": {
+                          "id": 17539,
+                          "name": "GPv2Signing",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 18699,
+                          "src": "5399:11:65",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_GPv2Signing_$18699_$",
+                            "typeString": "type(contract GPv2Signing)"
+                          }
+                        },
+                        "id": 17540,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "5411:6:65",
+                        "memberName": "Scheme",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 18247,
+                        "src": "5399:18:65",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_enum$_Scheme_$18247_$",
+                          "typeString": "type(enum GPv2Signing.Scheme)"
+                        }
+                      },
+                      "id": 17544,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "5399:30:65",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_enum$_Scheme_$18247",
+                        "typeString": "enum GPv2Signing.Scheme"
+                      }
+                    },
+                    "src": "5383:46:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_Scheme_$18247",
+                      "typeString": "enum GPv2Signing.Scheme"
+                    }
+                  },
+                  "id": 17546,
+                  "nodeType": "ExpressionStatement",
+                  "src": "5383:46:65"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 17448,
+              "nodeType": "StructuredDocumentation",
+              "src": "1893:2336:65",
+              "text": "@dev Decodes trade flags.\n Trade flags are used to tightly encode information on how to decode\n an order. Examples that directly affect the structure of an order are\n the kind of order (either a sell or a buy order) as well as whether the\n order is partially fillable or if it is a \"fill-or-kill\" order. It also\n encodes the signature scheme used to validate the order. As the most\n likely values are fill-or-kill sell orders by an externally owned\n account, the flags are chosen such that `0x00` represents this kind of\n order. The flags byte uses the following format:\n ```\n bit | 31 ...   | 6 | 5 | 4 | 3 | 2 | 1 | 0 |\n ----+----------+-------+---+-------+---+---+\n     | reserved | *   * | * | *   * | * | * |\n                  |   |   |   |   |   |   |\n                  |   |   |   |   |   |   +---- order kind bit, 0 for a sell order\n                  |   |   |   |   |   |         and 1 for a buy order\n                  |   |   |   |   |   |\n                  |   |   |   |   |   +-------- order fill bit, 0 for fill-or-kill\n                  |   |   |   |   |             and 1 for a partially fillable order\n                  |   |   |   |   |\n                  |   |   |   +---+------------ use internal sell token balance bit:\n                  |   |   |                     0x: ERC20 token balance\n                  |   |   |                     10: external Balancer Vault balance\n                  |   |   |                     11: internal Balancer Vault balance\n                  |   |   |\n                  |   |   +-------------------- use buy token balance bit\n                  |   |                         0: ERC20 token balance\n                  |   |                         1: internal Balancer Vault balance\n                  |   |\n                  +---+------------------------ signature scheme bits:\n                                                00: EIP-712\n                                                01: eth_sign\n                                                10: EIP-1271\n                                                11: pre_sign\n ```"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "extractFlags",
+            "nameLocation": "4243:12:65",
+            "parameters": {
+              "id": 17451,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17450,
+                  "mutability": "mutable",
+                  "name": "flags",
+                  "nameLocation": "4264:5:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4256:13:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 17449,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4256:7:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4255:15:65"
+            },
+            "returnParameters": {
+              "id": 17463,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17453,
+                  "mutability": "mutable",
+                  "name": "kind",
+                  "nameLocation": "4339:4:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4331:12:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 17452,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4331:7:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17455,
+                  "mutability": "mutable",
+                  "name": "partiallyFillable",
+                  "nameLocation": "4362:17:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4357:22:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 17454,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4357:4:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17457,
+                  "mutability": "mutable",
+                  "name": "sellTokenBalance",
+                  "nameLocation": "4401:16:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4393:24:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 17456,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4393:7:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17459,
+                  "mutability": "mutable",
+                  "name": "buyTokenBalance",
+                  "nameLocation": "4439:15:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4431:23:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 17458,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4431:7:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17462,
+                  "mutability": "mutable",
+                  "name": "signingScheme",
+                  "nameLocation": "4487:13:65",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17548,
+                  "src": "4468:32:65",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_Scheme_$18247",
+                    "typeString": "enum GPv2Signing.Scheme"
+                  },
+                  "typeName": {
+                    "id": 17461,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 17460,
+                      "name": "GPv2Signing.Scheme",
+                      "nameLocations": [
+                        "4468:11:65",
+                        "4480:6:65"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 18247,
+                      "src": "4468:18:65"
+                    },
+                    "referencedDeclaration": 18247,
+                    "src": "4468:18:65",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_Scheme_$18247",
+                      "typeString": "enum GPv2Signing.Scheme"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4317:193:65"
+            },
+            "scope": 17549,
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "GPv2Trade",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "documentation": {
+          "id": 17322,
+          "nodeType": "StructuredDocumentation",
+          "src": "198:75:65",
+          "text": "@title Gnosis Protocol v2 Trade Library.\n @author Gnosis Developers"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          17549
+        ],
+        "name": "GPv2Trade",
+        "nameLocation": "281:9:65",
+        "scope": 17550,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-or-later"
+  },
+  "id": 65
+}

@@ -1,0 +1,421 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "operatorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "tokensReceived",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "tokensReceived(address,address,address,uint256,bytes,bytes)": "0023de29"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"tokensReceived\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface for contracts that will be called with the ERC777 token's `tokensReceived` method. The contract receiving the tokens must implement this interface in order to receive the tokens.\",\"kind\":\"dev\",\"methods\":{\"tokensReceived(address,address,address,uint256,bytes,bytes)\":{\"details\":\"Called by the ERC777 token contract after a successful transfer or a minting operation.\",\"params\":{\"amount\":\"The amount of tokens that were transferred or minted.\",\"data\":\"Additional data that was passed during the transfer or minting operation.\",\"from\":\"The address of the sender.\",\"operator\":\"The address of the operator performing the transfer or minting operation.\",\"operatorData\":\"Additional data that was passed by the operator during the transfer or minting operation.\",\"to\":\"The address of the recipient.\"}}},\"title\":\"ERC777TokensRecipient\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/safe/contracts/interfaces/ERC777TokensRecipient.sol\":\"ERC777TokensRecipient\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/safe/contracts/interfaces/ERC777TokensRecipient.sol\":{\"keccak256\":\"0x32ca7f1610659f35e52f5a989e1d844b7847ad57fab06e0cae5bc027248536ac\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://9082896ec697e320087b1a682b69a5cdf71b33a2f7a956e2fb6054f9f9d56d06\",\"dweb:/ipfs/QmUu7iNkQNvvqBPbbxuhqiQpYPYYnfsyPEsf4AMQFANXFZ\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "operatorData",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "tokensReceived"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "tokensReceived(address,address,address,uint256,bytes,bytes)": {
+            "details": "Called by the ERC777 token contract after a successful transfer or a minting operation.",
+            "params": {
+              "amount": "The amount of tokens that were transferred or minted.",
+              "data": "Additional data that was passed during the transfer or minting operation.",
+              "from": "The address of the sender.",
+              "operator": "The address of the operator performing the transfer or minting operation.",
+              "operatorData": "Additional data that was passed by the operator during the transfer or minting operation.",
+              "to": "The address of the recipient."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/safe/contracts/interfaces/ERC777TokensRecipient.sol": "ERC777TokensRecipient"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/safe/contracts/interfaces/ERC777TokensRecipient.sol": {
+        "keccak256": "0x32ca7f1610659f35e52f5a989e1d844b7847ad57fab06e0cae5bc027248536ac",
+        "urls": [
+          "bzz-raw://9082896ec697e320087b1a682b69a5cdf71b33a2f7a956e2fb6054f9f9d56d06",
+          "dweb:/ipfs/QmUu7iNkQNvvqBPbbxuhqiQpYPYYnfsyPEsf4AMQFANXFZ"
+        ],
+        "license": "LGPL-3.0-only"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/safe/contracts/interfaces/ERC777TokensRecipient.sol",
+    "id": 52356,
+    "exportedSymbols": {
+      "ERC777TokensRecipient": [
+        52355
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "42:1102:120",
+    "nodes": [
+      {
+        "id": 52337,
+        "nodeType": "PragmaDirective",
+        "src": "42:31:120",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.7",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 52355,
+        "nodeType": "ContractDefinition",
+        "src": "315:828:120",
+        "nodes": [
+          {
+            "id": 52354,
+            "nodeType": "FunctionDefinition",
+            "src": "944:197:120",
+            "nodes": [],
+            "documentation": {
+              "id": 52339,
+              "nodeType": "StructuredDocumentation",
+              "src": "353:586:120",
+              "text": " @dev Called by the ERC777 token contract after a successful transfer or a minting operation.\n @param operator The address of the operator performing the transfer or minting operation.\n @param from The address of the sender.\n @param to The address of the recipient.\n @param amount The amount of tokens that were transferred or minted.\n @param data Additional data that was passed during the transfer or minting operation.\n @param operatorData Additional data that was passed by the operator during the transfer or minting operation."
+            },
+            "functionSelector": "0023de29",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "tokensReceived",
+            "nameLocation": "953:14:120",
+            "parameters": {
+              "id": 52352,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 52341,
+                  "mutability": "mutable",
+                  "name": "operator",
+                  "nameLocation": "985:8:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "977:16:120",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 52340,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "977:7:120",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52343,
+                  "mutability": "mutable",
+                  "name": "from",
+                  "nameLocation": "1011:4:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "1003:12:120",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 52342,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1003:7:120",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52345,
+                  "mutability": "mutable",
+                  "name": "to",
+                  "nameLocation": "1033:2:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "1025:10:120",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 52344,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1025:7:120",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52347,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "1053:6:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "1045:14:120",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 52346,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1045:7:120",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52349,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "1084:4:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "1069:19:120",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 52348,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1069:5:120",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52351,
+                  "mutability": "mutable",
+                  "name": "operatorData",
+                  "nameLocation": "1113:12:120",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52354,
+                  "src": "1098:27:120",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 52350,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1098:5:120",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "967:164:120"
+            },
+            "returnParameters": {
+              "id": 52353,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1140:0:120"
+            },
+            "scope": 52355,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "ERC777TokensRecipient",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 52338,
+          "nodeType": "StructuredDocumentation",
+          "src": "75:239:120",
+          "text": " @title ERC777TokensRecipient\n @dev Interface for contracts that will be called with the ERC777 token's `tokensReceived` method.\n The contract receiving the tokens must implement this interface in order to receive the tokens."
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          52355
+        ],
+        "name": "ERC777TokensRecipient",
+        "nameLocation": "325:21:120",
+        "scope": 52356,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-only"
+  },
+  "id": 120
+}
