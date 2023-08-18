@@ -9,7 +9,7 @@ actions:
     specs:
       register_single_order:
         description: Listens to events that index new single conditional orders
-        function: register:addContract
+        function: addContract:addContract
         trigger:
           transaction:
             filters:
@@ -47,7 +47,7 @@ actions:
 
       watch_settlements:
         description: Watch for settled trades and update the state
-        function: watch:checkForSettlement
+        function: checkForSettlement:checkForSettlement
         trigger:
           transaction:
             filters:
@@ -68,7 +68,7 @@ actions:
         description:
           Checks on every block if the registered smart order contract
           wants to trade
-        function: watch:checkForAndPlaceOrder
+        function: checkForAndPlaceOrder:checkForAndPlaceOrder
         trigger:
           block:
             blocks: 5

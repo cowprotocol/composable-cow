@@ -1,11 +1,10 @@
-import { Context } from "@tenderly/actions";
 import assert = require("assert");
+import Slack = require("node-slack");
+import { Context } from "@tenderly/actions";
 
 import { ethers } from "ethers";
 import { ConnectionInfo, Logger } from "ethers/lib/utils";
-import { OrderStatus, Registry } from "./register";
 
-import Slack = require("node-slack");
 import {
   init as sentryInit,
   startTransaction as sentryStartTransaction,
@@ -13,18 +12,10 @@ import {
 } from "@sentry/node";
 import { CaptureConsole as CaptureConsoleIntegration } from "@sentry/integrations";
 
-// const Sentry = require("@sentry/node");
+import { ExecutionContext, OrderStatus, Registry } from "./model";
 
 const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
 const NOTIFICATION_WAIT_PERIOD = 1000 * 60 * 60 * 2; // 2h - Don't send more than one notification every 2h
-
-interface ExecutionContext {
-  registry: Registry;
-  notificationsEnabled: boolean;
-  slack?: Slack;
-  sentryTransaction?: SentryTransaction;
-  context: Context;
-}
 
 let executionContext: ExecutionContext | undefined;
 
@@ -191,7 +182,7 @@ export function formatStatus(status: OrderStatus) {
   }
 }
 
-export function handleExecutionError(e: any) {
+export async function handleExecutionError(e: any) {
   try {
     const errorMessage = e?.message || "Unknown error";
     const notified = sendSlack(
@@ -201,7 +192,7 @@ export function handleExecutionError(e: any) {
 
     if (notified && executionContext) {
       executionContext.registry.lastNotifiedError = new Date();
-      writeRegistry();
+      await writeRegistry();
     }
   } catch (error) {
     consoleOriginal.error("Error sending slack notification", error);
