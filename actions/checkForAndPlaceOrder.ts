@@ -378,20 +378,28 @@ function _handleGetTradableOrderCall(
         };
       case "SingleOrderNotAuthed":
         // If there's no autorization we delete the order
-        // for now it doesn't support more advance cases where the order is auth during a pre-interaction
+        // - One reason could be, because the user CACTIONed the order
+        // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
 
-        console.error(
+        console.info(
           `${errorMessagePrefix}: Single order on safe ${owner} not authed. Deleting order...`
         );
-        return { result: CallResult.Failed, deleteConditionalOrder: true };
+        return {
+          result: CallResult.FailedButIsExpected,
+          deleteConditionalOrder: true,
+        };
       case "ProofNotAuthed":
         // If there's no autorization we delete the order
-        // for now it doesn't support more advance cases where the order is auth during a pre-interaction
+        // - One reason could be, because the user CACTIONed the order
+        // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
 
-        console.error(
+        console.info(
           `${errorMessagePrefix}: Proof on safe ${owner} not authed. Deleting order...`
         );
-        return { result: CallResult.Failed, deleteConditionalOrder: true };
+        return {
+          result: CallResult.FailedButIsExpected,
+          deleteConditionalOrder: true,
+        };
     }
 
     console.error(errorMessagePrefix + " for unexpected reasons", error);
