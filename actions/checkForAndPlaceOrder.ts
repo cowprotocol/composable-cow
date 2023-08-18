@@ -19,6 +19,7 @@ import {
   writeRegistry,
 } from "./utils";
 import { ChainContext, ConditionalOrder, OrderStatus } from "./model";
+import { GPv2Order } from "./types/ComposableCoW";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
@@ -115,11 +116,18 @@ async function _processConditionalOrder(
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
-    const { order, signature } = await _getTradeableOrderWithSignature(
+    const result = await _getTradeableOrderWithSignature(
       owner,
       conditionalOrder,
       contract
     );
+
+    if (!result.success) {
+      // The simulation failed, this only means the order is not ready to be placed in the orderbook. Will check again in the next block
+      return { error: false, deleteConditionalOrder: false };
+    }
+
+    const { order, signature } = result.data;
 
     const orderToSubmit: Order = {
       ...order,
@@ -299,11 +307,21 @@ function _handleOrderBookError(
   return { shouldThrow: true };
 }
 
+type GetTradeableOrderWithSignatureResult =
+  | {
+      success: true;
+      data: {
+        order: GPv2Order.DataStructOutput;
+        signature: string;
+      };
+    }
+  | { success: false; error: any };
+
 async function _getTradeableOrderWithSignature(
   owner: string,
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW
-) {
+): Promise<GetTradeableOrderWithSignatureResult> {
   const proof = conditionalOrder.proof ? conditionalOrder.proof.path : [];
   const offchainInput = "0x";
   const { to, data } =
@@ -319,20 +337,22 @@ async function _getTradeableOrderWithSignature(
     data,
   });
 
-  return contract.callStatic
-    .getTradeableOrderWithSignature(
+  try {
+    const data = await contract.callStatic.getTradeableOrderWithSignature(
       owner,
       conditionalOrder.params,
       offchainInput,
       proof
-    )
-    .catch((e) => {
-      console.error(
-        '[getTradeableOrderWithSignature] Error during "getTradeableOrderWithSignature" call: ',
-        e
-      );
-      throw e;
-    });
+    );
+
+    return { success: true, data };
+  } catch (error) {
+    console.error(
+      '[getTradeableOrderWithSignature] "getTradeableOrderWithSignature" failed. Order might not be ready to be placed in the orderbook yet',
+      error
+    );
+    return { success: false, error };
+  }
 }
 
 /**
