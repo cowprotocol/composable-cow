@@ -378,7 +378,7 @@ function _handleGetTradableOrderCall(
         };
       case "SingleOrderNotAuthed":
         // If there's no autorization we delete the order
-        // - One reason could be, because the user CACTIONed the order
+        // - One reason could be, because the user CANCELLED the order
         // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
 
         console.info(
@@ -390,7 +390,7 @@ function _handleGetTradableOrderCall(
         };
       case "ProofNotAuthed":
         // If there's no autorization we delete the order
-        // - One reason could be, because the user CACTIONed the order
+        // - One reason could be, because the user CANCELLED the order
         // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
 
         console.info(
