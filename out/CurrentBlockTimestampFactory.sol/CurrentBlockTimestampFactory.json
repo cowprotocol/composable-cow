@@ -1,0 +1,405 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "getValue",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b5060f48061001f6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063b6576bdf14602d575b600080fd5b603f60383660046051565b4292915050565b60405190815260200160405180910390f35b60008060208385031215606357600080fd5b823567ffffffffffffffff80821115607a57600080fd5b818501915085601f830112608d57600080fd5b813581811115609b57600080fd5b86602082850101111560ac57600080fd5b6020929092019691955090935050505056fea2646970667358221220464d449981dbd7e1071ddf7507de9c85dde3c1e3e2629445d203410eaac963b564736f6c63430008130033",
+    "sourceMap": "368:186:149:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063b6576bdf14602d575b600080fd5b603f60383660046051565b4292915050565b60405190815260200160405180910390f35b60008060208385031215606357600080fd5b823567ffffffffffffffff80821115607a57600080fd5b818501915085601f830112608d57600080fd5b813581811115609b57600080fd5b86602082850101111560ac57600080fd5b6020929092019691955090935050505056fea2646970667358221220464d449981dbd7e1071ddf7507de9c85dde3c1e3e2629445d203410eaac963b564736f6c63430008130033",
+    "sourceMap": "368:186:149:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;429:123;;;;;;:::i;:::-;529:15;429:123;;;;;;;;756:25:166;;;744:2;729:18;429:123:149;;;;;;;14:591:166;84:6;92;145:2;133:9;124:7;120:23;116:32;113:52;;;161:1;158;151:12;113:52;201:9;188:23;230:18;271:2;263:6;260:14;257:34;;;287:1;284;277:12;257:34;325:6;314:9;310:22;300:32;;370:7;363:4;359:2;355:13;351:27;341:55;;392:1;389;382:12;341:55;432:2;419:16;458:2;450:6;447:14;444:34;;;474:1;471;464:12;444:34;519:7;514:2;505:6;501:2;497:15;493:24;490:37;487:57;;;540:1;537;530:12;487:57;571:2;563:11;;;;;593:6;;-1:-1:-1;14:591:166;;-1:-1:-1;;;;14:591:166:o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getValue(bytes)": "b6576bdf"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"getValue\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"mfw78 <mfw78@rndlabs.xyz>\",\"details\":\"Designed to be used with Safe + ExtensibleFallbackHandler + ComposableCoW\",\"kind\":\"dev\",\"methods\":{},\"title\":\"CurrentBlockTimestampFactory - An on-chain value factory that returns the current block timestamp\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/value_factories/CurrentBlockTimestampFactory.sol\":\"CurrentBlockTimestampFactory\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"src/interfaces/IValueFactory.sol\":{\"keccak256\":\"0x3304ef8a0a1727258ac8278bf5426daeac37ece4653eaaff87b15143814a8122\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://9934d278069dd9474065777833a81e65af227b85d350b6c1f012b812101be9de\",\"dweb:/ipfs/QmcMBdvY7wLs92FCyutDGQGtHnYryjnaykREvDNBNM8Yih\"]},\"src/value_factories/CurrentBlockTimestampFactory.sol\":{\"keccak256\":\"0x923cafbf1a55044632cb9a289e2df3d74b461808d15ab1e8e0775e9829d8473a\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://5e70fdf0a54f4cc29ca974301d7a4dc4c289a197084268a6767981160a0d6595\",\"dweb:/ipfs/Qmf9JWipmNgRsXrcUBBBe1AZPCKD7tW72gmLedDpmNdUs6\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes",
+              "name": "",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValue",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/value_factories/CurrentBlockTimestampFactory.sol": "CurrentBlockTimestampFactory"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IValueFactory.sol": {
+        "keccak256": "0x3304ef8a0a1727258ac8278bf5426daeac37ece4653eaaff87b15143814a8122",
+        "urls": [
+          "bzz-raw://9934d278069dd9474065777833a81e65af227b85d350b6c1f012b812101be9de",
+          "dweb:/ipfs/QmcMBdvY7wLs92FCyutDGQGtHnYryjnaykREvDNBNM8Yih"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/value_factories/CurrentBlockTimestampFactory.sol": {
+        "keccak256": "0x923cafbf1a55044632cb9a289e2df3d74b461808d15ab1e8e0775e9829d8473a",
+        "urls": [
+          "bzz-raw://5e70fdf0a54f4cc29ca974301d7a4dc4c289a197084268a6767981160a0d6595",
+          "dweb:/ipfs/Qmf9JWipmNgRsXrcUBBBe1AZPCKD7tW72gmLedDpmNdUs6"
+        ],
+        "license": "GPL-3.0"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/value_factories/CurrentBlockTimestampFactory.sol",
+    "id": 55688,
+    "exportedSymbols": {
+      "CurrentBlockTimestampFactory": [
+        55687
+      ],
+      "IValueFactory": [
+        54595
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "36:519:149",
+    "nodes": [
+      {
+        "id": 55666,
+        "nodeType": "PragmaDirective",
+        "src": "36:31:149",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 55668,
+        "nodeType": "ImportDirective",
+        "src": "69:62:149",
+        "nodes": [],
+        "absolutePath": "src/interfaces/IValueFactory.sol",
+        "file": "../interfaces/IValueFactory.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 55688,
+        "sourceUnit": 54596,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 55667,
+              "name": "IValueFactory",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 54595,
+              "src": "77:13:149",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 55687,
+        "nodeType": "ContractDefinition",
+        "src": "368:186:149",
+        "nodes": [
+          {
+            "id": 55686,
+            "nodeType": "FunctionDefinition",
+            "src": "429:123:149",
+            "nodes": [],
+            "body": {
+              "id": 55685,
+              "nodeType": "Block",
+              "src": "504:48:149",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "expression": {
+                          "id": 55681,
+                          "name": "block",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -4,
+                          "src": "529:5:149",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_block",
+                            "typeString": "block"
+                          }
+                        },
+                        "id": 55682,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "535:9:149",
+                        "memberName": "timestamp",
+                        "nodeType": "MemberAccess",
+                        "src": "529:15:149",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 55680,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "lValueRequested": false,
+                      "nodeType": "ElementaryTypeNameExpression",
+                      "src": "521:7:149",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_bytes32_$",
+                        "typeString": "type(bytes32)"
+                      },
+                      "typeName": {
+                        "id": 55679,
+                        "name": "bytes32",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "521:7:149",
+                        "typeDescriptions": {}
+                      }
+                    },
+                    "id": 55683,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "typeConversion",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "521:24:149",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "functionReturnParameters": 55678,
+                  "id": 55684,
+                  "nodeType": "Return",
+                  "src": "514:31:149"
+                }
+              ]
+            },
+            "baseFunctions": [
+              54594
+            ],
+            "functionSelector": "b6576bdf",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValue",
+            "nameLocation": "438:8:149",
+            "overrides": {
+              "id": 55675,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "477:8:149"
+            },
+            "parameters": {
+              "id": 55674,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 55673,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55686,
+                  "src": "447:14:149",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 55672,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "447:5:149",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "446:16:149"
+            },
+            "returnParameters": {
+              "id": 55678,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 55677,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55686,
+                  "src": "495:7:149",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 55676,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "495:7:149",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "494:9:149"
+            },
+            "scope": 55687,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 55670,
+              "name": "IValueFactory",
+              "nameLocations": [
+                "409:13:149"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 54595,
+              "src": "409:13:149"
+            },
+            "id": 55671,
+            "nodeType": "InheritanceSpecifier",
+            "src": "409:13:149"
+          }
+        ],
+        "canonicalName": "CurrentBlockTimestampFactory",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 55669,
+          "nodeType": "StructuredDocumentation",
+          "src": "133:234:149",
+          "text": " @title CurrentBlockTimestampFactory - An on-chain value factory that returns the current block timestamp\n @dev Designed to be used with Safe + ExtensibleFallbackHandler + ComposableCoW\n @author mfw78 <mfw78@rndlabs.xyz>"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          55687,
+          54595
+        ],
+        "name": "CurrentBlockTimestampFactory",
+        "nameLocation": "377:28:149",
+        "scope": 55688,
+        "usedErrors": []
+      }
+    ],
+    "license": "GPL-3.0"
+  },
+  "id": 149
+}

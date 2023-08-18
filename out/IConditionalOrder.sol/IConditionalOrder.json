@@ -1,0 +1,1305 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "OrderNotValid",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_hash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "domainSeparator",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "ctx",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "staticInput",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "offchainInput",
+          "type": "bytes"
+        },
+        {
+          "components": [
+            {
+              "internalType": "contract IERC20",
+              "name": "sellToken",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IERC20",
+              "name": "buyToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sellAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "buyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "validTo",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "appData",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "feeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "kind",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "partiallyFillable",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "sellTokenBalance",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "buyTokenBalance",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct GPv2Order.Data",
+          "name": "order",
+          "type": "tuple"
+        }
+      ],
+      "name": "verify",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": "14a2a784"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"OrderNotValid\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"domainSeparator\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"ctx\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"staticInput\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"offchainInput\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"contract IERC20\",\"name\":\"sellToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"buyToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"sellAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"validTo\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"appData\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"kind\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"partiallyFillable\",\"type\":\"bool\"},{\"internalType\":\"bytes32\",\"name\":\"sellTokenBalance\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"buyTokenBalance\",\"type\":\"bytes32\"}],\"internalType\":\"struct GPv2Order.Data\",\"name\":\"order\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"CoW Protocol Developers + mfw78 <mfw78@rndlabs.xyz>\",\"errors\":{\"OrderNotValid(string)\":[{\"details\":\"This error is returned by the `getTradeableOrder` function if the order condition is not met.      A parameter of `string` type is included to allow the caller to specify the reason for the failure.\"}]},\"kind\":\"dev\",\"methods\":{\"verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))\":{\"details\":\"Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.      **MUST** revert if the order condition is not met.The `order` parameter is ignored / not validated by the `IConditionalOrderGenerator` implementation.      This parameter is included to allow more granular control over the order verification logic, and to      allow a watch tower / user to propose a discrete order without it being generated by on-chain logic.\",\"params\":{\"_hash\":\"the hash of the order\",\"ctx\":\"the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet\",\"domainSeparator\":\"the domain separator used to sign the order\",\"offchainInput\":\"dynamic off-chain input for a discrete order cut from this conditional order\",\"order\":\"`GPv2Order.Data` of a discrete order to be verified (if *not* an `IConditionalOrderGenerator`).\",\"owner\":\"the contract who is the owner of the order\",\"sender\":\"the `msg.sender` of the transaction\",\"staticInput\":\"the static input for all discrete orders cut from this conditional order\"}}},\"title\":\"Conditional Order Interface\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))\":{\"notice\":\"Verify if a given discrete order is valid.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IConditionalOrder.sol\":\"IConditionalOrder\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/@openzeppelin/contracts/interfaces/IERC20.sol\":{\"keccak256\":\"0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45\",\"dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq\"]},\"lib/@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5\",\"dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol\":{\"keccak256\":\"0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f\",\"dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Order.sol\":{\"keccak256\":\"0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d\",\"dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg\"]},\"lib/safe/contracts/interfaces/IERC165.sol\":{\"keccak256\":\"0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89\",\"dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38\"]},\"src/interfaces/IConditionalOrder.sol\":{\"keccak256\":\"0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699\",\"dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "type": "error",
+          "name": "OrderNotValid"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "_hash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "domainSeparator",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "ctx",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "staticInput",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "offchainInput",
+              "type": "bytes"
+            },
+            {
+              "internalType": "struct GPv2Order.Data",
+              "name": "order",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "sellToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "buyToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "receiver",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "sellAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "buyAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "validTo",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "appData",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "kind",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "partiallyFillable",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sellTokenBalance",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "buyTokenBalance",
+                  "type": "bytes32"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "verify"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": {
+            "details": "Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.      **MUST** revert if the order condition is not met.The `order` parameter is ignored / not validated by the `IConditionalOrderGenerator` implementation.      This parameter is included to allow more granular control over the order verification logic, and to      allow a watch tower / user to propose a discrete order without it being generated by on-chain logic.",
+            "params": {
+              "_hash": "the hash of the order",
+              "ctx": "the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet",
+              "domainSeparator": "the domain separator used to sign the order",
+              "offchainInput": "dynamic off-chain input for a discrete order cut from this conditional order",
+              "order": "`GPv2Order.Data` of a discrete order to be verified (if *not* an `IConditionalOrderGenerator`).",
+              "owner": "the contract who is the owner of the order",
+              "sender": "the `msg.sender` of the transaction",
+              "staticInput": "the static input for all discrete orders cut from this conditional order"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": {
+            "notice": "Verify if a given discrete order is valid."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/interfaces/IConditionalOrder.sol": "IConditionalOrder"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/@openzeppelin/contracts/interfaces/IERC20.sol": {
+        "keccak256": "0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45",
+        "urls": [
+          "bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45",
+          "dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq"
+        ],
+        "license": "MIT"
+      },
+      "lib/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305",
+        "urls": [
+          "bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5",
+          "dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53"
+        ],
+        "license": "MIT"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol": {
+        "keccak256": "0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528",
+        "urls": [
+          "bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f",
+          "dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol": {
+        "keccak256": "0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f",
+        "urls": [
+          "bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d",
+          "dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/safe/contracts/interfaces/IERC165.sol": {
+        "keccak256": "0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb",
+        "urls": [
+          "bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89",
+          "dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38"
+        ],
+        "license": "LGPL-3.0-only"
+      },
+      "src/interfaces/IConditionalOrder.sol": {
+        "keccak256": "0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b",
+        "urls": [
+          "bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699",
+          "dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ"
+        ],
+        "license": "GPL-3.0"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/interfaces/IConditionalOrder.sol",
+    "id": 54469,
+    "exportedSymbols": {
+      "GPv2Interaction": [
+        17090
+      ],
+      "GPv2Order": [
+        17246
+      ],
+      "IConditionalOrder": [
+        54437
+      ],
+      "IConditionalOrderGenerator": [
+        54468
+      ],
+      "IERC165": [
+        52197
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "36:3924:139",
+    "nodes": [
+      {
+        "id": 54395,
+        "nodeType": "PragmaDirective",
+        "src": "36:31:139",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 54397,
+        "nodeType": "ImportDirective",
+        "src": "69:62:139",
+        "nodes": [],
+        "absolutePath": "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol",
+        "file": "cowprotocol/libraries/GPv2Order.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 54469,
+        "sourceUnit": 17247,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 54396,
+              "name": "GPv2Order",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 17246,
+              "src": "77:9:139",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 54399,
+        "nodeType": "ImportDirective",
+        "src": "132:74:139",
+        "nodes": [],
+        "absolutePath": "lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol",
+        "file": "cowprotocol/libraries/GPv2Interaction.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 54469,
+        "sourceUnit": 17091,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 54398,
+              "name": "GPv2Interaction",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 17090,
+              "src": "140:15:139",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 54401,
+        "nodeType": "ImportDirective",
+        "src": "207:52:139",
+        "nodes": [],
+        "absolutePath": "lib/safe/contracts/interfaces/IERC165.sol",
+        "file": "safe/interfaces/IERC165.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 54469,
+        "sourceUnit": 52198,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 54400,
+              "name": "IERC165",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 52197,
+              "src": "215:7:139",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 54437,
+        "nodeType": "ContractDefinition",
+        "src": "370:2142:139",
+        "nodes": [
+          {
+            "id": 54407,
+            "nodeType": "ErrorDefinition",
+            "src": "624:28:139",
+            "nodes": [],
+            "documentation": {
+              "id": 54403,
+              "nodeType": "StructuredDocumentation",
+              "src": "404:215:139",
+              "text": "@dev This error is returned by the `getTradeableOrder` function if the order condition is not met.\n      A parameter of `string` type is included to allow the caller to specify the reason for the failure."
+            },
+            "errorSelector": "c8fc2725",
+            "name": "OrderNotValid",
+            "nameLocation": "630:13:139",
+            "parameters": {
+              "id": 54406,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54405,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54407,
+                  "src": "644:6:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 54404,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "644:6:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "643:8:139"
+            }
+          },
+          {
+            "id": 54415,
+            "nodeType": "StructDefinition",
+            "src": "840:121:139",
+            "nodes": [],
+            "canonicalName": "IConditionalOrder.ConditionalOrderParams",
+            "members": [
+              {
+                "constant": false,
+                "id": 54410,
+                "mutability": "mutable",
+                "name": "handler",
+                "nameLocation": "898:7:139",
+                "nodeType": "VariableDeclaration",
+                "scope": 54415,
+                "src": "880:25:139",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_IConditionalOrder_$54437",
+                  "typeString": "contract IConditionalOrder"
+                },
+                "typeName": {
+                  "id": 54409,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 54408,
+                    "name": "IConditionalOrder",
+                    "nameLocations": [
+                      "880:17:139"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 54437,
+                    "src": "880:17:139"
+                  },
+                  "referencedDeclaration": 54437,
+                  "src": "880:17:139",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IConditionalOrder_$54437",
+                    "typeString": "contract IConditionalOrder"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 54412,
+                "mutability": "mutable",
+                "name": "salt",
+                "nameLocation": "923:4:139",
+                "nodeType": "VariableDeclaration",
+                "scope": 54415,
+                "src": "915:12:139",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 54411,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "915:7:139",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 54414,
+                "mutability": "mutable",
+                "name": "staticInput",
+                "nameLocation": "943:11:139",
+                "nodeType": "VariableDeclaration",
+                "scope": 54415,
+                "src": "937:17:139",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes_storage_ptr",
+                  "typeString": "bytes"
+                },
+                "typeName": {
+                  "id": 54413,
+                  "name": "bytes",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "937:5:139",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_storage_ptr",
+                    "typeString": "bytes"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "ConditionalOrderParams",
+            "nameLocation": "847:22:139",
+            "scope": 54437,
+            "visibility": "public"
+          },
+          {
+            "id": 54436,
+            "nodeType": "FunctionDefinition",
+            "src": "2237:273:139",
+            "nodes": [],
+            "documentation": {
+              "id": 54416,
+              "nodeType": "StructuredDocumentation",
+              "src": "967:1265:139",
+              "text": " Verify if a given discrete order is valid.\n @dev Used in combination with `isValidSafeSignature` to verify that the order is signed by the Safe.\n      **MUST** revert if the order condition is not met.\n @dev The `order` parameter is ignored / not validated by the `IConditionalOrderGenerator` implementation.\n      This parameter is included to allow more granular control over the order verification logic, and to\n      allow a watch tower / user to propose a discrete order without it being generated by on-chain logic.\n @param owner the contract who is the owner of the order\n @param sender the `msg.sender` of the transaction\n @param _hash the hash of the order\n @param domainSeparator the domain separator used to sign the order\n @param ctx the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet\n @param staticInput the static input for all discrete orders cut from this conditional order\n @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order\n @param order `GPv2Order.Data` of a discrete order to be verified (if *not* an `IConditionalOrderGenerator`)."
+            },
+            "functionSelector": "14a2a784",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verify",
+            "nameLocation": "2246:6:139",
+            "parameters": {
+              "id": 54434,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54418,
+                  "mutability": "mutable",
+                  "name": "owner",
+                  "nameLocation": "2270:5:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2262:13:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 54417,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2262:7:139",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54420,
+                  "mutability": "mutable",
+                  "name": "sender",
+                  "nameLocation": "2293:6:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2285:14:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 54419,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2285:7:139",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54422,
+                  "mutability": "mutable",
+                  "name": "_hash",
+                  "nameLocation": "2317:5:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2309:13:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54421,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2309:7:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54424,
+                  "mutability": "mutable",
+                  "name": "domainSeparator",
+                  "nameLocation": "2340:15:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2332:23:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54423,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2332:7:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54426,
+                  "mutability": "mutable",
+                  "name": "ctx",
+                  "nameLocation": "2373:3:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2365:11:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54425,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2365:7:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54428,
+                  "mutability": "mutable",
+                  "name": "staticInput",
+                  "nameLocation": "2401:11:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2386:26:139",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54427,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2386:5:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54430,
+                  "mutability": "mutable",
+                  "name": "offchainInput",
+                  "nameLocation": "2437:13:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2422:28:139",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54429,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2422:5:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54433,
+                  "mutability": "mutable",
+                  "name": "order",
+                  "nameLocation": "2484:5:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54436,
+                  "src": "2460:29:139",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17121_calldata_ptr",
+                    "typeString": "struct GPv2Order.Data"
+                  },
+                  "typeName": {
+                    "id": 54432,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 54431,
+                      "name": "GPv2Order.Data",
+                      "nameLocations": [
+                        "2460:9:139",
+                        "2470:4:139"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17121,
+                      "src": "2460:14:139"
+                    },
+                    "referencedDeclaration": 17121,
+                    "src": "2460:14:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                      "typeString": "struct GPv2Order.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2252:243:139"
+            },
+            "returnParameters": {
+              "id": 54435,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2509:0:139"
+            },
+            "scope": 54437,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IConditionalOrder",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 54402,
+          "nodeType": "StructuredDocumentation",
+          "src": "261:108:139",
+          "text": " @title Conditional Order Interface\n @author CoW Protocol Developers + mfw78 <mfw78@rndlabs.xyz>"
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          54437
+        ],
+        "name": "IConditionalOrder",
+        "nameLocation": "380:17:139",
+        "scope": 54469,
+        "usedErrors": [
+          54407
+        ]
+      },
+      {
+        "id": 54468,
+        "nodeType": "ContractDefinition",
+        "src": "2607:1352:139",
+        "nodes": [
+          {
+            "id": 54450,
+            "nodeType": "EventDefinition",
+            "src": "2914:102:139",
+            "nodes": [],
+            "anonymous": false,
+            "documentation": {
+              "id": 54443,
+              "nodeType": "StructuredDocumentation",
+              "src": "2680:229:139",
+              "text": " @dev This event is emitted when a new conditional order is created.\n @param owner the address that has created the conditional order\n @param params the address / salt / data of the conditional order"
+            },
+            "eventSelector": "2cceac5555b0ca45a3744ced542f54b56ad2eb45e521962372eef212a2cbf361",
+            "name": "ConditionalOrderCreated",
+            "nameLocation": "2920:23:139",
+            "parameters": {
+              "id": 54449,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54445,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "owner",
+                  "nameLocation": "2960:5:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54450,
+                  "src": "2944:21:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 54444,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2944:7:139",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54448,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "params",
+                  "nameLocation": "3008:6:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54450,
+                  "src": "2967:47:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ConditionalOrderParams_$54415_memory_ptr",
+                    "typeString": "struct IConditionalOrder.ConditionalOrderParams"
+                  },
+                  "typeName": {
+                    "id": 54447,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 54446,
+                      "name": "IConditionalOrder.ConditionalOrderParams",
+                      "nameLocations": [
+                        "2967:17:139",
+                        "2985:22:139"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 54415,
+                      "src": "2967:40:139"
+                    },
+                    "referencedDeclaration": 54415,
+                    "src": "2967:40:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ConditionalOrderParams_$54415_storage_ptr",
+                      "typeString": "struct IConditionalOrder.ConditionalOrderParams"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2943:72:139"
+            }
+          },
+          {
+            "id": 54467,
+            "nodeType": "FunctionDefinition",
+            "src": "3736:221:139",
+            "nodes": [],
+            "documentation": {
+              "id": 54451,
+              "nodeType": "StructuredDocumentation",
+              "src": "3022:709:139",
+              "text": " @dev Get a tradeable order that can be posted to the CoW Protocol API and would pass signature validation.\n      **MUST** revert if the order condition is not met.\n @param owner the contract who is the owner of the order\n @param sender the `msg.sender` of the parent `isValidSignature` call\n @param ctx the context of the order (bytes32(0) if merkle tree is used, otherwise the H(params))\n @param staticInput the static input for all discrete orders cut from this conditional order\n @param offchainInput dynamic off-chain input for a discrete order cut from this conditional order\n @return the tradeable order for submission to the CoW Protocol API"
+            },
+            "functionSelector": "b8296fc4",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTradeableOrder",
+            "nameLocation": "3745:17:139",
+            "parameters": {
+              "id": 54462,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54453,
+                  "mutability": "mutable",
+                  "name": "owner",
+                  "nameLocation": "3780:5:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3772:13:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 54452,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3772:7:139",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54455,
+                  "mutability": "mutable",
+                  "name": "sender",
+                  "nameLocation": "3803:6:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3795:14:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 54454,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3795:7:139",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54457,
+                  "mutability": "mutable",
+                  "name": "ctx",
+                  "nameLocation": "3827:3:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3819:11:139",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54456,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3819:7:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54459,
+                  "mutability": "mutable",
+                  "name": "staticInput",
+                  "nameLocation": "3855:11:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3840:26:139",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54458,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3840:5:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54461,
+                  "mutability": "mutable",
+                  "name": "offchainInput",
+                  "nameLocation": "3891:13:139",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3876:28:139",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54460,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3876:5:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3762:148:139"
+            },
+            "returnParameters": {
+              "id": 54466,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54465,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54467,
+                  "src": "3934:21:139",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                    "typeString": "struct GPv2Order.Data"
+                  },
+                  "typeName": {
+                    "id": 54464,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 54463,
+                      "name": "GPv2Order.Data",
+                      "nameLocations": [
+                        "3934:9:139",
+                        "3944:4:139"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17121,
+                      "src": "3934:14:139"
+                    },
+                    "referencedDeclaration": 17121,
+                    "src": "3934:14:139",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                      "typeString": "struct GPv2Order.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3933:23:139"
+            },
+            "scope": 54468,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 54439,
+              "name": "IConditionalOrder",
+              "nameLocations": [
+                "2647:17:139"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 54437,
+              "src": "2647:17:139"
+            },
+            "id": 54440,
+            "nodeType": "InheritanceSpecifier",
+            "src": "2647:17:139"
+          },
+          {
+            "baseName": {
+              "id": 54441,
+              "name": "IERC165",
+              "nameLocations": [
+                "2666:7:139"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 52197,
+              "src": "2666:7:139"
+            },
+            "id": 54442,
+            "nodeType": "InheritanceSpecifier",
+            "src": "2666:7:139"
+          }
+        ],
+        "canonicalName": "IConditionalOrderGenerator",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 54438,
+          "nodeType": "StructuredDocumentation",
+          "src": "2514:92:139",
+          "text": " @title Conditional Order Generator Interface\n @author mfw78 <mfw78@rndlabs.xyz>"
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          54468,
+          52197,
+          54437
+        ],
+        "name": "IConditionalOrderGenerator",
+        "nameLocation": "2617:26:139",
+        "scope": 54469,
+        "usedErrors": [
+          54407
+        ]
+      }
+    ],
+    "license": "GPL-3.0"
+  },
+  "id": 139
+}
