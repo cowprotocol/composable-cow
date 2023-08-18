@@ -28,7 +28,7 @@ actions:
 
       register_merkle_root:
         description: Listens to events that index a merkle root of conditional orders
-        function: register:addContract
+        function: addContract:addContract
         trigger:
           transaction:
             filters:
