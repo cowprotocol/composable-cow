@@ -6,14 +6,6 @@ import {
   Log,
   TransactionEvent,
 } from "@tenderly/actions";
-import {
-  Order,
-  OrderBalance,
-  OrderKind,
-  computeOrderUid,
-} from "@cowprotocol/contracts";
-
-import axios from "axios";
 
 import { BigNumber } from "ethers";
 
