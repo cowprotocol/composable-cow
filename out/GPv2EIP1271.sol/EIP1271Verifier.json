@@ -1,0 +1,380 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_hash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature",
+          "type": "bytes"
+        }
+      ],
+      "name": "isValidSignature",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "magicValue",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "isValidSignature(bytes32,bytes)": "1626ba7e"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"magicValue\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Standardized interface for an implementation of smart contract signatures as described in EIP-1271. The code that follows is identical to the code in the standard with the exception of formatting and syntax changes to adapt the code to our Solidity version.\",\"kind\":\"dev\",\"methods\":{\"isValidSignature(bytes32,bytes)\":{\"details\":\"Should return whether the signature provided is valid for the provided data\",\"params\":{\"_hash\":\"Hash of the data to be signed\",\"_signature\":\"Signature byte array associated with _data MUST return the bytes4 magic value 0x1626ba7e when function passes. MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5) MUST allow external calls\"}}},\"title\":\"EIP1271 Interface\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol\":\"EIP1271Verifier\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol\":{\"keccak256\":\"0xea0afb5f00ece4de83adb6cf76629344dae3171db3040e50ed704e0650342ade\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://4d9d40de14b1bd8ce70a2f94aa43957e77d7c71b58973e5dcc7d5765ded6cae7\",\"dweb:/ipfs/QmaYLbc84vUtKjdvHjwkYVvnr2hP54Q1B7Jm5KW4iuxt4j\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "_hash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "_signature",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValidSignature",
+          "outputs": [
+            {
+              "internalType": "bytes4",
+              "name": "magicValue",
+              "type": "bytes4"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "isValidSignature(bytes32,bytes)": {
+            "details": "Should return whether the signature provided is valid for the provided data",
+            "params": {
+              "_hash": "Hash of the data to be signed",
+              "_signature": "Signature byte array associated with _data MUST return the bytes4 magic value 0x1626ba7e when function passes. MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5) MUST allow external calls"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol": "EIP1271Verifier"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol": {
+        "keccak256": "0xea0afb5f00ece4de83adb6cf76629344dae3171db3040e50ed704e0650342ade",
+        "urls": [
+          "bzz-raw://4d9d40de14b1bd8ce70a2f94aa43957e77d7c71b58973e5dcc7d5765ded6cae7",
+          "dweb:/ipfs/QmaYLbc84vUtKjdvHjwkYVvnr2hP54Q1B7Jm5KW4iuxt4j"
+        ],
+        "license": "LGPL-3.0-or-later"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/cowprotocol/src/contracts/interfaces/GPv2EIP1271.sol",
+    "id": 17189,
+    "exportedSymbols": {
+      "EIP1271Verifier": [
+        17188
+      ],
+      "GPv2EIP1271": [
+        17176
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "46:1247:60",
+    "nodes": [
+      {
+        "id": 17171,
+        "nodeType": "PragmaDirective",
+        "src": "46:31:60",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 17176,
+        "nodeType": "ContractDefinition",
+        "src": "79:287:60",
+        "nodes": [
+          {
+            "id": 17175,
+            "nodeType": "VariableDeclaration",
+            "src": "315:48:60",
+            "nodes": [],
+            "constant": true,
+            "documentation": {
+              "id": 17172,
+              "nodeType": "StructuredDocumentation",
+              "src": "105:205:60",
+              "text": "@dev Value returned by a call to `isValidSignature` if the signature\n was verified successfully. The value is defined in EIP-1271 as:\n bytes4(keccak256(\"isValidSignature(bytes32,bytes)\"))"
+            },
+            "mutability": "constant",
+            "name": "MAGICVALUE",
+            "nameLocation": "340:10:60",
+            "scope": 17176,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes4",
+              "typeString": "bytes4"
+            },
+            "typeName": {
+              "id": 17173,
+              "name": "bytes4",
+              "nodeType": "ElementaryTypeName",
+              "src": "315:6:60",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes4",
+                "typeString": "bytes4"
+              }
+            },
+            "value": {
+              "hexValue": "30783136323662613765",
+              "id": 17174,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "353:10:60",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_371636862_by_1",
+                "typeString": "int_const 371636862"
+              },
+              "value": "0x1626ba7e"
+            },
+            "visibility": "internal"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "GPv2EIP1271",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          17176
+        ],
+        "name": "GPv2EIP1271",
+        "nameLocation": "87:11:60",
+        "scope": 17189,
+        "usedErrors": []
+      },
+      {
+        "id": 17188,
+        "nodeType": "ContractDefinition",
+        "src": "676:616:60",
+        "nodes": [
+          {
+            "id": 17187,
+            "nodeType": "FunctionDefinition",
+            "src": "1158:132:60",
+            "nodes": [],
+            "documentation": {
+              "id": 17178,
+              "nodeType": "StructuredDocumentation",
+              "src": "708:445:60",
+              "text": "@dev Should return whether the signature provided is valid for the\n provided data\n @param _hash      Hash of the data to be signed\n @param _signature Signature byte array associated with _data\n MUST return the bytes4 magic value 0x1626ba7e when function passes.\n MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for\n solc > 0.5)\n MUST allow external calls"
+            },
+            "functionSelector": "1626ba7e",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isValidSignature",
+            "nameLocation": "1167:16:60",
+            "parameters": {
+              "id": 17183,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17180,
+                  "mutability": "mutable",
+                  "name": "_hash",
+                  "nameLocation": "1192:5:60",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17187,
+                  "src": "1184:13:60",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 17179,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1184:7:60",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 17182,
+                  "mutability": "mutable",
+                  "name": "_signature",
+                  "nameLocation": "1212:10:60",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17187,
+                  "src": "1199:23:60",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 17181,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1199:5:60",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1183:40:60"
+            },
+            "returnParameters": {
+              "id": 17186,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17185,
+                  "mutability": "mutable",
+                  "name": "magicValue",
+                  "nameLocation": "1278:10:60",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17187,
+                  "src": "1271:17:60",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  },
+                  "typeName": {
+                    "id": 17184,
+                    "name": "bytes4",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1271:6:60",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes4",
+                      "typeString": "bytes4"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1270:19:60"
+            },
+            "scope": 17188,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "EIP1271Verifier",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 17177,
+          "nodeType": "StructuredDocumentation",
+          "src": "368:308:60",
+          "text": "@title EIP1271 Interface\n @dev Standardized interface for an implementation of smart contract\n signatures as described in EIP-1271. The code that follows is identical to\n the code in the standard with the exception of formatting and syntax\n changes to adapt the code to our Solidity version."
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          17188
+        ],
+        "name": "EIP1271Verifier",
+        "nameLocation": "686:15:60",
+        "scope": 17189,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-or-later"
+  },
+  "id": 60
+}

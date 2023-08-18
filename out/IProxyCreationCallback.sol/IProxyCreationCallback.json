@@ -1,0 +1,380 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract SafeProxy",
+          "name": "proxy",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_singleton",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initializer",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "saltNonce",
+          "type": "uint256"
+        }
+      ],
+      "name": "proxyCreated",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "proxyCreated(address,address,bytes,uint256)": "1e52b518"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"contract SafeProxy\",\"name\":\"proxy\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_singleton\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initializer\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"saltNonce\",\"type\":\"uint256\"}],\"name\":\"proxyCreated\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"An interface for a contract that implements a callback function to be executed after the creation of a proxy instance.\",\"kind\":\"dev\",\"methods\":{\"proxyCreated(address,address,bytes,uint256)\":{\"details\":\"Function to be called after the creation of a SafeProxy instance.\",\"params\":{\"_singleton\":\"The address of the singleton contract used to create the proxy.\",\"initializer\":\"The initializer function call data.\",\"proxy\":\"The newly created SafeProxy instance.\",\"saltNonce\":\"The nonce used to generate the salt for the proxy deployment.\"}}},\"title\":\"IProxyCreationCallback\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/safe/contracts/proxies/IProxyCreationCallback.sol\":\"IProxyCreationCallback\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/safe/contracts/proxies/IProxyCreationCallback.sol\":{\"keccak256\":\"0xf5410c842c1bbff96a2047b31f5437a9dc5183d004ab1fc9f952220f11379602\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://0ac1fa0c7d6fc683384a3ce0b328c66adcc53b6a3e59d3b67c62404dd57c3099\",\"dweb:/ipfs/QmcVvxtcjZqyQwQcU4cPU4SZZ2LEahsmVWgJWGh5n8EHa7\"]},\"lib/safe/contracts/proxies/SafeProxy.sol\":{\"keccak256\":\"0x5dccbe86285c1d4c4b2fed0ae8007620c3186d22411f43feecfbf8a028e5c7e2\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://a1a02d01a92895110505e141d05b0924ea457a25b89a161f0aeedf6b5cb41aec\",\"dweb:/ipfs/QmYWEsFbWwtrVvEF9MNQtf4X3Qt13dAE8o44tEyAS9jmKP\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "contract SafeProxy",
+              "name": "proxy",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "_singleton",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initializer",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "saltNonce",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "proxyCreated"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "proxyCreated(address,address,bytes,uint256)": {
+            "details": "Function to be called after the creation of a SafeProxy instance.",
+            "params": {
+              "_singleton": "The address of the singleton contract used to create the proxy.",
+              "initializer": "The initializer function call data.",
+              "proxy": "The newly created SafeProxy instance.",
+              "saltNonce": "The nonce used to generate the salt for the proxy deployment."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/safe/contracts/proxies/IProxyCreationCallback.sol": "IProxyCreationCallback"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/safe/contracts/proxies/IProxyCreationCallback.sol": {
+        "keccak256": "0xf5410c842c1bbff96a2047b31f5437a9dc5183d004ab1fc9f952220f11379602",
+        "urls": [
+          "bzz-raw://0ac1fa0c7d6fc683384a3ce0b328c66adcc53b6a3e59d3b67c62404dd57c3099",
+          "dweb:/ipfs/QmcVvxtcjZqyQwQcU4cPU4SZZ2LEahsmVWgJWGh5n8EHa7"
+        ],
+        "license": "LGPL-3.0-only"
+      },
+      "lib/safe/contracts/proxies/SafeProxy.sol": {
+        "keccak256": "0x5dccbe86285c1d4c4b2fed0ae8007620c3186d22411f43feecfbf8a028e5c7e2",
+        "urls": [
+          "bzz-raw://a1a02d01a92895110505e141d05b0924ea457a25b89a161f0aeedf6b5cb41aec",
+          "dweb:/ipfs/QmYWEsFbWwtrVvEF9MNQtf4X3Qt13dAE8o44tEyAS9jmKP"
+        ],
+        "license": "LGPL-3.0-only"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/safe/contracts/proxies/IProxyCreationCallback.sol",
+    "id": 52557,
+    "exportedSymbols": {
+      "IProxy": [
+        52565
+      ],
+      "IProxyCreationCallback": [
+        52556
+      ],
+      "SafeProxy": [
+        52596
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "42:773:126",
+    "nodes": [
+      {
+        "id": 52540,
+        "nodeType": "PragmaDirective",
+        "src": "42:31:126",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.7",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 52541,
+        "nodeType": "ImportDirective",
+        "src": "74:25:126",
+        "nodes": [],
+        "absolutePath": "lib/safe/contracts/proxies/SafeProxy.sol",
+        "file": "./SafeProxy.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 52557,
+        "sourceUnit": 52597,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 52556,
+        "nodeType": "ContractDefinition",
+        "src": "269:545:126",
+        "nodes": [
+          {
+            "id": 52555,
+            "nodeType": "FunctionDefinition",
+            "src": "697:115:126",
+            "nodes": [],
+            "documentation": {
+              "id": 52543,
+              "nodeType": "StructuredDocumentation",
+              "src": "308:384:126",
+              "text": " @dev Function to be called after the creation of a SafeProxy instance.\n @param proxy The newly created SafeProxy instance.\n @param _singleton The address of the singleton contract used to create the proxy.\n @param initializer The initializer function call data.\n @param saltNonce The nonce used to generate the salt for the proxy deployment."
+            },
+            "functionSelector": "1e52b518",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "proxyCreated",
+            "nameLocation": "706:12:126",
+            "parameters": {
+              "id": 52553,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 52546,
+                  "mutability": "mutable",
+                  "name": "proxy",
+                  "nameLocation": "729:5:126",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52555,
+                  "src": "719:15:126",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_SafeProxy_$52596",
+                    "typeString": "contract SafeProxy"
+                  },
+                  "typeName": {
+                    "id": 52545,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 52544,
+                      "name": "SafeProxy",
+                      "nameLocations": [
+                        "719:9:126"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 52596,
+                      "src": "719:9:126"
+                    },
+                    "referencedDeclaration": 52596,
+                    "src": "719:9:126",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_SafeProxy_$52596",
+                      "typeString": "contract SafeProxy"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52548,
+                  "mutability": "mutable",
+                  "name": "_singleton",
+                  "nameLocation": "744:10:126",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52555,
+                  "src": "736:18:126",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 52547,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "736:7:126",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52550,
+                  "mutability": "mutable",
+                  "name": "initializer",
+                  "nameLocation": "771:11:126",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52555,
+                  "src": "756:26:126",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 52549,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "756:5:126",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 52552,
+                  "mutability": "mutable",
+                  "name": "saltNonce",
+                  "nameLocation": "792:9:126",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 52555,
+                  "src": "784:17:126",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 52551,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "784:7:126",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "718:84:126"
+            },
+            "returnParameters": {
+              "id": 52554,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "811:0:126"
+            },
+            "scope": 52556,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IProxyCreationCallback",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 52542,
+          "nodeType": "StructuredDocumentation",
+          "src": "101:167:126",
+          "text": " @title IProxyCreationCallback\n @dev An interface for a contract that implements a callback function to be executed after the creation of a proxy instance."
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          52556
+        ],
+        "name": "IProxyCreationCallback",
+        "nameLocation": "279:22:126",
+        "scope": 52557,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-only"
+  },
+  "id": 126
+}

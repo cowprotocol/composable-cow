@@ -1,0 +1,273 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "prospectiveSolver",
+          "type": "address"
+        }
+      ],
+      "name": "isSolver",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "isSolver(address)": "02cc250d"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"prospectiveSolver\",\"type\":\"address\"}],\"name\":\"isSolver\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Gnosis Developers\",\"kind\":\"dev\",\"methods\":{\"isSolver(address)\":{\"details\":\"determines whether the provided address is an authenticated solver.\",\"params\":{\"prospectiveSolver\":\"the address of prospective solver.\"},\"returns\":{\"_0\":\"true when prospectiveSolver is an authenticated solver, otherwise false.\"}}},\"title\":\"Gnosis Protocol v2 Authentication Interface\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/cowprotocol/src/contracts/interfaces/GPv2Authentication.sol\":\"GPv2Authentication\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/cowprotocol/src/contracts/interfaces/GPv2Authentication.sol\":{\"keccak256\":\"0x13eafd3d4043356364572ff28f213ea39faeb4b21b53a900b35fa765a5e0347f\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://71bbcdb728824b72046281d5ca6adc6da2d0806cf251b0662dfc8b06dec9845d\",\"dweb:/ipfs/Qme59yqn4QBBsVe9miUvyD1wVNNFvauXgsPBXT47Ahbizf\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "prospectiveSolver",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isSolver",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "isSolver(address)": {
+            "details": "determines whether the provided address is an authenticated solver.",
+            "params": {
+              "prospectiveSolver": "the address of prospective solver."
+            },
+            "returns": {
+              "_0": "true when prospectiveSolver is an authenticated solver, otherwise false."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/cowprotocol/src/contracts/interfaces/GPv2Authentication.sol": "GPv2Authentication"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/cowprotocol/src/contracts/interfaces/GPv2Authentication.sol": {
+        "keccak256": "0x13eafd3d4043356364572ff28f213ea39faeb4b21b53a900b35fa765a5e0347f",
+        "urls": [
+          "bzz-raw://71bbcdb728824b72046281d5ca6adc6da2d0806cf251b0662dfc8b06dec9845d",
+          "dweb:/ipfs/Qme59yqn4QBBsVe9miUvyD1wVNNFvauXgsPBXT47Ahbizf"
+        ],
+        "license": "LGPL-3.0-or-later"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/cowprotocol/src/contracts/interfaces/GPv2Authentication.sol",
+    "id": 17170,
+    "exportedSymbols": {
+      "GPv2Authentication": [
+        17169
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "46:468:59",
+    "nodes": [
+      {
+        "id": 17159,
+        "nodeType": "PragmaDirective",
+        "src": "46:31:59",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 17169,
+        "nodeType": "ContractDefinition",
+        "src": "164:349:59",
+        "nodes": [
+          {
+            "id": 17168,
+            "nodeType": "FunctionDefinition",
+            "src": "437:74:59",
+            "nodes": [],
+            "documentation": {
+              "id": 17161,
+              "nodeType": "StructuredDocumentation",
+              "src": "199:233:59",
+              "text": "@dev determines whether the provided address is an authenticated solver.\n @param prospectiveSolver the address of prospective solver.\n @return true when prospectiveSolver is an authenticated solver, otherwise false."
+            },
+            "functionSelector": "02cc250d",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isSolver",
+            "nameLocation": "446:8:59",
+            "parameters": {
+              "id": 17164,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17163,
+                  "mutability": "mutable",
+                  "name": "prospectiveSolver",
+                  "nameLocation": "463:17:59",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17168,
+                  "src": "455:25:59",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 17162,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "455:7:59",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "454:27:59"
+            },
+            "returnParameters": {
+              "id": 17167,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 17166,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 17168,
+                  "src": "505:4:59",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 17165,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "505:4:59",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "504:6:59"
+            },
+            "scope": 17169,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "GPv2Authentication",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 17160,
+          "nodeType": "StructuredDocumentation",
+          "src": "79:85:59",
+          "text": "@title Gnosis Protocol v2 Authentication Interface\n @author Gnosis Developers"
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          17169
+        ],
+        "name": "GPv2Authentication",
+        "nameLocation": "174:18:59",
+        "scope": 17170,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-or-later"
+  },
+  "id": 59
+}

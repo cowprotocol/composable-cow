@@ -1,0 +1,533 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"author\":\"Richard Meissner - @rmeissner\",\"details\":\"The fallback manager appends the following context to the calldata:      1. Fallback manager caller address (non-padded) based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/f8cc8b844a9f92f63dc55aa581f7d643a1bc5ac1/contracts/metatx/ERC2771Context.sol\",\"kind\":\"dev\",\"methods\":{},\"title\":\"Handler Context - Allows the fallback handler to extract addition context from the calldata\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/safe/contracts/handler/HandlerContext.sol\":\"HandlerContext\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/safe/contracts/handler/HandlerContext.sol\":{\"keccak256\":\"0x3e105ebac003af9c8d34e3eed517ff0355d5f487e17478c85df0f225b04846f5\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://657bec347d746453883c461a3d9a2275bf2b99625dcaef0960e1c0276c3d56c4\",\"dweb:/ipfs/QmUGj8Tzs1CsmUf63LbTMK81EEGtYYnWKLGdHHtoYCd9CF\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "lib/safe/contracts/handler/HandlerContext.sol": "HandlerContext"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/safe/contracts/handler/HandlerContext.sol": {
+        "keccak256": "0x3e105ebac003af9c8d34e3eed517ff0355d5f487e17478c85df0f225b04846f5",
+        "urls": [
+          "bzz-raw://657bec347d746453883c461a3d9a2275bf2b99625dcaef0960e1c0276c3d56c4",
+          "dweb:/ipfs/QmUGj8Tzs1CsmUf63LbTMK81EEGtYYnWKLGdHHtoYCd9CF"
+        ],
+        "license": "LGPL-3.0-only"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "lib/safe/contracts/handler/HandlerContext.sol",
+    "id": 50929,
+    "exportedSymbols": {
+      "HandlerContext": [
+        50928
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "42:1592:110",
+    "nodes": [
+      {
+        "id": 50899,
+        "nodeType": "PragmaDirective",
+        "src": "42:31:110",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.7",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 50928,
+        "nodeType": "ContractDefinition",
+        "src": "507:1126:110",
+        "nodes": [
+          {
+            "id": 50917,
+            "nodeType": "FunctionDefinition",
+            "src": "1053:379:110",
+            "nodes": [],
+            "body": {
+              "id": 50916,
+              "nodeType": "Block",
+              "src": "1114:318:110",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 50911,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "expression": {
+                            "expression": {
+                              "id": 50907,
+                              "name": "msg",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": -15,
+                              "src": "1132:3:110",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_magic_message",
+                                "typeString": "msg"
+                              }
+                            },
+                            "id": 50908,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "1136:4:110",
+                            "memberName": "data",
+                            "nodeType": "MemberAccess",
+                            "src": "1132:8:110",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes_calldata_ptr",
+                              "typeString": "bytes calldata"
+                            }
+                          },
+                          "id": 50909,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "1141:6:110",
+                          "memberName": "length",
+                          "nodeType": "MemberAccess",
+                          "src": "1132:15:110",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": ">=",
+                        "rightExpression": {
+                          "hexValue": "3230",
+                          "id": 50910,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "1151:2:110",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_20_by_1",
+                            "typeString": "int_const 20"
+                          },
+                          "value": "20"
+                        },
+                        "src": "1132:21:110",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "496e76616c69642063616c6c64617461206c656e677468",
+                        "id": 50912,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1155:25:110",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_babc7b92dcb00bd43678cbbe8d21c148c8d3a1fddaa81ca2f447ead72c44182b",
+                          "typeString": "literal_string \"Invalid calldata length\""
+                        },
+                        "value": "Invalid calldata length"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_babc7b92dcb00bd43678cbbe8d21c148c8d3a1fddaa81ca2f447ead72c44182b",
+                          "typeString": "literal_string \"Invalid calldata length\""
+                        }
+                      ],
+                      "id": 50906,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "1124:7:110",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 50913,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1124:57:110",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 50914,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1124:57:110"
+                },
+                {
+                  "AST": {
+                    "nodeType": "YulBlock",
+                    "src": "1346:80:110",
+                    "statements": [
+                      {
+                        "nodeType": "YulAssignment",
+                        "src": "1360:56:110",
+                        "value": {
+                          "arguments": [
+                            {
+                              "kind": "number",
+                              "nodeType": "YulLiteral",
+                              "src": "1374:2:110",
+                              "type": "",
+                              "value": "96"
+                            },
+                            {
+                              "arguments": [
+                                {
+                                  "arguments": [
+                                    {
+                                      "arguments": [],
+                                      "functionName": {
+                                        "name": "calldatasize",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "1395:12:110"
+                                      },
+                                      "nodeType": "YulFunctionCall",
+                                      "src": "1395:14:110"
+                                    },
+                                    {
+                                      "kind": "number",
+                                      "nodeType": "YulLiteral",
+                                      "src": "1411:2:110",
+                                      "type": "",
+                                      "value": "20"
+                                    }
+                                  ],
+                                  "functionName": {
+                                    "name": "sub",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "1391:3:110"
+                                  },
+                                  "nodeType": "YulFunctionCall",
+                                  "src": "1391:23:110"
+                                }
+                              ],
+                              "functionName": {
+                                "name": "calldataload",
+                                "nodeType": "YulIdentifier",
+                                "src": "1378:12:110"
+                              },
+                              "nodeType": "YulFunctionCall",
+                              "src": "1378:37:110"
+                            }
+                          ],
+                          "functionName": {
+                            "name": "shr",
+                            "nodeType": "YulIdentifier",
+                            "src": "1370:3:110"
+                          },
+                          "nodeType": "YulFunctionCall",
+                          "src": "1370:46:110"
+                        },
+                        "variableNames": [
+                          {
+                            "name": "sender",
+                            "nodeType": "YulIdentifier",
+                            "src": "1360:6:110"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "evmVersion": "paris",
+                  "externalReferences": [
+                    {
+                      "declaration": 50904,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1360:6:110",
+                      "valueSize": 1
+                    }
+                  ],
+                  "id": 50915,
+                  "nodeType": "InlineAssembly",
+                  "src": "1337:89:110"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 50901,
+              "nodeType": "StructuredDocumentation",
+              "src": "546:502:110",
+              "text": " @notice Allows fetching the original caller address.\n @dev This is only reliable in combination with a FallbackManager that supports this (e.g. Safe contract >=1.3.0).\n      When using this functionality make sure that the linked _manager (aka msg.sender) supports this.\n      This function does not rely on a trusted forwarder. Use the returned value only to\n      check information against the calling manager.\n @return sender Original caller address."
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_msgSender",
+            "nameLocation": "1062:10:110",
+            "parameters": {
+              "id": 50902,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1072:2:110"
+            },
+            "returnParameters": {
+              "id": 50905,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 50904,
+                  "mutability": "mutable",
+                  "name": "sender",
+                  "nameLocation": "1106:6:110",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 50917,
+                  "src": "1098:14:110",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 50903,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1098:7:110",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1097:16:110"
+            },
+            "scope": 50928,
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "id": 50927,
+            "nodeType": "FunctionDefinition",
+            "src": "1545:86:110",
+            "nodes": [],
+            "body": {
+              "id": 50926,
+              "nodeType": "Block",
+              "src": "1597:34:110",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 50923,
+                      "name": "msg",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": -15,
+                      "src": "1614:3:110",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_magic_message",
+                        "typeString": "msg"
+                      }
+                    },
+                    "id": 50924,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "1618:6:110",
+                    "memberName": "sender",
+                    "nodeType": "MemberAccess",
+                    "src": "1614:10:110",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 50922,
+                  "id": 50925,
+                  "nodeType": "Return",
+                  "src": "1607:17:110"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 50918,
+              "nodeType": "StructuredDocumentation",
+              "src": "1438:102:110",
+              "text": " @notice Returns the FallbackManager address\n @return Fallback manager address"
+            },
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_manager",
+            "nameLocation": "1554:8:110",
+            "parameters": {
+              "id": 50919,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1562:2:110"
+            },
+            "returnParameters": {
+              "id": 50922,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 50921,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 50927,
+                  "src": "1588:7:110",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 50920,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1588:7:110",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1587:9:110"
+            },
+            "scope": 50928,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "abstract": true,
+        "baseContracts": [],
+        "canonicalName": "HandlerContext",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 50900,
+          "nodeType": "StructuredDocumentation",
+          "src": "75:431:110",
+          "text": " @title Handler Context - Allows the fallback handler to extract addition context from the calldata\n @dev The fallback manager appends the following context to the calldata:\n      1. Fallback manager caller address (non-padded)\n based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/f8cc8b844a9f92f63dc55aa581f7d643a1bc5ac1/contracts/metatx/ERC2771Context.sol\n @author Richard Meissner - @rmeissner"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          50928
+        ],
+        "name": "HandlerContext",
+        "nameLocation": "525:14:110",
+        "scope": 50929,
+        "usedErrors": []
+      }
+    ],
+    "license": "LGPL-3.0-only"
+  },
+  "id": 110
+}
