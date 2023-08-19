@@ -1,11 +1,4 @@
-import {
-  ActionFn,
-  BlockEvent,
-  Context,
-  Event,
-  Log,
-  TransactionEvent,
-} from "@tenderly/actions";
+import { ActionFn, BlockEvent, Context, Event } from "@tenderly/actions";
 import {
   Order,
   OrderBalance,
@@ -15,168 +8,19 @@ import {
 
 import axios from "axios";
 
-import { BigNumber, ethers } from "ethers";
-import {
-  ComposableCoW,
-  ComposableCoW__factory,
-  GPv2Settlement__factory,
-} from "./types";
-import { Registry, OrderStatus, ConditionalOrder } from "./register";
+import { ethers } from "ethers";
 import { BytesLike, Logger } from "ethers/lib/utils";
+
+import { ComposableCoW, ComposableCoW__factory } from "./types";
 import {
-  apiUrl,
   formatStatus,
-  getProvider,
   handleExecutionError,
   init,
   writeRegistry,
 } from "./utils";
-import { GPv2SettlementInterface } from "./types/GPv2Settlement";
+import { ChainContext, ConditionalOrder, OrderStatus } from "./model";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
-
-/**
- * Watch for settled trades and update the registry
- * @param context tenderly context
- * @param event transaction event
- */
-export const checkForSettlement: ActionFn = async (
-  context: Context,
-  event: Event
-) => {
-  return _checkForSettlement(context, event).catch(handleExecutionError);
-};
-
-/**
- * Asynchronous version of checkForSettlement. It will process all the settlements, and will throw an error at the end if there was at least one error
- */
-const _checkForSettlement: ActionFn = async (
-  context: Context,
-  event: Event
-) => {
-  const transactionEvent = event as TransactionEvent;
-  const settlement = GPv2Settlement__factory.createInterface();
-
-  const { registry } = await init(
-    "checkForSettlement",
-    transactionEvent.network,
-    context
-  );
-
-  let hasErrors = false;
-  transactionEvent.logs.forEach(async (log) => {
-    const { error } = await _processSettlement(
-      transactionEvent.hash,
-      log,
-      settlement,
-      registry
-    );
-    hasErrors ||= error;
-  });
-
-  // Update the registry
-  hasErrors ||= !(await writeRegistry());
-
-  // Throw execution error if there was at least one error
-  if (hasErrors) {
-    throw Error(
-      "[checkForSettlement] Error while checking the settlements to mark orders as FILLED"
-    );
-  }
-};
-
-async function _processSettlement(
-  tx: string,
-  log: Log,
-  settlement: GPv2SettlementInterface,
-  registry: Registry
-): Promise<{ error: boolean }> {
-  const { ownerOrders } = registry;
-  try {
-    if (log.topics[0] === settlement.getEventTopic("Trade")) {
-      const [owner, , , , , , orderUid] = settlement.decodeEventLog(
-        "Trade",
-        log.data,
-        log.topics
-      ) as [string, string, string, BigNumber, BigNumber, BigNumber, string];
-
-      // Check if the owner is in the registry
-      if (ownerOrders.has(owner)) {
-        // Get the conditionalOrders for the owner
-        const conditionalOrders = ownerOrders.get(owner);
-        // Iterate over the conditionalOrders and update the status of the orderUid
-        conditionalOrders?.forEach((conditionalOrder) => {
-          // Check if the orderUid is in the conditionalOrder
-          if (conditionalOrder.orders.has(orderUid)) {
-            // Update the status of the orderUid to FILLED
-            console.log(
-              `Update order ${orderUid} to status FILLED. Settlement Tx: ${tx}`
-            );
-            conditionalOrder.orders.set(orderUid, OrderStatus.FILLED);
-          }
-        });
-      }
-    }
-  } catch (e: any) {
-    console.error("Error checking for settlement", e);
-
-    return { error: true };
-  }
-
-  return { error: false };
-}
-
-async function getTradeableOrderWithSignature(
-  owner: string,
-  conditionalOrder: ConditionalOrder,
-  contract: ComposableCoW
-) {
-  const proof = conditionalOrder.proof ? conditionalOrder.proof.path : [];
-  const offchainInput = "0x";
-  contract.getTradeableOrderWithSignature;
-  const { to, data } =
-    await contract.populateTransaction.getTradeableOrderWithSignature(
-      owner,
-      conditionalOrder.params,
-      offchainInput,
-      proof
-    );
-
-  // await contract.provider
-  //   .estimateGas({
-  //     to: contract.address,
-  //     data,
-  //   })
-  //   .then((r) => {
-  //     console.log("[getTradeableOrderWithSignature:estimateGas] Success", r);
-  //   })
-  //   .catch((e) => {
-  //     console.error(
-  //       '[getTradeableOrderWithSignature:estimateGas] Error during "getTradeableOrderWithSignature" call: ',
-  //       e
-  //     );
-  //   });
-
-  console.log("[getTradeableOrderWithSignature] Simulate", {
-    to,
-    data,
-  });
-
-  return contract.callStatic
-    .getTradeableOrderWithSignature(
-      owner,
-      conditionalOrder.params,
-      offchainInput,
-      proof
-    )
-    .catch((e) => {
-      console.error(
-        '[getTradeableOrderWithSignature] Error during "getTradeableOrderWithSignature" call: ',
-        e
-      );
-      throw e;
-    });
-}
 
 /**
  * Watch for new blocks and check for orders to place
@@ -271,7 +115,7 @@ async function _processConditionalOrder(
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
-    const { order, signature } = await getTradeableOrderWithSignature(
+    const { order, signature } = await _getTradeableOrderWithSignature(
       owner,
       conditionalOrder,
       contract
@@ -285,11 +129,11 @@ async function _processConditionalOrder(
     };
 
     // calculate the orderUid
-    const orderUid = getOrderUid(network, orderToSubmit, owner);
+    const orderUid = _getOrderUid(network, orderToSubmit, owner);
 
     // if the orderUid has not been submitted, or filled, then place the order
     if (!conditionalOrder.orders.has(orderUid)) {
-      await placeOrder(
+      await _placeOrder(
         orderUid,
         { ...orderToSubmit, from: owner, signature },
         chainContext.api_url
@@ -319,7 +163,7 @@ async function _processConditionalOrder(
         case "ProofNotAuthed":
           console.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
       }
-      printUnfilledOrders(conditionalOrder.orders);
+      _printUnfilledOrders(conditionalOrder.orders);
       console.log(
         "Removing conditional order from registry due to CALL_EXCEPTION"
       );
@@ -331,7 +175,7 @@ async function _processConditionalOrder(
   return { deleteConditionalOrder: false, error };
 }
 
-function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
+function _getOrderUid(network: string, orderToSubmit: Order, owner: string) {
   return computeOrderUid(
     {
       name: "Gnosis Protocol",
@@ -356,7 +200,7 @@ function getOrderUid(network: string, orderToSubmit: Order, owner: string) {
  * Print a list of all the orders that were placed and not filled
  * @param orders All the orders that are being tracked
  */
-export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
+export const _printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
   const unfilledOrders = Array.from(orders.entries())
     .filter(([_orderUid, status]) => status === OrderStatus.SUBMITTED) // as SUBMITTED != FILLED
     .map(([orderUid, _status]) => orderUid)
@@ -372,7 +216,7 @@ export const printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
  * @param order to be placed on the cow protocol api
  * @param apiUrl rest api url
  */
-async function placeOrder(
+async function _placeOrder(
   orderUid: string,
   order: any,
   apiUrl: string
@@ -417,7 +261,7 @@ async function placeOrder(
     if (error.response) {
       const { status, data } = error.response;
 
-      const { shouldThrow } = handleOrderBookError(status, data);
+      const { shouldThrow } = _handleOrderBookError(status, data);
 
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
@@ -441,6 +285,54 @@ async function placeOrder(
     }
     throw error;
   }
+}
+
+function _handleOrderBookError(
+  status: any,
+  data: any
+): { shouldThrow: boolean } {
+  if (status === 400 && data?.errorType === "DuplicatedOrder") {
+    // The order is in the OrderBook, all good :)
+    return { shouldThrow: false };
+  }
+
+  return { shouldThrow: true };
+}
+
+async function _getTradeableOrderWithSignature(
+  owner: string,
+  conditionalOrder: ConditionalOrder,
+  contract: ComposableCoW
+) {
+  const proof = conditionalOrder.proof ? conditionalOrder.proof.path : [];
+  const offchainInput = "0x";
+  const { to, data } =
+    await contract.populateTransaction.getTradeableOrderWithSignature(
+      owner,
+      conditionalOrder.params,
+      offchainInput,
+      proof
+    );
+
+  console.log("[getTradeableOrderWithSignature] Simulate", {
+    to,
+    data,
+  });
+
+  return contract.callStatic
+    .getTradeableOrderWithSignature(
+      owner,
+      conditionalOrder.params,
+      offchainInput,
+      proof
+    )
+    .catch((e) => {
+      console.error(
+        '[getTradeableOrderWithSignature] Error during "getTradeableOrderWithSignature" call: ',
+        e
+      );
+      throw e;
+    });
 }
 
 /**
@@ -490,34 +382,3 @@ export const balanceToString = (balance: string) => {
     throw new Error(`Unknown balance type: ${balance}`);
   }
 };
-
-class ChainContext {
-  provider: ethers.providers.Provider;
-  api_url: string;
-
-  constructor(provider: ethers.providers.Provider, api_url: string) {
-    this.provider = provider;
-    this.api_url = api_url;
-  }
-
-  public static async create(
-    context: Context,
-    network: string
-  ): Promise<ChainContext> {
-    const provider = await getProvider(context, network);
-
-    const providerNetwork = await provider.getNetwork();
-    return new ChainContext(provider, apiUrl(network));
-  }
-}
-function handleOrderBookError(
-  status: any,
-  data: any
-): { shouldThrow: boolean } {
-  if (status === 400 && data?.errorType === "DuplicatedOrder") {
-    // The order is in the OrderBook, all good :)
-    return { shouldThrow: false };
-  }
-
-  return { shouldThrow: true };
-}

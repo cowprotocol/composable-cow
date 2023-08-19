@@ -3,8 +3,8 @@ import {
   TestBlockEvent,
   TestTransactionEvent,
 } from "@tenderly/actions-test";
-import { checkForAndPlaceOrder } from "../watch";
-import { addContract } from "../register";
+import { checkForAndPlaceOrder } from "../checkForAndPlaceOrder";
+import { addContract } from "../addContract";
 import { ethers } from "ethers";
 import assert = require("assert");
 import { getProvider } from "../utils";
