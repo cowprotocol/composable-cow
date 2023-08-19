@@ -19,6 +19,7 @@ import {
   writeRegistry,
 } from "./utils";
 import { ChainContext, ConditionalOrder, OrderStatus } from "./model";
+import { GPv2Order } from "./types/ComposableCoW";
 
 const GPV2SETTLEMENT = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41";
 
@@ -115,11 +116,22 @@ async function _processConditionalOrder(
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
-    const { order, signature } = await _getTradeableOrderWithSignature(
+    const tradeableOrderResult = await _getTradeableOrderWithSignature(
       owner,
       conditionalOrder,
       contract
     );
+
+    // Return early if the simulation fails
+    if (tradeableOrderResult.result != CallResult.Success) {
+      const { deleteConditionalOrder, result } = tradeableOrderResult;
+      return {
+        error: result !== CallResult.FailedButIsExpected, // If we expected the call to fail, then we don't consider it an error
+        deleteConditionalOrder,
+      };
+    }
+
+    const { order, signature } = tradeableOrderResult.data;
 
     const orderToSubmit: Order = {
       ...order,
@@ -149,26 +161,6 @@ async function _processConditionalOrder(
       );
     }
   } catch (e: any) {
-    error = true;
-    if (e.code === Logger.errors.CALL_EXCEPTION) {
-      switch (e.errorName) {
-        case "OrderNotValid":
-          // The conditional order has not expired, or been cancelled, but the order is not valid
-          // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
-          return { deleteConditionalOrder: false, error };
-        case "SingleOrderNotAuthed":
-          console.log(
-            `Single order on safe ${owner} not authed. Unfilled orders:`
-          );
-        case "ProofNotAuthed":
-          console.log(`Proof on safe ${owner} not authed. Unfilled orders:`);
-      }
-      _printUnfilledOrders(conditionalOrder.orders);
-      console.log(
-        "Removing conditional order from registry due to CALL_EXCEPTION"
-      );
-      return { deleteConditionalOrder: true, error };
-    }
     console.error(`Unexpected error while processing order:`, e);
   }
 
@@ -194,10 +186,9 @@ function _getOrderUid(network: string, orderToSubmit: Order, owner: string) {
   );
 }
 
-// --- Helpers ---
-
 /**
  * Print a list of all the orders that were placed and not filled
+ *
  * @param orders All the orders that are being tracked
  */
 export const _printUnfilledOrders = (orders: Map<BytesLike, OrderStatus>) => {
@@ -299,11 +290,35 @@ function _handleOrderBookError(
   return { shouldThrow: true };
 }
 
+type GetTradeableOrderWithSignatureResult =
+  | GetTradeableOrderWithSignatureSuccess
+  | GetTradeableOrderWithSignatureError;
+
+enum CallResult {
+  Success,
+  Failed,
+  FailedButIsExpected,
+}
+
+type GetTradeableOrderWithSignatureSuccess = {
+  result: CallResult.Success;
+  deleteConditionalOrder: boolean;
+  data: {
+    order: GPv2Order.DataStructOutput;
+    signature: string;
+  };
+};
+type GetTradeableOrderWithSignatureError = {
+  result: CallResult.Failed | CallResult.FailedButIsExpected;
+  deleteConditionalOrder: boolean;
+  errorObj: any;
+};
+
 async function _getTradeableOrderWithSignature(
   owner: string,
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW
-) {
+): Promise<GetTradeableOrderWithSignatureResult> {
   const proof = conditionalOrder.proof ? conditionalOrder.proof.path : [];
   const offchainInput = "0x";
   const { to, data } =
@@ -319,20 +334,82 @@ async function _getTradeableOrderWithSignature(
     data,
   });
 
-  return contract.callStatic
-    .getTradeableOrderWithSignature(
+  try {
+    const data = await contract.callStatic.getTradeableOrderWithSignature(
       owner,
       conditionalOrder.params,
       offchainInput,
       proof
-    )
-    .catch((e) => {
-      console.error(
-        '[getTradeableOrderWithSignature] Error during "getTradeableOrderWithSignature" call: ',
-        e
-      );
-      throw e;
-    });
+    );
+
+    return { result: CallResult.Success, deleteConditionalOrder: false, data };
+  } catch (error: any) {
+    // Print and handle the error
+    // We need to decide if the error is final or not (if a re-attempt might help). If it doesn't, we delete the order
+    const { result, deleteConditionalOrder } = _handleGetTradableOrderCall(
+      error,
+      owner
+    );
+    return {
+      result,
+      deleteConditionalOrder,
+      errorObj: error,
+    };
+  }
+}
+
+function _handleGetTradableOrderCall(
+  error: any,
+  owner: string
+): {
+  result: CallResult.Failed | CallResult.FailedButIsExpected;
+  deleteConditionalOrder: boolean;
+} {
+  if (error.code === Logger.errors.CALL_EXCEPTION) {
+    const errorMessagePrefix =
+      "[getTradeableOrderWithSignature] Call Exception";
+    switch (error.errorName) {
+      case "OrderNotValid":
+        // The conditional order has not expired, or been cancelled, but the order is not valid
+        // For example, with TWAPs, this may be after `span` seconds have passed in the epoch.
+        return {
+          result: CallResult.FailedButIsExpected,
+          deleteConditionalOrder: false,
+        };
+      case "SingleOrderNotAuthed":
+        // If there's no authorization we delete the order
+        // - One reason could be, because the user CANCELLED the order
+        // - for now it doesn't support more advanced cases where the order is auth during a pre-interaction
+
+        console.info(
+          `${errorMessagePrefix}: Single order on safe ${owner} not authed. Deleting order...`
+        );
+        return {
+          result: CallResult.FailedButIsExpected,
+          deleteConditionalOrder: true,
+        };
+      case "ProofNotAuthed":
+        // If there's no authorization we delete the order
+        // - One reason could be, because the user CANCELLED the order
+        // - for now it doesn't support more advanced cases where the order is auth during a pre-interaction
+
+        console.info(
+          `${errorMessagePrefix}: Proof on safe ${owner} not authed. Deleting order...`
+        );
+        return {
+          result: CallResult.FailedButIsExpected,
+          deleteConditionalOrder: true,
+        };
+    }
+
+    console.error(errorMessagePrefix + " for unexpected reasons", error);
+    // If we don't know the reason, is better to not delete the order
+    return { result: CallResult.Failed, deleteConditionalOrder: false };
+  }
+
+  console.error("[getTradeableOrderWithSignature] Unexpected error", error);
+  // If we don't know the reason, is better to not delete the order
+  return { result: CallResult.Failed, deleteConditionalOrder: false };
 }
 
 /**
