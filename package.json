@@ -30,6 +30,8 @@
     "lint:actions": "eslint && prettier --check ./actions",
     "test:actions": "yarn build:actions && yarn ts-node actions/test/test_register.ts",
     "start:actions": "yarn ts-node actions/test/run_local.ts",
+    "deploy:dev": " tenderly actions deploy --project-config tenderly",
+    "deploy:prod": " tenderly actions deploy --project-config tenderly-prod",
     "fmt:cli": "prettier ./cli -w",
     "lint:cli": "eslint && prettier --check ./cli",
     "build:cli": "cd cli && npm ci && yarn run build",
