@@ -116,22 +116,22 @@ async function _processConditionalOrder(
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
-    const tradableOrderResult = await _getTradeableOrderWithSignature(
+    const tradeableOrderResult = await _getTradeableOrderWithSignature(
       owner,
       conditionalOrder,
       contract
     );
 
     // Return early if the simulation fails
-    if (tradableOrderResult.result != CallResult.Success) {
-      const { deleteConditionalOrder, result } = tradableOrderResult;
+    if (tradeableOrderResult.result != CallResult.Success) {
+      const { deleteConditionalOrder, result } = tradeableOrderResult;
       return {
         error: result !== CallResult.FailedButIsExpected, // If we expected the call to fail, then we don't consider it an error
         deleteConditionalOrder,
       };
     }
 
-    const { order, signature } = tradableOrderResult.data;
+    const { order, signature } = tradeableOrderResult.data;
 
     const orderToSubmit: Order = {
       ...order,
@@ -377,9 +377,9 @@ function _handleGetTradableOrderCall(
           deleteConditionalOrder: false,
         };
       case "SingleOrderNotAuthed":
-        // If there's no autorization we delete the order
+        // If there's no authorization we delete the order
         // - One reason could be, because the user CANCELLED the order
-        // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
+        // - for now it doesn't support more advanced cases where the order is auth during a pre-interaction
 
         console.info(
           `${errorMessagePrefix}: Single order on safe ${owner} not authed. Deleting order...`
@@ -389,9 +389,9 @@ function _handleGetTradableOrderCall(
           deleteConditionalOrder: true,
         };
       case "ProofNotAuthed":
-        // If there's no autorization we delete the order
+        // If there's no authorization we delete the order
         // - One reason could be, because the user CANCELLED the order
-        // - for now it doesn't support more advance cases where the order is auth during a pre-interaction
+        // - for now it doesn't support more advanced cases where the order is auth during a pre-interaction
 
         console.info(
           `${errorMessagePrefix}: Proof on safe ${owner} not authed. Deleting order...`
