@@ -40,10 +40,10 @@ const _addContract: ActionFn = async (context: Context, event: Event) => {
 
   // Process the logs
   let hasErrors = false;
-  transactionEvent.logs.forEach((log) => {
-    const { error } = _registerNewOrder(tx, log, composableCow, registry);
+  for (const log of transactionEvent.logs) {
+    const { error } = await _registerNewOrder(tx, log, composableCow, registry);
     hasErrors ||= error;
-  });
+  }
 
   hasErrors ||= !(await writeRegistry());
   // Throw execution error if there was at least one error
@@ -54,12 +54,12 @@ const _addContract: ActionFn = async (context: Context, event: Event) => {
   }
 };
 
-export function _registerNewOrder(
+export async function _registerNewOrder(
   tx: string,
   log: Log,
   composableCow: ComposableCoWInterface,
   registry: Registry
-): { error: boolean } {
+): Promise<{ error: boolean }> {
   try {
     // Check if the log is a ConditionalOrderCreated event
     if (
@@ -72,7 +72,7 @@ export function _registerNewOrder(
       ) as [string, IConditionalOrder.ConditionalOrderParamsStruct];
 
       // Attempt to add the conditional order to the registry
-      add(tx, owner, params, null, log.address, registry);
+      await add(tx, owner, params, null, log.address, registry);
     } else if (log.topics[0] == composableCow.getEventTopic("MerkleRootSet")) {
       const [owner, root, proof] = composableCow.decodeEventLog(
         "MerkleRootSet",
@@ -90,7 +90,8 @@ export function _registerNewOrder(
           ["bytes[]"],
           proof.data as BytesLike
         );
-        proofData.forEach((order) => {
+
+        for (const order of proofData) {
           // Decode the order
           const decodedOrder = ethers.utils.defaultAbiCoder.decode(
             [
@@ -100,7 +101,7 @@ export function _registerNewOrder(
             order as BytesLike
           );
           // Attempt to add the conditional order to the registry
-          add(
+          await add(
             tx,
             owner,
             decodedOrder[1],
@@ -108,7 +109,7 @@ export function _registerNewOrder(
             log.address,
             registry
           );
-        });
+        }
       }
     }
   } catch (error) {
