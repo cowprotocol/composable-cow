@@ -38,9 +38,6 @@ const main = async () => {
   const provider = await getProvider(testRuntime.context, network);
   const { chainId } = await provider.getNetwork();
 
-  // Provides a way to process a specific block p
-  const blockNumber = process.env.BLOCK_NUMBER;
-
   const onNewBlock = async (blockNumber: number) => {
     try {
       processBlock(provider, blockNumber, chainId, testRuntime);
@@ -49,7 +46,9 @@ const main = async () => {
     }
   };
 
+  // Run one of the 2 Execution modes (single block, or watch mode)
   if (process.env.BLOCK_NUMBER) {
+    // Execute once, for a specific block
     const blockNumber = Number(process.env.BLOCK_NUMBER);
     console.log(`[run_local] Processing specific block ${blockNumber}...`);
     await onNewBlock(blockNumber).catch(console.error);
