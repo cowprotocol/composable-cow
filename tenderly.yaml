@@ -1,9 +1,8 @@
 account_id: 4edfc3a8-de04-463e-8408-34302bfa01e0
-project_slug: dev@cow.fi
 provider: ""
 
 actions:
-  devcow/project:
+  gp-v2/watch-tower-dev:
     runtime: v1
     sources: actions
     specs:

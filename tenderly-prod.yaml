@@ -1,9 +1,9 @@
-account_id: 9732a0da-5849-4b68-a671-9c4bf1266ca4
-# project_slug: anxolin@gmail.com
+# TODO: Delete this file one this is implemented https://github.com/cowprotocol/composable-cow/issues/51
+account_id: 4edfc3a8-de04-463e-8408-34302bfa01e0
 provider: ""
 
 actions:
-  gp-v2/production:
+  gp-v2/watch-tower-prod:
     runtime: v1
     sources: actions
     specs:
