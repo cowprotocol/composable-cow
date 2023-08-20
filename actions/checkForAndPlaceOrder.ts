@@ -116,8 +116,36 @@ async function _processConditionalOrder(
 ): Promise<{ deleteConditionalOrder: boolean; error: boolean }> {
   let error = false;
   try {
+    // Do a basic auth check (for singleOrders) // TODO: Check also Merkle auth
+    // Check in case the user invalidated it (this reduces errors in logs)
+    if (!conditionalOrder.proof) {
+      const ctx = await contract.callStatic.hash(conditionalOrder.params);
+      const authorised = await contract.callStatic
+        .singleOrders(owner, ctx)
+        .catch((error) => {
+          console.log(
+            "[processConditionalOrder] Error checking singleOrders auth",
+            { owner, ctx, conditionalOrder },
+            error
+          );
+          return undefined; // returns undefined if it cannot be checked
+        });
+
+      // Return early if the order is not authorised (if its not authorised)
+      // Note we continue in case of an error (this is just to let _getTradeableOrderWithSignature handle the error and log the Tenderly simulation link)
+      if (authorised === false) {
+        console.log(
+          `[processConditionalOrder] Single order not authed. Deleting order...`,
+          { owner, ctx, conditionalOrder }
+        );
+        return { deleteConditionalOrder: true, error: false };
+      }
+    }
+
+    // Get GPv2 Order
     const tradeableOrderResult = await _getTradeableOrderWithSignature(
       owner,
+      network,
       conditionalOrder,
       contract
     );
@@ -316,6 +344,7 @@ type GetTradeableOrderWithSignatureError = {
 
 async function _getTradeableOrderWithSignature(
   owner: string,
+  network: string,
   conditionalOrder: ConditionalOrder,
   contract: ComposableCoW
 ): Promise<GetTradeableOrderWithSignatureResult> {
@@ -329,10 +358,9 @@ async function _getTradeableOrderWithSignature(
       proof
     );
 
-  console.log("[getTradeableOrderWithSignature] Simulate", {
-    to,
-    data,
-  });
+  console.log(
+    `[getTradeableOrderWithSignature] Simulate: https://dashboard.tenderly.co/gp-v2/watch-tower-prod/simulator/new?network=${network}&contractAddress=${to}&rawFunctionInput=${data}`
+  );
 
   try {
     const data = await contract.callStatic.getTradeableOrderWithSignature(
@@ -400,11 +428,18 @@ function _handleGetTradableOrderCall(
           result: CallResult.FailedButIsExpected,
           deleteConditionalOrder: true,
         };
+      default:
+        // If there's no authorization we delete the order
+        // - One reason could be, because the user CANCELLED the order
+        // - for now it doesn't support more advanced cases where the order is auth during a pre-interaction
+        const errorName = error.errorName ? ` (${error.errorName})` : "";
+        console.error(
+          `${errorMessagePrefix} for unexpected reasons${errorName}`,
+          error
+        );
+        // If we don't know the reason, is better to not delete the order
+        return { result: CallResult.Failed, deleteConditionalOrder: false };
     }
-
-    console.error(errorMessagePrefix + " for unexpected reasons", error);
-    // If we don't know the reason, is better to not delete the order
-    return { result: CallResult.Failed, deleteConditionalOrder: false };
   }
 
   console.error("[getTradeableOrderWithSignature] Unexpected error", error);
