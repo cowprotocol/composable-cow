@@ -85,14 +85,14 @@ const _checkForAndPlaceOrder: ActionFn = async (
       }
     }
 
-    ordersPendingDelete.forEach((conditionalOrder) => {
+    for (const conditionalOrder of ordersPendingDelete) {
       const deleted = conditionalOrders.delete(conditionalOrder);
       const action = deleted ? "Deleted" : "Fail to delete";
       console.log(
         `[checkForAndPlaceOrder] ${action} conditional order with params:`,
         conditionalOrder.params
       );
-    });
+    }
   }
 
   // Update the registry

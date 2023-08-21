@@ -44,7 +44,7 @@ const _checkForSettlement: ActionFn = async (
   );
 
   let hasErrors = false;
-  transactionEvent.logs.forEach(async (log) => {
+  for (const log of transactionEvent.logs) {
     const { error } = await _processSettlement(
       transactionEvent.hash,
       log,
@@ -52,7 +52,7 @@ const _checkForSettlement: ActionFn = async (
       registry
     );
     hasErrors ||= error;
-  });
+  }
 
   // Update the registry
   hasErrors ||= !(await writeRegistry());
@@ -83,9 +83,9 @@ async function _processSettlement(
       // Check if the owner is in the registry
       if (ownerOrders.has(owner)) {
         // Get the conditionalOrders for the owner
-        const conditionalOrders = ownerOrders.get(owner);
+        const conditionalOrders = ownerOrders.get(owner) ?? [];
         // Iterate over the conditionalOrders and update the status of the orderUid
-        conditionalOrders?.forEach((conditionalOrder) => {
+        for (const conditionalOrder of conditionalOrders) {
           // Check if the orderUid is in the conditionalOrder
           if (conditionalOrder.orders.has(orderUid)) {
             // Update the status of the orderUid to FILLED
@@ -94,7 +94,7 @@ async function _processSettlement(
             );
             conditionalOrder.orders.set(orderUid, OrderStatus.FILLED);
           }
-        });
+        }
       }
     }
   } catch (e: any) {
