@@ -287,7 +287,7 @@ var consoleOriginal = {
 
 // Override the log function since some internal libraries might print something and breaks Tenderly
 
-// console.warn = logWithLimit["warn"];
+// console.warn = logWithLimit("warn");
 // console.error = logWithLimit("error");
 // console.debug = logWithLimit("debug");
 // console.log = logWithLimit("log");
