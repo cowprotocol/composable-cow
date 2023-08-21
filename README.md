@@ -115,115 +115,11 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 **TODO**
 **NOTE:** For cancelling a TWAP order, follow the instructions at [Conditional order cancellation](#Conditional-order-cancellation).
 
-## CLI
-
-The CLI utility provided contains help functions to see all the options / configurability available for each subcommand.
-
-**CAUTION:** This utility handles private keys for proposing transactions to Safes. Standard safety precautions associated with private key handling applies. It is recommended to **NEVER** pass private keys directly via command line as this may expose sensitive keys to those who have access to list processes running on your machine.
-
-### Enviroment setup
-
-Copy `.env.example` to `.env`, setting at least the `PRIVATE_KEY` and `ETH_RPC_URL`. Then build the project, in the root directory of the repository:
-
-```bash
-yarn build
-```
-
-### Usage
-
-```
-Dispatch conditional orders on Safe using composable CoW Protocol
-
-Options:
-  -V, --version                   output the version number
-  -h, --help                      display help for command
-
-Commands:
-  create-twap [options]           Create a TWAP order
-  set-fallback-handler [options]  Set the fallback handler of the Safe
-  set-domain-verifier [options]   Set the CoW Protocol domain verifier of the Safe
-  help [options] [command]        display help for command
-```
-
-1. Setting a safe's fallback handler
-
-   ```bash
-   yarn ts-node cli/cli.ts set-fallback-handler -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> -r <RPC_URL> --handler <EXTENSIBLE_FALLBACK_HANDLER>
-   ```
-
-   Check your safe's transaction queue and you should see the newly created transaction.
-
-2. Setting an `ExtensibleFallbackHandler`-enabled Safe's `domainVerifier` for `GPv2Settlement`:
-
-   ```bash
-   yarn ts-node cli.ts set-domain-verifier -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> -r <RPC_URL>
-   ```
-
-3. Creating a TWAP order
-
-   The CLI utility will automatically do some math for you. All order creation is from the perspective of _totals_. By specifying the `--sell-token`, `--buy-token`, `--total-sell-amount`, and `--total-min-buyamount`, the CLI will automatically determine the number of decimals, parse the values, and divide the totals by the number of parts (`-n`), using the results as the basis for the TWAP order.
-
-   ```bash
-   yarn ts-node cli.ts create-twap -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> --sell-token <SELL_TOKEN_ADDRESS> --buy-token <BUY_TOKEN_ADDRESS> --total-sell-amount 1000 --total-min-buy-amount 1 -n 6 -t 60000 -r <RPC_URL> -h <TWAP_HANDLER_ADDRESS>
-   ```
-
-   Check your safe' transaction queue, and you should see a newly created transaction that batches together the creation of the single conditional order and approving `GPv2VaultRelayer` on `sellToken` for `total-sell-amount`, and emits the order by setting `dispatch = true` in the creation.
-
-   **NOTE:** When creating TWAP orders, the `--total-sell-amount` and `--total-min-buy-amount` are specified in whole units of the respective ERC20 token. For example, if wanting to buy a total amount of 1 WETH, specify `--total-min-buy-amount 1`. The CLI will automatically determine decimals and specify these appropriately.
-
-4. Cancelling a conditional order
-
-   **TODO**
-
-## Tenderly Actions
-
-A watchdog has been implementing using [Tenderly Actions](https://docs.tenderly.co/web3-actions/intro-to-web3-actions). By means of _emitted Event_ and new block monitoring, conditional orders can run autonomously.
-
-Notably, with the `CondtionalOrderCreated` and `MerkleRootSet` events, multiple conditional orders can be created for one safe - in doing so, the actions maintain a registry of:
-
-1. Safes that have created _at least one conditional order_.
-2. All payloads for conditional orders by safe that have not expired or been cancelled.
-3. All part orders by `orderUid` containing their status (`SUBMITTED`, `FILLED`) - the `Trade` on `GPv2Settlement` is monitored to determine if an order is `FILLED`.
-
-As orders expire, or are cancelled, they are removed from the registry to conserve storage space.
-
-### Local testing
-
-This is asusming that you have followed the instructions for deploying the stack on `anvil` in [local deployment](#Local-deployment)
-
-From the root directory of the repository:
-
-```bash
-yarn build
-ETH_RPC_URL=http://127.0.0.1:8545 yarn ts-node ./actions/test/run_local.ts
-```
-
-### Deployment
-
-If running your own watch tower, or deploying for production:
-
-```bash
-tenderly actions deploy
-```
-
-Make sure you configure the secrets in Tenderly:
-
-- `NODE_URL_${network}`: RPC Node URL
-- `NODE_USER_${network}`: (optional) RPC Node user name for basic auth.
-- `NODE_PASSWORD_${network}`: (optional) RPC Node password name for basic auth.
-- `NOTIFICATIONS_ENABLED`: (default `true`) Set to `false` to disable Slack notifications
-- `SLACK_WEBHOOK_URL`: Slack Webhook (required only if notifications are enabled)
-- `SENTRY_DSN`: (optional) Sentry DSN code. If present, it will enable Sentry notifications
-
 ## Developers
 
 ### Requirements
 
 - `forge` ([Foundry](https://github.com/foundry-rs/foundry))
-- `node` (`>= v16.18.0`)
-- `yarn`
-- `npm`
-- `tenderly`
 
 ### Deployed Contracts
 
@@ -281,7 +177,7 @@ forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_
 
 #### Local deployment
 
-For local integration testing, including the use of [Tenderly Actions](#Tenderly-actions), it may be useful deploying to a _forked_ mainnet environment. This can be done with `anvil`.
+For local integration testing, including the use of [Watch Tower](https://github.com/cowprotocol/tenderly-watch-tower), it may be useful deploying to a _forked_ mainnet environment. This can be done with `anvil`.
 
 1. Open a terminal and run `anvil`:
 
@@ -308,33 +204,3 @@ For local integration testing, including the use of [Tenderly Actions](#Tenderly
    source .env
    SAFE="address here" forge script script/submit_SingleOrder.s.sol:SubmitSingleOrder --rpc-url http://127.0.0.1:8545 --broadcast
    ```
-
-#### Run Tenderly Web3 Actions locally
-
-> Useful for debugging locally the actions. Also could be used to create an order for an old block in case there was a failure of WatchTowers indexing it.
-
-Make sure you setup the environment (so you have your own `.env` file).
-
-Decide in which network you want to run the actions and provide the additional parameters for that network. For example:
-
-```ini
-NETWORK=100
-NODE_URL_100=https://your-rpc-endpoint
-NODE_USER_100=optionally-provide-user-if-auth-is-required
-NODE_PASSWORD_100=optionally-provide-password-if-auth-is-required
-```
-
-```bash
-# Build Actions
-yarn build:actions
-
-# Run actions locally
-#   - It will start watching and processing new blocks
-#   - As a result, new Composable Cow orders will be discovered and posted to the OrderBook API
-yarn start:actions
-
-# You can re-process an old block by:
-#   - Add an env BLOCK_NUMBER
-#   - Run actions locally
-yarn start:actions
-```
