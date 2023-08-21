@@ -8,15 +8,145 @@ import { addContract } from "../addContract";
 import { ethers } from "ethers";
 import assert = require("assert");
 import { getProvider } from "../utils";
+import { getOrdersStorageKey } from "../model";
+import { exit } from "process";
 
 require("dotenv").config();
 
 const main = async () => {
-  const testRuntime = new TestRuntime();
-
   // The web3 actions fetches the node url and computes the API based on the current chain id
   const network = process.env.NETWORK;
   assert(network, "network is required");
+
+  const testRuntime = await _getRunTime(network);
+
+  // Get provider
+  const provider = await getProvider(testRuntime.context, network);
+  const { chainId } = await provider.getNetwork();
+
+  // Run one of the 2 Execution modes (single block, or watch mode)
+  if (process.env.BLOCK_NUMBER) {
+    // Execute once, for a specific block
+    const blockNumber = Number(process.env.BLOCK_NUMBER);
+    console.log(`[run_local] Processing specific block ${blockNumber}...`);
+    await processBlock(provider, blockNumber, chainId, testRuntime).catch(
+      () => {
+        exit(100);
+      }
+    );
+    console.log(`[run_local] Block ${blockNumber} has been processed.`);
+  } else {
+    // Watch for new blocks
+    console.log(`[run_local] Subscribe to new blocks for network ${network}`);
+    provider.on("block", async (blockNumber: number) => {
+      try {
+        await processBlock(provider, blockNumber, chainId, testRuntime);
+      } catch (error) {
+        console.error("[run_local] Error in processBlock", error);
+      }
+    });
+  }
+};
+
+async function processBlock(
+  provider: ethers.providers.Provider,
+  blockNumber: number,
+  chainId: number,
+  testRuntime: TestRuntime
+) {
+  const block = await provider.getBlock(blockNumber);
+
+  // Transaction watcher for adding new contracts
+  const blockWithTransactions = await provider.getBlockWithTransactions(
+    blockNumber
+  );
+  let hasErrors = false;
+  for (const transaction of blockWithTransactions.transactions) {
+    const receipt = await provider.getTransactionReceipt(transaction.hash);
+    if (receipt) {
+      const {
+        hash,
+        from,
+        value,
+        nonce,
+        gasLimit,
+        maxPriorityFeePerGas,
+        maxFeePerGas,
+      } = transaction;
+
+      const testTransactionEvent: TestTransactionEvent = {
+        blockHash: block.hash,
+        blockNumber: block.number,
+        from,
+        hash,
+        network: chainId.toString(),
+        logs: receipt.logs,
+        input: "",
+        value: value.toString(),
+        nonce: nonce.toString(),
+        gas: gasLimit.toString(),
+        gasUsed: receipt.gasUsed.toString(),
+        cumulativeGasUsed: receipt.cumulativeGasUsed.toString(),
+        gasPrice: receipt.effectiveGasPrice.toString(),
+        gasTipCap: maxPriorityFeePerGas ? maxPriorityFeePerGas.toString() : "",
+        gasFeeCap: maxFeePerGas ? maxFeePerGas.toString() : "",
+        transactionHash: transaction.hash,
+      };
+
+      // run action
+      console.log(`[run_local] Run "addContract" action for TX ${hash}`);
+      const result = await testRuntime
+        .execute(addContract, testTransactionEvent)
+        .then(() => true)
+        .catch((e) => {
+          hasErrors = true;
+          console.error(
+            `[run_local] Error running "addContract" action for TX:`,
+            e
+          );
+          return false;
+        });
+      console.log(
+        `[run_local] Result of "addContract" action for TX ${hash}: ${_formatResult(
+          result
+        )}`
+      );
+    }
+  }
+
+  // Block watcher for creating new orders
+  const testBlockEvent = new TestBlockEvent();
+  testBlockEvent.blockNumber = blockNumber;
+  testBlockEvent.blockDifficulty = block.difficulty.toString();
+  testBlockEvent.blockHash = block.hash;
+  testBlockEvent.network = chainId.toString();
+
+  // run action
+  console.log(`[run_local] checkForAndPlaceOrder for block ${blockNumber}`);
+  const result = await testRuntime
+    .execute(checkForAndPlaceOrder, testBlockEvent)
+    .then(() => true)
+    .catch((e) => {
+      hasErrors = true;
+      console.log(
+        `[run_local] Error running "checkForAndPlaceOrder" action`,
+        e
+      );
+      return false;
+    });
+  console.log(
+    `[run_local] Result of "checkForAndPlaceOrder" action for block ${blockNumber}: ${_formatResult(
+      result
+    )}`
+  );
+
+  if (hasErrors) {
+    throw new Error("[run_local] Errors found in processing block");
+  }
+}
+
+async function _getRunTime(network: string): Promise<TestRuntime> {
+  const testRuntime = new TestRuntime();
 
   // Add secrets from local env (.env) for current network
   const envNames = [
@@ -34,98 +164,22 @@ const main = async () => {
     }
   }
 
-  // Get provider
-  const provider = await getProvider(testRuntime.context, network);
-  const { chainId } = await provider.getNetwork();
-
-  const onNewBlock = async (blockNumber: number) => {
-    try {
-      processBlock(provider, blockNumber, chainId, testRuntime);
-    } catch (error) {
-      console.error("[run_local] Error in processBlock", error);
-    }
-  };
-
-  // Run one of the 2 Execution modes (single block, or watch mode)
-  if (process.env.BLOCK_NUMBER) {
-    // Execute once, for a specific block
-    const blockNumber = Number(process.env.BLOCK_NUMBER);
-    console.log(`[run_local] Processing specific block ${blockNumber}...`);
-    await onNewBlock(blockNumber).catch(console.error);
-    console.log(`[run_local] Block ${blockNumber} has been processed.`);
-  } else {
-    // Watch for new blocks
-    console.log(`[run_local] Subscribe to new blocks for network ${network}`);
-    provider.on("block", onNewBlock);
-  }
-};
-
-async function processBlock(
-  provider: ethers.providers.Provider,
-  blockNumber: number,
-  chainId: number,
-  testRuntime: TestRuntime
-) {
-  const block = await provider.getBlock(blockNumber);
-
-  // Transaction watcher for adding new contracts
-  const blockWithTransactions = await provider.getBlockWithTransactions(
-    blockNumber
-  );
-  for (const transaction of blockWithTransactions.transactions) {
-    const receipt = await provider.getTransactionReceipt(transaction.hash);
-    if (receipt) {
-      const testTransactionEvent: TestTransactionEvent = {
-        blockHash: block.hash,
-        blockNumber: block.number,
-        from: transaction.from,
-        hash: transaction.hash,
-        network: chainId.toString(),
-        logs: receipt.logs,
-        input: "",
-        value: transaction.value.toString(),
-        nonce: transaction.nonce.toString(),
-        gas: transaction.gasLimit.toString(),
-        gasUsed: receipt.gasUsed.toString(),
-        cumulativeGasUsed: receipt.cumulativeGasUsed.toString(),
-        gasPrice: receipt.effectiveGasPrice.toString(),
-        gasTipCap: transaction.maxPriorityFeePerGas
-          ? transaction.maxPriorityFeePerGas.toString()
-          : "",
-        gasFeeCap: transaction.maxFeePerGas
-          ? transaction.maxFeePerGas.toString()
-          : "",
-        transactionHash: transaction.hash,
-      };
-
-      // run action
-      await testRuntime
-        .execute(addContract, testTransactionEvent)
-        .catch((e) => {
-          console.error(
-            "[run_local] Error in addContract processing transaction:",
-            e
-          );
-        });
-    }
+  // Load storage from env
+  const storage = process.env.STORAGE;
+  if (storage) {
+    const storageFormatted = JSON.stringify(JSON.parse(storage), null, 2);
+    console.log("[run_local] Loading storage from env", storageFormatted);
+    await testRuntime.context.storage.putStr(
+      getOrdersStorageKey(network),
+      storage
+    );
   }
 
-  // Block watcher for creating new orders
-  const testBlockEvent = new TestBlockEvent();
-  testBlockEvent.blockNumber = blockNumber;
-  testBlockEvent.blockDifficulty = block.difficulty.toString();
-  testBlockEvent.blockHash = block.hash;
-  testBlockEvent.network = chainId.toString();
+  return testRuntime;
+}
 
-  // run action
-  await testRuntime
-    .execute(checkForAndPlaceOrder, testBlockEvent)
-    .catch((e) => {
-      console.log(
-        "[run_local] Error in checkForAndPlaceOrder processing block",
-        e
-      );
-    });
+function _formatResult(result: boolean) {
+  return result ? "✅" : "❌";
 }
 
 (async () => await main())();

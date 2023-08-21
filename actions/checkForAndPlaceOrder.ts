@@ -78,6 +78,12 @@ const _checkForAndPlaceOrder: ActionFn = async (
         context
       );
 
+      console.log(
+        `[checkForAndPlaceOrder] Check conditional order result: ${
+          error ? "❌" : "✅"
+        }`
+      );
+
       hasErrors ||= error;
 
       if (deleteConditionalOrder) {
@@ -189,7 +195,11 @@ async function _processConditionalOrder(
       );
     }
   } catch (e: any) {
-    console.error(`Unexpected error while processing order:`, e);
+    error = true;
+    console.error(
+      `[_processConditionalOrder] Unexpected error while processing order:`,
+      e
+    );
   }
 
   return { deleteConditionalOrder: false, error };
