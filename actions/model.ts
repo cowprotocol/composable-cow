@@ -182,3 +182,32 @@ export function replacer(_key: any, value: any) {
     return value;
   }
 }
+
+export type SmartOrderValidationResult<T> =
+  | SmartOrderValidationSuccess<T>
+  | SmartOrderValidationError;
+
+export enum ValidationResult {
+  Success,
+  Failed,
+  FailedButIsExpected,
+}
+
+export type SmartOrderValidationSuccess<T> = {
+  result: ValidationResult.Success;
+  data: T;
+};
+export type SmartOrderValidationError = {
+  result: ValidationResult.Failed | ValidationResult.FailedButIsExpected;
+  deleteConditionalOrder: boolean;
+  errorObj: any;
+};
+
+export type SmartOrderValidator = (
+  params: ValidateOrderParams
+) => Promise<SmartOrderValidationResult<void>>;
+export interface ValidateOrderParams {
+  handler: string;
+  salt: BytesLike;
+  staticInput: BytesLike;
+}
