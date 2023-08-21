@@ -14,7 +14,7 @@ import { CaptureConsole as CaptureConsoleIntegration } from "@sentry/integration
 
 import { ExecutionContext, OrderStatus, Registry } from "./model";
 
-const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
+// const TENDERLY_LOG_LIMIT = 3800; // 4000 is the limit, we just leave some margin for printing the chunk index
 const NOTIFICATION_WAIT_PERIOD = 1000 * 60 * 60 * 2; // 2h - Don't send more than one notification every 2h
 
 let executionContext: ExecutionContext | undefined;
@@ -244,52 +244,53 @@ var consoleOriginal = {
   debug: console.debug,
 };
 
-/**
- * Tenderly has a limit of 4Kb per log message. When you surpass this limit, the log is not printed any more making it super hard to debug anything
- *
- * This tool will print
- *
- * @param data T
- */
-const logWithLimit =
-  (level: "log" | "warn" | "error" | "debug") =>
-  (...data: any[]) => {
-    const bigLogText = data
-      .map((item) => {
-        if (typeof item === "string") {
-          return item;
-        }
-        return JSON.stringify(item, null, 2);
-      })
-      .join(" ");
+// TODO: Delete this code after we sort out the Tenderly log limit issue
+// /**
+//  * Tenderly has a limit of 4Kb per log message. When you surpass this limit, the log is not printed any more making it super hard to debug anything
+//  *
+//  * This tool will print
+//  *
+//  * @param data T
+//  */
+// const logWithLimit =
+//   (level: "log" | "warn" | "error" | "debug") =>
+//   (...data: any[]) => {
+//     const bigLogText = data
+//       .map((item) => {
+//         if (typeof item === "string") {
+//           return item;
+//         }
+//         return JSON.stringify(item, null, 2);
+//       })
+//       .join(" ");
 
-    const numChunks = Math.ceil(bigLogText.length / TENDERLY_LOG_LIMIT);
+//     const numChunks = Math.ceil(bigLogText.length / TENDERLY_LOG_LIMIT);
 
-    for (let i = 0; i < numChunks; i += 1) {
-      const chartStart = i * TENDERLY_LOG_LIMIT;
-      const prefix = numChunks > 1 ? `[${i + 1}/${numChunks}] ` : "";
-      const message =
-        prefix +
-        bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT);
-      consoleOriginal[level](message);
+//     for (let i = 0; i < numChunks; i += 1) {
+//       const chartStart = i * TENDERLY_LOG_LIMIT;
+//       const prefix = numChunks > 1 ? `[${i + 1}/${numChunks}] ` : "";
+//       const message =
+//         prefix +
+//         bigLogText.substring(chartStart, chartStart + TENDERLY_LOG_LIMIT);
+//       consoleOriginal[level](message);
 
-      // if (level === "error") {
-      //   sendSlack(message);
-      // }
+//       // if (level === "error") {
+//       //   sendSlack(message);
+//       // }
 
-      // // Used to debug the Tenderly log Limit issues
-      // consoleOriginal[level](
-      //   prefix + "TEST for bigLogText of " + bigLogText.length + " bytes"
-      // );
-    }
-  };
+//       // // Used to debug the Tenderly log Limit issues
+//       // consoleOriginal[level](
+//       //   prefix + "TEST for bigLogText of " + bigLogText.length + " bytes"
+//       // );
+//     }
+//   };
 
 // Override the log function since some internal libraries might print something and breaks Tenderly
 
-console.warn = logWithLimit("warn");
-console.error = logWithLimit("error");
-console.debug = logWithLimit("debug");
-console.log = logWithLimit("log");
+// console.warn = logWithLimit("warn");
+// console.error = logWithLimit("error");
+// console.debug = logWithLimit("debug");
+// console.log = logWithLimit("log");
 
 export function sendSlack(message: string): boolean {
   if (!executionContext) {
