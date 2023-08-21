@@ -184,7 +184,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
      */
     function test_getTradeableOrder_FuzzRevertIfExpired(uint256 startTime, uint256 currentTime) public {
         // guard against overflows
-        vm.assume(startTime < type(uint32).max);
+        vm.assume(startTime <= type(uint32).max);
+        vm.assume(currentTime <= type(uint32).max);
         // force revert after expiry
         vm.assume(currentTime >= startTime + (FREQUENCY * NUM_PARTS));
 
