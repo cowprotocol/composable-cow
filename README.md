@@ -10,7 +10,7 @@ A detailed explanation on the architecture is available [here](https://hackmd.io
 
 For the purposes of outlining the methodologies, it is assumed that:
 
-1. The `Safe` has already had it's fallback handler set to `ExtensibleFallbackHandler`.
+1. The `Safe` has already had its fallback handler set to `ExtensibleFallbackHandler`.
 2. The `Safe` has set the `domainVerifier` for the `GPv2Settlement.domainSeparator()` to `ComposableCoW`
 
 #### Conditional order creation
@@ -31,7 +31,7 @@ A conditional order is a struct `ConditionalOrderParams`, consisting of:
 2. Populate a merkle tree with the leaves from (1), where each leaf is a double hashed of the ABI-encoded struct.
 3. Determine the merkle root of the tree and set this as the root, calling `ComposableCoW.setRoot`. The `proof` must be set, and currently:
    a. Set a `location` of `0` for no proofs emitted.
-   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpted as an array of proofs and indexed by the watch tower.
+   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpreted as an array of proofs and indexed by the watch tower.
 
 #### Get Tradeable Order With Signature
 
@@ -121,7 +121,7 @@ The CLI utility provided contains help functions to see all the options / config
 
 **CAUTION:** This utility handles private keys for proposing transactions to Safes. Standard safety precautions associated with private key handling applies. It is recommended to **NEVER** pass private keys directly via command line as this may expose sensitive keys to those who have access to list processes running on your machine.
 
-### Enviroment setup
+### Environment setup
 
 Copy `.env.example` to `.env`, setting at least the `PRIVATE_KEY` and `ETH_RPC_URL`. Then build the project, in the root directory of the repository:
 
@@ -167,7 +167,7 @@ Commands:
    yarn ts-node cli.ts create-twap -s <SAFE_ADDRESS> -c <COMPOSABLE_COW_ADDRESS> --sell-token <SELL_TOKEN_ADDRESS> --buy-token <BUY_TOKEN_ADDRESS> --total-sell-amount 1000 --total-min-buy-amount 1 -n 6 -t 60000 -r <RPC_URL> -h <TWAP_HANDLER_ADDRESS>
    ```
 
-   Check your safe' transaction queue, and you should see a newly created transaction that batches together the creation of the single conditional order and approving `GPv2VaultRelayer` on `sellToken` for `total-sell-amount`, and emits the order by setting `dispatch = true` in the creation.
+   Check your safe's transaction queue, and you should see a newly created transaction that batches together the creation of the single conditional order and approves `GPv2VaultRelayer` on `sellToken` for `total-sell-amount`, and emits the order by setting `dispatch = true` in the creation.
 
    **NOTE:** When creating TWAP orders, the `--total-sell-amount` and `--total-min-buy-amount` are specified in whole units of the respective ERC20 token. For example, if wanting to buy a total amount of 1 WETH, specify `--total-min-buy-amount 1`. The CLI will automatically determine decimals and specify these appropriately.
 
@@ -177,7 +177,7 @@ Commands:
 
 ## Tenderly Actions
 
-A watchdog has been implementing using [Tenderly Actions](https://docs.tenderly.co/web3-actions/intro-to-web3-actions). By means of _emitted Event_ and new block monitoring, conditional orders can run autonomously.
+A watchdog has been implemented using [Tenderly Actions](https://docs.tenderly.co/web3-actions/intro-to-web3-actions). By means of _emitted Event_ and new block monitoring, conditional orders can run autonomously.
 
 Notably, with the `CondtionalOrderCreated` and `MerkleRootSet` events, multiple conditional orders can be created for one safe - in doing so, the actions maintain a registry of:
 
@@ -189,7 +189,7 @@ As orders expire, or are cancelled, they are removed from the registry to conser
 
 ### Local testing
 
-This is asusming that you have followed the instructions for deploying the stack on `anvil` in [local deployment](#Local-deployment)
+This is assuming that you have followed the instructions for deploying the stack on `anvil` in [local deployment](#Local-deployment)
 
 From the root directory of the repository:
 
