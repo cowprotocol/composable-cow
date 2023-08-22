@@ -1,0 +1,846 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "contract IERC20",
+              "name": "sellToken",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IERC20",
+              "name": "buyToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sellAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "buyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "validTo",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "appData",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "feeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "kind",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "partiallyFillable",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "sellTokenBalance",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "buyTokenBalance",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct GPv2Order.Data",
+          "name": "order",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "contract IConditionalOrder",
+              "name": "handler",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "salt",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "staticInput",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+          "name": "",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b506102b9806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806301ffc9a71461003b578063f9ae35a214610062575b600080fd5b61004e610049366004610142565b610075565b604051901515815260200160405180910390f35b61004e61007036600461018b565b61010e565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167ff9ae35a200000000000000000000000000000000000000000000000000000000148061010857507fffffffff0000000000000000000000000000000000000000000000000000000082167f01ffc9a700000000000000000000000000000000000000000000000000000000145b92915050565b600080610121606088016040890161024d565b73ffffffffffffffffffffffffffffffffffffffff16149695505050505050565b60006020828403121561015457600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461018457600080fd5b9392505050565b60008060008060008587036101e08112156101a557600080fd5b610180808212156101b557600080fd5b8796508601359450506101a085013567ffffffffffffffff808211156101da57600080fd5b908701906060828a0312156101ee57600080fd5b9093506101c0870135908082111561020557600080fd5b818801915088601f83011261021957600080fd5b81358181111561022857600080fd5b89602082850101111561023a57600080fd5b9699959850939650602001949392505050565b60006020828403121561025f57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461018457600080fdfea2646970667358221220556281c807c29f32eae228b27ed16df37132b56c50ac70fa410d9e7bedc93d0664736f6c63430008130033",
+    "sourceMap": "226:418:137:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c806301ffc9a71461003b578063f9ae35a214610062575b600080fd5b61004e610049366004610142565b610075565b604051901515815260200160405180910390f35b61004e61007036600461018b565b61010e565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167ff9ae35a200000000000000000000000000000000000000000000000000000000148061010857507fffffffff0000000000000000000000000000000000000000000000000000000082167f01ffc9a700000000000000000000000000000000000000000000000000000000145b92915050565b600080610121606088016040890161024d565b73ffffffffffffffffffffffffffffffffffffffff16149695505050505050565b60006020828403121561015457600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461018457600080fd5b9392505050565b60008060008060008587036101e08112156101a557600080fd5b610180808212156101b557600080fd5b8796508601359450506101a085013567ffffffffffffffff808211156101da57600080fd5b908701906060828a0312156101ee57600080fd5b9093506101c0870135908082111561020557600080fd5b818801915088601f83011261021957600080fd5b81358181111561022857600080fd5b89602082850101111561023a57600080fd5b9699959850939650602001949392505050565b60006020828403121561025f57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461018457600080fdfea2646970667358221220556281c807c29f32eae228b27ed16df37132b56c50ac70fa410d9e7bedc93d0664736f6c63430008130033",
+    "sourceMap": "226:418:137:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;317:204:136;;;;;;:::i;:::-;;:::i;:::-;;;516:14:168;;509:22;491:41;;479:2;464:18;317:204:136;;;;;;;391:251:137;;;;;;:::i;:::-;;:::i;317:204:136:-;404:4;427:43;;;442:28;427:43;;:87;;-1:-1:-1;474:40:136;;;489:25;474:40;427:87;420:94;317:204;-1:-1:-1;;317:204:136:o;391:251:137:-;584:4;;607:14;;;;;;;;:::i;:::-;:28;;;;391:251;-1:-1:-1;;;;;;391:251:137:o;14:332:168:-;72:6;125:2;113:9;104:7;100:23;96:32;93:52;;;141:1;138;131:12;93:52;180:9;167:23;230:66;223:5;219:78;212:5;209:89;199:117;;312:1;309;302:12;199:117;335:5;14:332;-1:-1:-1;;;14:332:168:o;543:1108::-;708:6;716;724;732;740;784:9;775:7;771:23;814:3;810:2;806:12;803:32;;;831:1;828;821:12;803:32;854:3;877:2;873;869:11;866:31;;;893:1;890;883:12;866:31;916:9;;-1:-1:-1;957:18:168;;944:32;;-1:-1:-1;;1027:3:168;1012:19;;999:33;1051:18;1081:14;;;1078:34;;;1108:1;1105;1098:12;1078:34;1131:22;;;;1187:2;1169:16;;;1165:25;1162:45;;;1203:1;1200;1193:12;1162:45;1226:2;;-1:-1:-1;1281:3:168;1266:19;;1253:33;;1298:16;;;1295:36;;;1327:1;1324;1317:12;1295:36;1365:8;1354:9;1350:24;1340:34;;1412:7;1405:4;1401:2;1397:13;1393:27;1383:55;;1434:1;1431;1424:12;1383:55;1474:2;1461:16;1500:2;1492:6;1489:14;1486:34;;;1516:1;1513;1506:12;1486:34;1563:7;1556:4;1547:6;1543:2;1539:15;1535:26;1532:39;1529:59;;;1584:1;1581;1574:12;1529:59;543:1108;;;;-1:-1:-1;543:1108:168;;-1:-1:-1;1615:4:168;1607:13;;1639:6;543:1108;-1:-1:-1;;;543:1108:168:o;1656:309::-;1715:6;1768:2;1756:9;1747:7;1743:23;1739:32;1736:52;;;1784:1;1781;1774:12;1736:52;1823:9;1810:23;1873:42;1866:5;1862:54;1855:5;1852:65;1842:93;;1931:1;1928;1921:12",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "supportsInterface(bytes4)": "01ffc9a7",
+    "verify((address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32),bytes32,(address,bytes32,bytes),bytes)": "f9ae35a2"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"contract IERC20\",\"name\":\"sellToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"buyToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"sellAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"validTo\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"appData\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"kind\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"partiallyFillable\",\"type\":\"bool\"},{\"internalType\":\"bytes32\",\"name\":\"sellTokenBalance\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"buyTokenBalance\",\"type\":\"bytes32\"}],\"internalType\":\"struct GPv2Order.Data\",\"name\":\"order\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"contract IConditionalOrder\",\"name\":\"handler\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"salt\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"staticInput\",\"type\":\"bytes\"}],\"internalType\":\"struct IConditionalOrder.ConditionalOrderParams\",\"name\":\"\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"mfw78 <mfw78@rndlabs.xyz>\",\"kind\":\"dev\",\"methods\":{\"supportsInterface(bytes4)\":{\"details\":\"Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding EIP section https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified to learn more about how these ids are created. This function call must use less than 30 000 gas.\"},\"verify((address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32),bytes32,(address,bytes32,bytes),bytes)\":{\"params\":{\"order\":\"The order being verified\"}}},\"title\":\"A Swap Guard that only allows orders with a receiver of 0x0 (ie. self)\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"verify((address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32),bytes32,(address,bytes32,bytes),bytes)\":{\"notice\":\"Only allow orders with a receiver of 0x0 (ie. self)\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/guards/ReceiverLock.sol\":\"ReceiverLock\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/@openzeppelin/contracts/interfaces/IERC20.sol\":{\"keccak256\":\"0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45\",\"dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq\"]},\"lib/@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5\",\"dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol\":{\"keccak256\":\"0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f\",\"dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Order.sol\":{\"keccak256\":\"0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d\",\"dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg\"]},\"lib/safe/contracts/interfaces/IERC165.sol\":{\"keccak256\":\"0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89\",\"dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38\"]},\"src/guards/BaseSwapGuard.sol\":{\"keccak256\":\"0xd7b2a2629504bf5d331c4fa21f5b5e11584c11bb1e51ba687b37eed459f2bacb\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://5555cfec57b3b95f15bb7d5b364baf0998f97cefd9f3744d804d5c7cbd6d6ccc\",\"dweb:/ipfs/QmWojLCbP41KcaHaNWv667qKgFBW9K797tzUskfpBdiA6Y\"]},\"src/guards/ReceiverLock.sol\":{\"keccak256\":\"0x6dd5033473ca3264bbef0d703d29f6c10488d36b69fe1d924f071e412369f8c3\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://954572256b96d72a47ba02657b426474d12541ad0942618f28dc732bfc8737f9\",\"dweb:/ipfs/Qmdi8pxjLbxDWufBs4JS2PpkoHfDje447PNfnBQZy52i2g\"]},\"src/interfaces/IConditionalOrder.sol\":{\"keccak256\":\"0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699\",\"dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ\"]},\"src/interfaces/ISwapGuard.sol\":{\"keccak256\":\"0x60abdef709d22cb95e4b1d4680cb70d5286cfb5aa71ec65868cc44164ef8790f\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://7593245e22ffc533a073891affdbb003fa56eaa5ef7f0202a673b52968ad7ed5\",\"dweb:/ipfs/QmRhAvNzbHp8qfrw7eHZP6EDWw42tXMXSV3KuyhyxFy3Nx\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct GPv2Order.Data",
+              "name": "order",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "sellToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "buyToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "receiver",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "sellAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "buyAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "validTo",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "appData",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "kind",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "partiallyFillable",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sellTokenBalance",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "buyTokenBalance",
+                  "type": "bytes32"
+                }
+              ]
+            },
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+              "name": "",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IConditionalOrder",
+                  "name": "handler",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "salt",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "staticInput",
+                  "type": "bytes"
+                }
+              ]
+            },
+            {
+              "internalType": "bytes",
+              "name": "",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function",
+          "name": "verify",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "supportsInterface(bytes4)": {
+            "details": "Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding EIP section https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified to learn more about how these ids are created. This function call must use less than 30 000 gas."
+          },
+          "verify((address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32),bytes32,(address,bytes32,bytes),bytes)": {
+            "params": {
+              "order": "The order being verified"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "verify((address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32),bytes32,(address,bytes32,bytes),bytes)": {
+            "notice": "Only allow orders with a receiver of 0x0 (ie. self)"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/guards/ReceiverLock.sol": "ReceiverLock"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/@openzeppelin/contracts/interfaces/IERC20.sol": {
+        "keccak256": "0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45",
+        "urls": [
+          "bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45",
+          "dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq"
+        ],
+        "license": "MIT"
+      },
+      "lib/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305",
+        "urls": [
+          "bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5",
+          "dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53"
+        ],
+        "license": "MIT"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol": {
+        "keccak256": "0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528",
+        "urls": [
+          "bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f",
+          "dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol": {
+        "keccak256": "0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f",
+        "urls": [
+          "bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d",
+          "dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/safe/contracts/interfaces/IERC165.sol": {
+        "keccak256": "0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb",
+        "urls": [
+          "bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89",
+          "dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38"
+        ],
+        "license": "LGPL-3.0-only"
+      },
+      "src/guards/BaseSwapGuard.sol": {
+        "keccak256": "0xd7b2a2629504bf5d331c4fa21f5b5e11584c11bb1e51ba687b37eed459f2bacb",
+        "urls": [
+          "bzz-raw://5555cfec57b3b95f15bb7d5b364baf0998f97cefd9f3744d804d5c7cbd6d6ccc",
+          "dweb:/ipfs/QmWojLCbP41KcaHaNWv667qKgFBW9K797tzUskfpBdiA6Y"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/guards/ReceiverLock.sol": {
+        "keccak256": "0x6dd5033473ca3264bbef0d703d29f6c10488d36b69fe1d924f071e412369f8c3",
+        "urls": [
+          "bzz-raw://954572256b96d72a47ba02657b426474d12541ad0942618f28dc732bfc8737f9",
+          "dweb:/ipfs/Qmdi8pxjLbxDWufBs4JS2PpkoHfDje447PNfnBQZy52i2g"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/interfaces/IConditionalOrder.sol": {
+        "keccak256": "0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b",
+        "urls": [
+          "bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699",
+          "dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/interfaces/ISwapGuard.sol": {
+        "keccak256": "0x60abdef709d22cb95e4b1d4680cb70d5286cfb5aa71ec65868cc44164ef8790f",
+        "urls": [
+          "bzz-raw://7593245e22ffc533a073891affdbb003fa56eaa5ef7f0202a673b52968ad7ed5",
+          "dweb:/ipfs/QmRhAvNzbHp8qfrw7eHZP6EDWw42tXMXSV3KuyhyxFy3Nx"
+        ],
+        "license": "GPL-3.0"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/guards/ReceiverLock.sol",
+    "id": 54348,
+    "exportedSymbols": {
+      "BaseSwapGuard": [
+        54314
+      ],
+      "GPv2Order": [
+        17246
+      ],
+      "IConditionalOrder": [
+        54437
+      ],
+      "IERC165": [
+        52197
+      ],
+      "ISwapGuard": [
+        54496
+      ],
+      "ReceiverLock": [
+        54347
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "36:609:137",
+    "nodes": [
+      {
+        "id": 54316,
+        "nodeType": "PragmaDirective",
+        "src": "36:31:137",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 54317,
+        "nodeType": "ImportDirective",
+        "src": "69:29:137",
+        "nodes": [],
+        "absolutePath": "src/guards/BaseSwapGuard.sol",
+        "file": "./BaseSwapGuard.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 54348,
+        "sourceUnit": 54315,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 54347,
+        "nodeType": "ContractDefinition",
+        "src": "226:418:137",
+        "nodes": [
+          {
+            "id": 54346,
+            "nodeType": "FunctionDefinition",
+            "src": "391:251:137",
+            "nodes": [],
+            "body": {
+              "id": 54345,
+              "nodeType": "Block",
+              "src": "590:52:137",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "commonType": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    },
+                    "id": 54343,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "expression": {
+                        "id": 54337,
+                        "name": "order",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 54324,
+                        "src": "607:5:137",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$17121_calldata_ptr",
+                          "typeString": "struct GPv2Order.Data calldata"
+                        }
+                      },
+                      "id": 54338,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "613:8:137",
+                      "memberName": "receiver",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 17102,
+                      "src": "607:14:137",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "==",
+                    "rightExpression": {
+                      "arguments": [
+                        {
+                          "hexValue": "30",
+                          "id": 54341,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "633:1:137",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          }
+                        ],
+                        "id": 54340,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "lValueRequested": false,
+                        "nodeType": "ElementaryTypeNameExpression",
+                        "src": "625:7:137",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_address_$",
+                          "typeString": "type(address)"
+                        },
+                        "typeName": {
+                          "id": 54339,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "625:7:137",
+                          "typeDescriptions": {}
+                        }
+                      },
+                      "id": 54342,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "625:10:137",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "607:28:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 54336,
+                  "id": 54344,
+                  "nodeType": "Return",
+                  "src": "600:35:137"
+                }
+              ]
+            },
+            "baseFunctions": [
+              54495
+            ],
+            "documentation": {
+              "id": 54321,
+              "nodeType": "StructuredDocumentation",
+              "src": "271:115:137",
+              "text": " Only allow orders with a receiver of 0x0 (ie. self)\n @param order The order being verified"
+            },
+            "functionSelector": "f9ae35a2",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verify",
+            "nameLocation": "400:6:137",
+            "overrides": {
+              "id": 54333,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "566:8:137"
+            },
+            "parameters": {
+              "id": 54332,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54324,
+                  "mutability": "mutable",
+                  "name": "order",
+                  "nameLocation": "440:5:137",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54346,
+                  "src": "416:29:137",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17121_calldata_ptr",
+                    "typeString": "struct GPv2Order.Data"
+                  },
+                  "typeName": {
+                    "id": 54323,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 54322,
+                      "name": "GPv2Order.Data",
+                      "nameLocations": [
+                        "416:9:137",
+                        "426:4:137"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17121,
+                      "src": "416:14:137"
+                    },
+                    "referencedDeclaration": 17121,
+                    "src": "416:14:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                      "typeString": "struct GPv2Order.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54326,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54346,
+                  "src": "455:7:137",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54325,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "455:7:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54329,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54346,
+                  "src": "472:49:137",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ConditionalOrderParams_$54415_calldata_ptr",
+                    "typeString": "struct IConditionalOrder.ConditionalOrderParams"
+                  },
+                  "typeName": {
+                    "id": 54328,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 54327,
+                      "name": "IConditionalOrder.ConditionalOrderParams",
+                      "nameLocations": [
+                        "472:17:137",
+                        "490:22:137"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 54415,
+                      "src": "472:40:137"
+                    },
+                    "referencedDeclaration": 54415,
+                    "src": "472:40:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ConditionalOrderParams_$54415_storage_ptr",
+                      "typeString": "struct IConditionalOrder.ConditionalOrderParams"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 54331,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54346,
+                  "src": "531:14:137",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54330,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "531:5:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "406:145:137"
+            },
+            "returnParameters": {
+              "id": 54336,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54335,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54346,
+                  "src": "584:4:137",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 54334,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "584:4:137",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "583:6:137"
+            },
+            "scope": 54347,
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 54319,
+              "name": "BaseSwapGuard",
+              "nameLocations": [
+                "251:13:137"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 54314,
+              "src": "251:13:137"
+            },
+            "id": 54320,
+            "nodeType": "InheritanceSpecifier",
+            "src": "251:13:137"
+          }
+        ],
+        "canonicalName": "ReceiverLock",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 54318,
+          "nodeType": "StructuredDocumentation",
+          "src": "100:125:137",
+          "text": " @title A Swap Guard that only allows orders with a receiver of 0x0 (ie. self)\n @author mfw78 <mfw78@rndlabs.xyz>"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          54347,
+          54314,
+          54496,
+          52197
+        ],
+        "name": "ReceiverLock",
+        "nameLocation": "235:12:137",
+        "scope": 54348,
+        "usedErrors": []
+      }
+    ],
+    "license": "GPL-3.0"
+  },
+  "id": 137
+}

@@ -1,0 +1,2272 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "OrderNotValid",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "contract IConditionalOrder",
+              "name": "handler",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "salt",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "staticInput",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+          "name": "params",
+          "type": "tuple"
+        }
+      ],
+      "name": "ConditionalOrderCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "staticInput",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "getTradeableOrder",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "contract IERC20",
+              "name": "sellToken",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IERC20",
+              "name": "buyToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sellAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "buyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "validTo",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "appData",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "feeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "kind",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "partiallyFillable",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "sellTokenBalance",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "buyTokenBalance",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct GPv2Order.Data",
+          "name": "order",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_hash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "domainSeparator",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "ctx",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "staticInput",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "offchainInput",
+          "type": "bytes"
+        },
+        {
+          "components": [
+            {
+              "internalType": "contract IERC20",
+              "name": "sellToken",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IERC20",
+              "name": "buyToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sellAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "buyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "validTo",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "appData",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "feeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "kind",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "partiallyFillable",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "sellTokenBalance",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "buyTokenBalance",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct GPv2Order.Data",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "name": "verify",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b50610aaf806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806301ffc9a71461004657806314a2a7841461006e578063b8296fc414610083575b600080fd5b61005961005436600461051e565b6100a3565b60405190151581526020015b60405180910390f35b61008161007c3660046105e5565b61013c565b005b6100966100913660046106d3565b610259565b6040516100659190610772565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167fb8296fc400000000000000000000000000000000000000000000000000000000148061013657507fffffffff0000000000000000000000000000000000000000000000000000000082167f01ffc9a700000000000000000000000000000000000000000000000000000000145b92915050565b600061014d8b8b8989898989610259565b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0810180517fd5a25ba2e97094ad7d83dc28a6572da797d6b3e7fc6663bd93efb789fc17e48982526101a0822091526040517f19010000000000000000000000000000000000000000000000000000000000008152600281018b9052602281019190915260429020909150891461024c57604080518082018252600c81527f696e76616c696420686173680000000000000000000000000000000000000000602082015290517fc8fc27250000000000000000000000000000000000000000000000000000000081526102439190600401610860565b60405180910390fd5b5050505050505050505050565b6040805161018081018252600080825260208201819052918101829052606081018290526080810182905260a0810182905260c0810182905260e081018290526101008101829052610120810182905261014081018290526101608101829052906102c6868601876108e0565b80516040517f70a0823100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8c81166004830152929350600092909116906370a0823190602401602060405180830381865afa15801561033b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061035f919061099b565b905081608001518110156103d257604080518082018252601481527f62616c616e636520696e73756666696369656e74000000000000000000000000602082015290517fc8fc27250000000000000000000000000000000000000000000000000000000081526102439190600401610860565b604051806101800160405280836000015173ffffffffffffffffffffffffffffffffffffffff168152602001836020015173ffffffffffffffffffffffffffffffffffffffff168152602001836040015173ffffffffffffffffffffffffffffffffffffffff1681526020018281526020016001815260200161045884606001516104fc565b63ffffffff1681526020018360a001518152602001600081526020017ff3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee34677581526020016000151581526020017f5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc981526020017f5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc981525092505050979650505050505050565b6000818061050a81426109e3565b6105149190610a2d565b6101369190610a55565b60006020828403121561053057600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461056057600080fd5b9392505050565b73ffffffffffffffffffffffffffffffffffffffff8116811461058957600080fd5b50565b803561059781610567565b919050565b60008083601f8401126105ae57600080fd5b50813567ffffffffffffffff8111156105c657600080fd5b6020830191508360208285010111156105de57600080fd5b9250929050565b6000806000806000806000806000806102608b8d03121561060557600080fd5b61060f8b35610567565b8a35995060208b013561062181610567565b985060408b0135975060608b0135965060808b0135955060a08b013567ffffffffffffffff8082111561065357600080fd5b61065f8e838f0161059c565b909750955060c08d013591508082111561067857600080fd5b506106858d828e0161059c565b9094509250506101808b8d037fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff200112156106be57600080fd5b60e08b0190509295989b9194979a5092959850565b600080600080600080600060a0888a0312156106ee57600080fd5b87356106f981610567565b9650602088013561070981610567565b955060408801359450606088013567ffffffffffffffff8082111561072d57600080fd5b6107398b838c0161059c565b909650945060808a013591508082111561075257600080fd5b5061075f8a828b0161059c565b989b979a50959850939692959293505050565b815173ffffffffffffffffffffffffffffffffffffffff168152610180810160208301516107b8602084018273ffffffffffffffffffffffffffffffffffffffff169052565b5060408301516107e0604084018273ffffffffffffffffffffffffffffffffffffffff169052565b50606083015160608301526080830151608083015260a083015161080c60a084018263ffffffff169052565b5060c083015160c083015260e083015160e0830152610100808401518184015250610120808401516108418285018215159052565b5050610140838101519083015261016092830151929091019190915290565b600060208083528351808285015260005b8181101561088d57858101830151858201604001528201610871565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b803563ffffffff8116811461059757600080fd5b600060c082840312156108f257600080fd5b60405160c0810181811067ffffffffffffffff8211171561093c577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6040526109488361058c565b81526109566020840161058c565b60208201526109676040840161058c565b6040820152610978606084016108cc565b60608201526080830135608082015260a083013560a08201528091505092915050565b6000602082840312156109ad57600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600063ffffffff80841680610a21577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b92169190910492915050565b63ffffffff818116838216028082169190828114610a4d57610a4d6109b4565b505092915050565b63ffffffff818116838216019080821115610a7257610a726109b4565b509291505056fea264697066735822122081a659e17f4d42becdf4ad566d3ec1ca4d26036cf4d6698751a1dd8bf1e99b0564736f6c63430008130033",
+    "sourceMap": "529:1672:146:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c806301ffc9a71461004657806314a2a7841461006e578063b8296fc414610083575b600080fd5b61005961005436600461051e565b6100a3565b60405190151581526020015b60405180910390f35b61008161007c3660046105e5565b61013c565b005b6100966100913660046106d3565b610259565b6040516100659190610772565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167fb8296fc400000000000000000000000000000000000000000000000000000000148061013657507fffffffff0000000000000000000000000000000000000000000000000000000082167f01ffc9a700000000000000000000000000000000000000000000000000000000145b92915050565b600061014d8b8b8989898989610259565b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0810180517fd5a25ba2e97094ad7d83dc28a6572da797d6b3e7fc6663bd93efb789fc17e48982526101a0822091526040517f19010000000000000000000000000000000000000000000000000000000000008152600281018b9052602281019190915260429020909150891461024c57604080518082018252600c81527f696e76616c696420686173680000000000000000000000000000000000000000602082015290517fc8fc27250000000000000000000000000000000000000000000000000000000081526102439190600401610860565b60405180910390fd5b5050505050505050505050565b6040805161018081018252600080825260208201819052918101829052606081018290526080810182905260a0810182905260c0810182905260e081018290526101008101829052610120810182905261014081018290526101608101829052906102c6868601876108e0565b80516040517f70a0823100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8c81166004830152929350600092909116906370a0823190602401602060405180830381865afa15801561033b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061035f919061099b565b905081608001518110156103d257604080518082018252601481527f62616c616e636520696e73756666696369656e74000000000000000000000000602082015290517fc8fc27250000000000000000000000000000000000000000000000000000000081526102439190600401610860565b604051806101800160405280836000015173ffffffffffffffffffffffffffffffffffffffff168152602001836020015173ffffffffffffffffffffffffffffffffffffffff168152602001836040015173ffffffffffffffffffffffffffffffffffffffff1681526020018281526020016001815260200161045884606001516104fc565b63ffffffff1681526020018360a001518152602001600081526020017ff3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee34677581526020016000151581526020017f5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc981526020017f5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc981525092505050979650505050505050565b6000818061050a81426109e3565b6105149190610a2d565b6101369190610a55565b60006020828403121561053057600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461056057600080fd5b9392505050565b73ffffffffffffffffffffffffffffffffffffffff8116811461058957600080fd5b50565b803561059781610567565b919050565b60008083601f8401126105ae57600080fd5b50813567ffffffffffffffff8111156105c657600080fd5b6020830191508360208285010111156105de57600080fd5b9250929050565b6000806000806000806000806000806102608b8d03121561060557600080fd5b61060f8b35610567565b8a35995060208b013561062181610567565b985060408b0135975060608b0135965060808b0135955060a08b013567ffffffffffffffff8082111561065357600080fd5b61065f8e838f0161059c565b909750955060c08d013591508082111561067857600080fd5b506106858d828e0161059c565b9094509250506101808b8d037fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff200112156106be57600080fd5b60e08b0190509295989b9194979a5092959850565b600080600080600080600060a0888a0312156106ee57600080fd5b87356106f981610567565b9650602088013561070981610567565b955060408801359450606088013567ffffffffffffffff8082111561072d57600080fd5b6107398b838c0161059c565b909650945060808a013591508082111561075257600080fd5b5061075f8a828b0161059c565b989b979a50959850939692959293505050565b815173ffffffffffffffffffffffffffffffffffffffff168152610180810160208301516107b8602084018273ffffffffffffffffffffffffffffffffffffffff169052565b5060408301516107e0604084018273ffffffffffffffffffffffffffffffffffffffff169052565b50606083015160608301526080830151608083015260a083015161080c60a084018263ffffffff169052565b5060c083015160c083015260e083015160e0830152610100808401518184015250610120808401516108418285018215159052565b5050610140838101519083015261016092830151929091019190915290565b600060208083528351808285015260005b8181101561088d57858101830151858201604001528201610871565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b803563ffffffff8116811461059757600080fd5b600060c082840312156108f257600080fd5b60405160c0810181811067ffffffffffffffff8211171561093c577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6040526109488361058c565b81526109566020840161058c565b60208201526109676040840161058c565b6040820152610978606084016108cc565b60608201526080830135608082015260a083013560a08201528091505092915050565b6000602082840312156109ad57600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600063ffffffff80841680610a21577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b92169190910492915050565b63ffffffff818116838216028082169190828114610a4d57610a4d6109b4565b505092915050565b63ffffffff818116838216019080821115610a7257610a726109b4565b509291505056fea264697066735822122081a659e17f4d42becdf4ad566d3ec1ca4d26036cf4d6698751a1dd8bf1e99b0564736f6c63430008130033",
+    "sourceMap": "529:1672:146:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1944:220:133;;;;;;:::i;:::-;;:::i;:::-;;;612:14:168;;605:22;587:41;;575:2;560:18;1944:220:133;;;;;;;;867:634;;;;;;:::i;:::-;;:::i;:::-;;1015:1184:146;;;;;;:::i;:::-;;:::i;:::-;;;;;;;:::i;1944:220:133:-;2031:4;2054:59;;;2069:44;2054:59;;:103;;-1:-1:-1;2117:40:133;;;2132:25;2117:40;2054:103;2047:110;1944:220;-1:-1:-1;;1944:220:133:o;867:634::-;1153:36;1192:65;1210:5;1217:6;1225:3;1230:11;;1243:13;;1192:17;:65::i;:::-;5434:14:63;;;5473:16;;5520:9;5502:28;;5578:3;5557:25;;5595:23;;6176:4;6170:11;6220:10;6194:37;;6274:1;6251:25;;6244:50;;;6337:2;6314:26;;6307:46;;;;6410:2;6381:32;;1153:104:133;;-1:-1:-1;1359:5:133;:56;1353:142;;1471:12;;;;;;;;;;;;;;;;1439:45;;;;;;;1471:12;1439:45;;;:::i;:::-;;;;;;;;1353:142;1143:358;867:634;;;;;;;;;;:::o;1015:1184:146:-;-1:-1:-1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1342:31:146;;;;;;:::i;:::-;1402:14;;:31;;;;;:24;7169:55:168;;;1402:31:146;;;7151:74:168;1303:70:146;;-1:-1:-1;1384:15:146;;1402:24;;;;;;7124:18:168;;1402:31:146;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;1384:49;;1549:4;:14;;;1538:7;:25;;1532:119;;1619:20;;;;;;;;;;;;;;;;1587:53;;;;;;;1619:20;1587:53;;;:::i;1532:119::-;1791:401;;;;;;;;1819:4;:14;;;1791:401;;;;;;1847:4;:13;;;1791:401;;;;;;1874:4;:13;;;1791:401;;;;;;1901:7;1791:401;;;;1922:1;1791:401;;;;1968:47;1988:4;:26;;;1968:19;:47::i;:::-;1791:401;;;;;;2029:4;:12;;;1791:401;;;;2055:1;1791:401;;;;2070:19;1791:401;;;;2103:5;1791:401;;;;;;2122:23;1791:401;;;;2159:23;1791:401;;;1783:409;;1214:985;;1015:1184;;;;;;;;;:::o;463:166:142:-;526:14;614:8;;564:34;614:8;571:15;564:34;:::i;:::-;563:47;;;;:::i;:::-;562:60;;;;:::i;14:332:168:-;72:6;125:2;113:9;104:7;100:23;96:32;93:52;;;141:1;138;131:12;93:52;180:9;167:23;230:66;223:5;219:78;212:5;209:89;199:117;;312:1;309;302:12;199:117;335:5;14:332;-1:-1:-1;;;14:332:168:o;639:154::-;725:42;718:5;714:54;707:5;704:65;694:93;;783:1;780;773:12;694:93;639:154;:::o;798:134::-;866:20;;895:31;866:20;895:31;:::i;:::-;798:134;;;:::o;937:347::-;988:8;998:6;1052:3;1045:4;1037:6;1033:17;1029:27;1019:55;;1070:1;1067;1060:12;1019:55;-1:-1:-1;1093:20:168;;1136:18;1125:30;;1122:50;;;1168:1;1165;1158:12;1122:50;1205:4;1197:6;1193:17;1181:29;;1257:3;1250:4;1241:6;1233;1229:19;1225:30;1222:39;1219:59;;;1274:1;1271;1264:12;1219:59;937:347;;;;;:::o;1289:1401::-;1458:6;1466;1474;1482;1490;1498;1506;1514;1522;1530;1583:3;1571:9;1562:7;1558:23;1554:33;1551:53;;;1600:1;1597;1590:12;1551:53;1613:49;1651:9;1638:23;1613:49;:::i;:::-;1694:9;1681:23;1671:33;;1754:2;1743:9;1739:18;1726:32;1767:31;1792:5;1767:31;:::i;:::-;1817:5;-1:-1:-1;1869:2:168;1854:18;;1841:32;;-1:-1:-1;1920:2:168;1905:18;;1892:32;;-1:-1:-1;1971:3:168;1956:19;;1943:33;;-1:-1:-1;2027:3:168;2012:19;;1999:33;2051:18;2081:14;;;2078:34;;;2108:1;2105;2098:12;2078:34;2147:58;2197:7;2188:6;2177:9;2173:22;2147:58;:::i;:::-;2224:8;;-1:-1:-1;2121:84:168;-1:-1:-1;2312:3:168;2297:19;;2284:33;;-1:-1:-1;2329:16:168;;;2326:36;;;2358:1;2355;2348:12;2326:36;;2397:60;2449:7;2438:8;2427:9;2423:24;2397:60;:::i;:::-;2476:8;;-1:-1:-1;2371:86:168;-1:-1:-1;;2625:3:168;2531:23;;;2556:66;2527:96;2523:106;2520:126;;;2642:1;2639;2632:12;2520:126;2680:3;2669:9;2665:19;2655:29;;1289:1401;;;;;;;;;;;;;:::o;2695:1063::-;2812:6;2820;2828;2836;2844;2852;2860;2913:3;2901:9;2892:7;2888:23;2884:33;2881:53;;;2930:1;2927;2920:12;2881:53;2969:9;2956:23;2988:31;3013:5;2988:31;:::i;:::-;3038:5;-1:-1:-1;3095:2:168;3080:18;;3067:32;3108:33;3067:32;3108:33;:::i;:::-;3160:7;-1:-1:-1;3214:2:168;3199:18;;3186:32;;-1:-1:-1;3269:2:168;3254:18;;3241:32;3292:18;3322:14;;;3319:34;;;3349:1;3346;3339:12;3319:34;3388:58;3438:7;3429:6;3418:9;3414:22;3388:58;:::i;:::-;3465:8;;-1:-1:-1;3362:84:168;-1:-1:-1;3553:3:168;3538:19;;3525:33;;-1:-1:-1;3570:16:168;;;3567:36;;;3599:1;3596;3589:12;3567:36;;3638:60;3690:7;3679:8;3668:9;3664:24;3638:60;:::i;:::-;2695:1063;;;;-1:-1:-1;2695:1063:168;;-1:-1:-1;2695:1063:168;;;;3612:86;;-1:-1:-1;;;2695:1063:168:o;4002:1264::-;4222:13;;3848:42;3837:54;3825:67;;4182:3;4167:19;;4294:4;4286:6;4282:17;4276:24;4309:62;4365:4;4354:9;4350:20;4336:12;3848:42;3837:54;3825:67;;3763:135;4309:62;;4420:4;4412:6;4408:17;4402:24;4435:64;4493:4;4482:9;4478:20;4462:14;3848:42;3837:54;3825:67;;3763:135;4435:64;;4555:4;4547:6;4543:17;4537:24;4530:4;4519:9;4515:20;4508:54;4618:4;4610:6;4606:17;4600:24;4593:4;4582:9;4578:20;4571:54;4674:4;4666:6;4662:17;4656:24;4689:55;4738:4;4727:9;4723:20;4707:14;3979:10;3968:22;3956:35;;3903:94;4689:55;;4800:4;4792:6;4788:17;4782:24;4775:4;4764:9;4760:20;4753:54;4863:4;4855:6;4851:17;4845:24;4838:4;4827:9;4823:20;4816:54;4889:6;4949:2;4941:6;4937:15;4931:22;4926:2;4915:9;4911:18;4904:50;;4973:6;5028:2;5020:6;5016:15;5010:22;5041:51;5088:2;5077:9;5073:18;5057:14;421:13;414:21;402:34;;351:91;5041:51;-1:-1:-1;;5111:6:168;5159:15;;;5153:22;5133:18;;;5126:50;5195:6;5243:15;;;5237:22;5217:18;;;;5210:50;;;;4002:1264;:::o;5271:607::-;5383:4;5412:2;5441;5430:9;5423:21;5473:6;5467:13;5516:6;5511:2;5500:9;5496:18;5489:34;5541:1;5551:140;5565:6;5562:1;5559:13;5551:140;;;5660:14;;;5656:23;;5650:30;5626:17;;;5645:2;5622:26;5615:66;5580:10;;5551:140;;;5555:3;5740:1;5735:2;5726:6;5715:9;5711:22;5707:31;5700:42;5869:2;5799:66;5794:2;5786:6;5782:15;5778:88;5767:9;5763:104;5759:113;5751:121;;;;5271:607;;;;:::o;5883:163::-;5950:20;;6010:10;5999:22;;5989:33;;5979:61;;6036:1;6033;6026:12;6051:949;6133:6;6186:3;6174:9;6165:7;6161:23;6157:33;6154:53;;;6203:1;6200;6193:12;6154:53;6236:2;6230:9;6278:3;6270:6;6266:16;6348:6;6336:10;6333:22;6312:18;6300:10;6297:34;6294:62;6291:242;;;6389:77;6386:1;6379:88;6490:4;6487:1;6480:15;6518:4;6515:1;6508:15;6291:242;6549:2;6542:22;6588:29;6607:9;6588:29;:::i;:::-;6580:6;6573:45;6651:38;6685:2;6674:9;6670:18;6651:38;:::i;:::-;6646:2;6638:6;6634:15;6627:63;6723:38;6757:2;6746:9;6742:18;6723:38;:::i;:::-;6718:2;6710:6;6706:15;6699:63;6795:37;6828:2;6817:9;6813:18;6795:37;:::i;:::-;6790:2;6782:6;6778:15;6771:62;6895:3;6884:9;6880:19;6867:33;6861:3;6853:6;6849:16;6842:59;6963:3;6952:9;6948:19;6935:33;6929:3;6921:6;6917:16;6910:59;6988:6;6978:16;;;6051:949;;;;:::o;7236:184::-;7306:6;7359:2;7347:9;7338:7;7334:23;7330:32;7327:52;;;7375:1;7372;7365:12;7327:52;-1:-1:-1;7398:16:168;;7236:184;-1:-1:-1;7236:184:168:o;7425:::-;7477:77;7474:1;7467:88;7574:4;7571:1;7564:15;7598:4;7595:1;7588:15;7614:345;7653:1;7679:10;7716:2;7713:1;7709:10;7738:3;7728:191;;7775:77;7772:1;7765:88;7876:4;7873:1;7866:15;7904:4;7901:1;7894:15;7728:191;7937:10;;7933:20;;;;;7614:345;-1:-1:-1;;7614:345:168:o;7964:249::-;8035:10;8077;;;8089;;;8073:27;8120:20;;;;8035:10;8159:24;;;8149:58;;8187:18;;:::i;:::-;8149:58;;7964:249;;;;:::o;8218:172::-;8285:10;8315;;;8327;;;8311:27;;8350:11;;;8347:37;;;8364:18;;:::i;:::-;8347:37;8218:172;;;;:::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getTradeableOrder(address,address,bytes32,bytes,bytes)": "b8296fc4",
+    "supportsInterface(bytes4)": "01ffc9a7",
+    "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": "14a2a784"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"OrderNotValid\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"contract IConditionalOrder\",\"name\":\"handler\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"salt\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"staticInput\",\"type\":\"bytes\"}],\"indexed\":false,\"internalType\":\"struct IConditionalOrder.ConditionalOrderParams\",\"name\":\"params\",\"type\":\"tuple\"}],\"name\":\"ConditionalOrderCreated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"staticInput\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"getTradeableOrder\",\"outputs\":[{\"components\":[{\"internalType\":\"contract IERC20\",\"name\":\"sellToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"buyToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"sellAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"validTo\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"appData\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"kind\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"partiallyFillable\",\"type\":\"bool\"},{\"internalType\":\"bytes32\",\"name\":\"sellTokenBalance\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"buyTokenBalance\",\"type\":\"bytes32\"}],\"internalType\":\"struct GPv2Order.Data\",\"name\":\"order\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"domainSeparator\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"ctx\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"staticInput\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"offchainInput\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"contract IERC20\",\"name\":\"sellToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"buyToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"sellAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"validTo\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"appData\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"kind\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"partiallyFillable\",\"type\":\"bool\"},{\"internalType\":\"bytes32\",\"name\":\"sellTokenBalance\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"buyTokenBalance\",\"type\":\"bytes32\"}],\"internalType\":\"struct GPv2Order.Data\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"errors\":{\"OrderNotValid(string)\":[{\"details\":\"This error is returned by the `getTradeableOrder` function if the order condition is not met.      A parameter of `string` type is included to allow the caller to specify the reason for the failure.\"}]},\"events\":{\"ConditionalOrderCreated(address,(address,bytes32,bytes))\":{\"details\":\"This event is emitted when a new conditional order is created.\",\"params\":{\"owner\":\"the address that has created the conditional order\",\"params\":\"the address / salt / data of the conditional order\"}}},\"kind\":\"dev\",\"methods\":{\"getTradeableOrder(address,address,bytes32,bytes,bytes)\":{\"details\":\"If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance for `buyToken` at the current market price (no limit!).\",\"params\":{\"ctx\":\"the context of the order (bytes32(0) if merkle tree is used, otherwise the H(params))\",\"offchainInput\":\"dynamic off-chain input for a discrete order cut from this conditional order\",\"owner\":\"the contract who is the owner of the order\",\"sender\":\"the `msg.sender` of the parent `isValidSignature` call\",\"staticInput\":\"the static input for all discrete orders cut from this conditional order\"},\"returns\":{\"order\":\"the tradeable order for submission to the CoW Protocol API\"}},\"supportsInterface(bytes4)\":{\"details\":\"Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding EIP section https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified to learn more about how these ids are created. This function call must use less than 30 000 gas.\"},\"verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))\":{\"details\":\"As an order generator, the `GPv2Order.Data` passed as a parameter is ignored / not validated.\",\"params\":{\"_hash\":\"the hash of the order\",\"ctx\":\"the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet\",\"domainSeparator\":\"the domain separator used to sign the order\",\"offchainInput\":\"dynamic off-chain input for a discrete order cut from this conditional order\",\"order\":\"`GPv2Order.Data` of a discrete order to be verified (if *not* an `IConditionalOrderGenerator`).\",\"owner\":\"the contract who is the owner of the order\",\"sender\":\"the `msg.sender` of the transaction\",\"staticInput\":\"the static input for all discrete orders cut from this conditional order\"}}},\"title\":\"A smart contract that trades whenever its balance of a certain token exceeds a target threshold\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))\":{\"notice\":\"Verify if a given discrete order is valid.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/types/TradeAboveThreshold.sol\":\"TradeAboveThreshold\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"lib/@openzeppelin/contracts/interfaces/IERC20.sol\":{\"keccak256\":\"0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45\",\"dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq\"]},\"lib/@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5\",\"dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol\":{\"keccak256\":\"0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f\",\"dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF\"]},\"lib/cowprotocol/src/contracts/libraries/GPv2Order.sol\":{\"keccak256\":\"0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f\",\"license\":\"LGPL-3.0-or-later\",\"urls\":[\"bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d\",\"dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg\"]},\"lib/safe/contracts/interfaces/IERC165.sol\":{\"keccak256\":\"0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89\",\"dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38\"]},\"src/BaseConditionalOrder.sol\":{\"keccak256\":\"0x510558386b92b1d5961d8158ae6e3288a1d520c03123d109042a5ec3290b9588\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e071465250cbc11d946f422f4ff774d757291cac00f4c69fbac1d1e34cdae402\",\"dweb:/ipfs/QmUF2qNwJhvs3GeWmsWnL6y21eL6mb3QEW7EPYY7NZc25v\"]},\"src/interfaces/IConditionalOrder.sol\":{\"keccak256\":\"0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699\",\"dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ\"]},\"src/types/ConditionalOrdersUtilsLib.sol\":{\"keccak256\":\"0x38e4ce4fc58c018f510ee45d78ae49253e8aa70fdf559d83ebb6c838c6b47aae\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a38ccd5b8ce2895a77b7474b1ac36ebfccc975b3839f6d3bfef72700f8f6f777\",\"dweb:/ipfs/QmSfs5zZ4U14NkZYSqAFUBcuKGjyfMM5Dp2sbj14FmVYPf\"]},\"src/types/TradeAboveThreshold.sol\":{\"keccak256\":\"0x195a9827dc4a619aff6d797231f37fe0c36c3c0deecb52f905d9dbb33544c36d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f714af47db691063ab8004614ea9f5b0f08f5fa8c91058dceee28b681ead2884\",\"dweb:/ipfs/QmPyL4FGP5qpQeWybQZLtQzTyUCY8d7PvuDx4VuFpeq9fF\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "type": "error",
+          "name": "OrderNotValid"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+              "name": "params",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IConditionalOrder",
+                  "name": "handler",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "salt",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "staticInput",
+                  "type": "bytes"
+                }
+              ],
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ConditionalOrderCreated",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "staticInput",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getTradeableOrder",
+          "outputs": [
+            {
+              "internalType": "struct GPv2Order.Data",
+              "name": "order",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "sellToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "buyToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "receiver",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "sellAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "buyAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "validTo",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "appData",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "kind",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "partiallyFillable",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sellTokenBalance",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "buyTokenBalance",
+                  "type": "bytes32"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "_hash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "domainSeparator",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "ctx",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "staticInput",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "offchainInput",
+              "type": "bytes"
+            },
+            {
+              "internalType": "struct GPv2Order.Data",
+              "name": "",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "sellToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "buyToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "receiver",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "sellAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "buyAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "validTo",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "appData",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "kind",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "partiallyFillable",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sellTokenBalance",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "buyTokenBalance",
+                  "type": "bytes32"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "verify"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "getTradeableOrder(address,address,bytes32,bytes,bytes)": {
+            "details": "If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance for `buyToken` at the current market price (no limit!).",
+            "params": {
+              "ctx": "the context of the order (bytes32(0) if merkle tree is used, otherwise the H(params))",
+              "offchainInput": "dynamic off-chain input for a discrete order cut from this conditional order",
+              "owner": "the contract who is the owner of the order",
+              "sender": "the `msg.sender` of the parent `isValidSignature` call",
+              "staticInput": "the static input for all discrete orders cut from this conditional order"
+            },
+            "returns": {
+              "order": "the tradeable order for submission to the CoW Protocol API"
+            }
+          },
+          "supportsInterface(bytes4)": {
+            "details": "Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding EIP section https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified to learn more about how these ids are created. This function call must use less than 30 000 gas."
+          },
+          "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": {
+            "details": "As an order generator, the `GPv2Order.Data` passed as a parameter is ignored / not validated.",
+            "params": {
+              "_hash": "the hash of the order",
+              "ctx": "the context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet",
+              "domainSeparator": "the domain separator used to sign the order",
+              "offchainInput": "dynamic off-chain input for a discrete order cut from this conditional order",
+              "order": "`GPv2Order.Data` of a discrete order to be verified (if *not* an `IConditionalOrderGenerator`).",
+              "owner": "the contract who is the owner of the order",
+              "sender": "the `msg.sender` of the transaction",
+              "staticInput": "the static input for all discrete orders cut from this conditional order"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "verify(address,address,bytes32,bytes32,bytes32,bytes,bytes,(address,address,address,uint256,uint256,uint32,bytes32,uint256,bytes32,bool,bytes32,bytes32))": {
+            "notice": "Verify if a given discrete order is valid."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/types/TradeAboveThreshold.sol": "TradeAboveThreshold"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "lib/@openzeppelin/contracts/interfaces/IERC20.sol": {
+        "keccak256": "0x6ebf1944ab804b8660eb6fc52f9fe84588cee01c2566a69023e59497e7d27f45",
+        "urls": [
+          "bzz-raw://2900536cdadec954ced8789a9d1ed4b5e640029e1424e91fd5b88026486f4d45",
+          "dweb:/ipfs/QmUMUX7CuYoiHvFkhifqtXGaciw2wnm4t9sAoPzETZ3Gbq"
+        ],
+        "license": "MIT"
+      },
+      "lib/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+        "keccak256": "0x287b55befed2961a7eabd7d7b1b2839cbca8a5b80ef8dcbb25ed3d4c2002c305",
+        "urls": [
+          "bzz-raw://bd39944e8fc06be6dbe2dd1d8449b5336e23c6a7ba3e8e9ae5ae0f37f35283f5",
+          "dweb:/ipfs/QmPV3FGYjVwvKSgAXKUN3r9T9GwniZz83CxBpM7vyj2G53"
+        ],
+        "license": "MIT"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Interaction.sol": {
+        "keccak256": "0xb950f05f76ac8044b82314ea5510941fdbc0f0e76e7f159023d435652b429528",
+        "urls": [
+          "bzz-raw://c081155e1b18c060aaab781b4887744413efffdfc55ce190db45c321444f165f",
+          "dweb:/ipfs/QmbK3Qu7ZgwBfx2Es5EQcvG6q2srkHjzfNK2ziQ4ojxLSF"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/cowprotocol/src/contracts/libraries/GPv2Order.sol": {
+        "keccak256": "0xffd0cc3de3209aa38045d57def570ccbde028a39a54b00c696dbe19f4f6d7f9f",
+        "urls": [
+          "bzz-raw://5714a47cae551d3364bfc6a753d92822b29d277298e55942a2814ed1e2afd87d",
+          "dweb:/ipfs/QmS2G8ftdhk11qoSYHX8twZK5vFArhcnVVe6gy5UGTvXmg"
+        ],
+        "license": "LGPL-3.0-or-later"
+      },
+      "lib/safe/contracts/interfaces/IERC165.sol": {
+        "keccak256": "0x779ed3893a8812e383670b755f65c7727e9343dadaa4d7a4aa7f4aa35d859fdb",
+        "urls": [
+          "bzz-raw://bb2039e1459ace1e68761e873632fc339866332f9f5ecb7452a0bc3a3b847e89",
+          "dweb:/ipfs/QmYXvDQXJnDkXFvsvKLyZXaAv4x42qvtbtmwHftP4RKX38"
+        ],
+        "license": "LGPL-3.0-only"
+      },
+      "src/BaseConditionalOrder.sol": {
+        "keccak256": "0x510558386b92b1d5961d8158ae6e3288a1d520c03123d109042a5ec3290b9588",
+        "urls": [
+          "bzz-raw://e071465250cbc11d946f422f4ff774d757291cac00f4c69fbac1d1e34cdae402",
+          "dweb:/ipfs/QmUF2qNwJhvs3GeWmsWnL6y21eL6mb3QEW7EPYY7NZc25v"
+        ],
+        "license": "MIT"
+      },
+      "src/interfaces/IConditionalOrder.sol": {
+        "keccak256": "0x52c9a2b5d5cc7345fe4b4c039af88c5621bc7c6059534cc7c76b77833aafae7b",
+        "urls": [
+          "bzz-raw://1660e1510b82216e38b669f16b69f4a37b012b00655d0fc6794e4d77d2182699",
+          "dweb:/ipfs/QmNiZ7rMT74sKT9d6SUEnKXiWjaYLL8nAzSdLBXBAzYNmZ"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/types/ConditionalOrdersUtilsLib.sol": {
+        "keccak256": "0x38e4ce4fc58c018f510ee45d78ae49253e8aa70fdf559d83ebb6c838c6b47aae",
+        "urls": [
+          "bzz-raw://a38ccd5b8ce2895a77b7474b1ac36ebfccc975b3839f6d3bfef72700f8f6f777",
+          "dweb:/ipfs/QmSfs5zZ4U14NkZYSqAFUBcuKGjyfMM5Dp2sbj14FmVYPf"
+        ],
+        "license": "MIT"
+      },
+      "src/types/TradeAboveThreshold.sol": {
+        "keccak256": "0x195a9827dc4a619aff6d797231f37fe0c36c3c0deecb52f905d9dbb33544c36d",
+        "urls": [
+          "bzz-raw://f714af47db691063ab8004614ea9f5b0f08f5fa8c91058dceee28b681ead2884",
+          "dweb:/ipfs/QmPyL4FGP5qpQeWybQZLtQzTyUCY8d7PvuDx4VuFpeq9fF"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/types/TradeAboveThreshold.sol",
+    "id": 55439,
+    "exportedSymbols": {
+      "BALANCE_INSUFFICIENT": [
+        55337
+      ],
+      "BaseConditionalOrder": [
+        53501
+      ],
+      "GPv2Interaction": [
+        17090
+      ],
+      "GPv2Order": [
+        17246
+      ],
+      "IConditionalOrder": [
+        54437
+      ],
+      "IConditionalOrderGenerator": [
+        54468
+      ],
+      "IERC165": [
+        52197
+      ],
+      "IERC20": [
+        670
+      ],
+      "INVALID_HASH": [
+        53402
+      ],
+      "TradeAboveThreshold": [
+        55438
+      ],
+      "Utils": [
+        54593
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "32:2170:146",
+    "nodes": [
+      {
+        "id": 55328,
+        "nodeType": "PragmaDirective",
+        "src": "32:31:146",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 55330,
+        "nodeType": "ImportDirective",
+        "src": "65:59:146",
+        "nodes": [],
+        "absolutePath": "lib/@openzeppelin/contracts/interfaces/IERC20.sol",
+        "file": "@openzeppelin/interfaces/IERC20.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 55439,
+        "sourceUnit": 3,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 55329,
+              "name": "IERC20",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 670,
+              "src": "73:6:146",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 55331,
+        "nodeType": "ImportDirective",
+        "src": "126:37:146",
+        "nodes": [],
+        "absolutePath": "src/BaseConditionalOrder.sol",
+        "file": "../BaseConditionalOrder.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 55439,
+        "sourceUnit": 53502,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 55333,
+        "nodeType": "ImportDirective",
+        "src": "164:83:146",
+        "nodes": [],
+        "absolutePath": "src/types/ConditionalOrdersUtilsLib.sol",
+        "file": "./ConditionalOrdersUtilsLib.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 55439,
+        "sourceUnit": 54594,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 55332,
+              "name": "ConditionalOrdersUtilsLib",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 54593,
+              "src": "172:25:146",
+              "typeDescriptions": {}
+            },
+            "local": "Utils",
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "id": 55337,
+        "nodeType": "VariableDeclaration",
+        "src": "351:61:146",
+        "nodes": [],
+        "constant": true,
+        "mutability": "constant",
+        "name": "BALANCE_INSUFFICIENT",
+        "nameLocation": "367:20:146",
+        "scope": 55439,
+        "stateVariable": false,
+        "storageLocation": "default",
+        "typeDescriptions": {
+          "typeIdentifier": "t_string_memory_ptr",
+          "typeString": "string"
+        },
+        "typeName": {
+          "id": 55335,
+          "name": "string",
+          "nodeType": "ElementaryTypeName",
+          "src": "351:6:146",
+          "typeDescriptions": {
+            "typeIdentifier": "t_string_storage_ptr",
+            "typeString": "string"
+          }
+        },
+        "value": {
+          "hexValue": "62616c616e636520696e73756666696369656e74",
+          "id": 55336,
+          "isConstant": false,
+          "isLValue": false,
+          "isPure": true,
+          "kind": "string",
+          "lValueRequested": false,
+          "nodeType": "Literal",
+          "src": "390:22:146",
+          "typeDescriptions": {
+            "typeIdentifier": "t_stringliteral_a9ef3b4d07292ad1e9ff9cf86a951bcf260ed39b4c9f3962ba7c62aae85e2c4f",
+            "typeString": "literal_string \"balance insufficient\""
+          },
+          "value": "balance insufficient"
+        },
+        "visibility": "internal"
+      },
+      {
+        "id": 55438,
+        "nodeType": "ContractDefinition",
+        "src": "529:1672:146",
+        "nodes": [
+          {
+            "id": 55355,
+            "nodeType": "StructDefinition",
+            "src": "588:186:146",
+            "nodes": [],
+            "canonicalName": "TradeAboveThreshold.Data",
+            "members": [
+              {
+                "constant": false,
+                "id": 55343,
+                "mutability": "mutable",
+                "name": "sellToken",
+                "nameLocation": "617:9:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "610:16:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_IERC20_$670",
+                  "typeString": "contract IERC20"
+                },
+                "typeName": {
+                  "id": 55342,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 55341,
+                    "name": "IERC20",
+                    "nameLocations": [
+                      "610:6:146"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 670,
+                    "src": "610:6:146"
+                  },
+                  "referencedDeclaration": 670,
+                  "src": "610:6:146",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC20_$670",
+                    "typeString": "contract IERC20"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 55346,
+                "mutability": "mutable",
+                "name": "buyToken",
+                "nameLocation": "643:8:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "636:15:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_IERC20_$670",
+                  "typeString": "contract IERC20"
+                },
+                "typeName": {
+                  "id": 55345,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 55344,
+                    "name": "IERC20",
+                    "nameLocations": [
+                      "636:6:146"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 670,
+                    "src": "636:6:146"
+                  },
+                  "referencedDeclaration": 670,
+                  "src": "636:6:146",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC20_$670",
+                    "typeString": "contract IERC20"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 55348,
+                "mutability": "mutable",
+                "name": "receiver",
+                "nameLocation": "669:8:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "661:16:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 55347,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "661:7:146",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 55350,
+                "mutability": "mutable",
+                "name": "validityBucketSeconds",
+                "nameLocation": "694:21:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "687:28:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint32",
+                  "typeString": "uint32"
+                },
+                "typeName": {
+                  "id": 55349,
+                  "name": "uint32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "687:6:146",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 55352,
+                "mutability": "mutable",
+                "name": "threshold",
+                "nameLocation": "733:9:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "725:17:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 55351,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "725:7:146",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 55354,
+                "mutability": "mutable",
+                "name": "appData",
+                "nameLocation": "760:7:146",
+                "nodeType": "VariableDeclaration",
+                "scope": 55355,
+                "src": "752:15:146",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 55353,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "752:7:146",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Data",
+            "nameLocation": "595:4:146",
+            "scope": 55438,
+            "visibility": "public"
+          },
+          {
+            "id": 55437,
+            "nodeType": "FunctionDefinition",
+            "src": "1015:1184:146",
+            "nodes": [],
+            "body": {
+              "id": 55436,
+              "nodeType": "Block",
+              "src": "1214:985:146",
+              "nodes": [],
+              "statements": [
+                {
+                  "assignments": [
+                    55377
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 55377,
+                      "mutability": "mutable",
+                      "name": "data",
+                      "nameLocation": "1335:4:146",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 55436,
+                      "src": "1303:36:146",
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                        "typeString": "struct TradeAboveThreshold.Data"
+                      },
+                      "typeName": {
+                        "id": 55376,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 55375,
+                          "name": "TradeAboveThreshold.Data",
+                          "nameLocations": [
+                            "1303:19:146",
+                            "1323:4:146"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 55355,
+                          "src": "1303:24:146"
+                        },
+                        "referencedDeclaration": 55355,
+                        "src": "1303:24:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$55355_storage_ptr",
+                          "typeString": "struct TradeAboveThreshold.Data"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "documentation": "@dev Decode the payload into the trade above threshold parameters.",
+                  "id": 55384,
+                  "initialValue": {
+                    "arguments": [
+                      {
+                        "id": 55380,
+                        "name": "staticInput",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 55364,
+                        "src": "1353:11:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        }
+                      },
+                      {
+                        "components": [
+                          {
+                            "id": 55381,
+                            "name": "Data",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55355,
+                            "src": "1367:4:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_struct$_Data_$55355_storage_ptr_$",
+                              "typeString": "type(struct TradeAboveThreshold.Data storage pointer)"
+                            }
+                          }
+                        ],
+                        "id": 55382,
+                        "isConstant": false,
+                        "isInlineArray": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "lValueRequested": false,
+                        "nodeType": "TupleExpression",
+                        "src": "1366:6:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_struct$_Data_$55355_storage_ptr_$",
+                          "typeString": "type(struct TradeAboveThreshold.Data storage pointer)"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_type$_t_struct$_Data_$55355_storage_ptr_$",
+                          "typeString": "type(struct TradeAboveThreshold.Data storage pointer)"
+                        }
+                      ],
+                      "expression": {
+                        "id": 55378,
+                        "name": "abi",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": -1,
+                        "src": "1342:3:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_magic_abi",
+                          "typeString": "abi"
+                        }
+                      },
+                      "id": 55379,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "lValueRequested": false,
+                      "memberLocation": "1346:6:146",
+                      "memberName": "decode",
+                      "nodeType": "MemberAccess",
+                      "src": "1342:10:146",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_abidecode_pure$__$returns$__$",
+                        "typeString": "function () pure"
+                      }
+                    },
+                    "id": 55383,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1342:31:146",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                      "typeString": "struct TradeAboveThreshold.Data memory"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1303:70:146"
+                },
+                {
+                  "assignments": [
+                    55386
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 55386,
+                      "mutability": "mutable",
+                      "name": "balance",
+                      "nameLocation": "1392:7:146",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 55436,
+                      "src": "1384:15:146",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 55385,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "1384:7:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 55392,
+                  "initialValue": {
+                    "arguments": [
+                      {
+                        "id": 55390,
+                        "name": "owner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 55358,
+                        "src": "1427:5:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "expression": {
+                          "id": 55387,
+                          "name": "data",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 55377,
+                          "src": "1402:4:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                            "typeString": "struct TradeAboveThreshold.Data memory"
+                          }
+                        },
+                        "id": 55388,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "1407:9:146",
+                        "memberName": "sellToken",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 55343,
+                        "src": "1402:14:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC20_$670",
+                          "typeString": "contract IERC20"
+                        }
+                      },
+                      "id": 55389,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "1417:9:146",
+                      "memberName": "balanceOf",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 627,
+                      "src": "1402:24:146",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
+                        "typeString": "function (address) view external returns (uint256)"
+                      }
+                    },
+                    "id": 55391,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1402:31:146",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1384:49:146"
+                },
+                {
+                  "condition": {
+                    "id": 55398,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "!",
+                    "prefix": true,
+                    "src": "1536:28:146",
+                    "subExpression": {
+                      "components": [
+                        {
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 55396,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "id": 55393,
+                            "name": "balance",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55386,
+                            "src": "1538:7:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": ">=",
+                          "rightExpression": {
+                            "expression": {
+                              "id": 55394,
+                              "name": "data",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 55377,
+                              "src": "1549:4:146",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                                "typeString": "struct TradeAboveThreshold.Data memory"
+                              }
+                            },
+                            "id": 55395,
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "1554:9:146",
+                            "memberName": "threshold",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 55352,
+                            "src": "1549:14:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "src": "1538:25:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        }
+                      ],
+                      "id": 55397,
+                      "isConstant": false,
+                      "isInlineArray": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "TupleExpression",
+                      "src": "1537:27:146",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 55406,
+                  "nodeType": "IfStatement",
+                  "src": "1532:119:146",
+                  "trueBody": {
+                    "id": 55405,
+                    "nodeType": "Block",
+                    "src": "1566:85:146",
+                    "statements": [
+                      {
+                        "errorCall": {
+                          "arguments": [
+                            {
+                              "id": 55402,
+                              "name": "BALANCE_INSUFFICIENT",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 55337,
+                              "src": "1619:20:146",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_string_memory_ptr",
+                                "typeString": "string memory"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_string_memory_ptr",
+                                "typeString": "string memory"
+                              }
+                            ],
+                            "expression": {
+                              "id": 55399,
+                              "name": "IConditionalOrder",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 54437,
+                              "src": "1587:17:146",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_IConditionalOrder_$54437_$",
+                                "typeString": "type(contract IConditionalOrder)"
+                              }
+                            },
+                            "id": 55401,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "1605:13:146",
+                            "memberName": "OrderNotValid",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 54407,
+                            "src": "1587:31:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_error_pure$_t_string_memory_ptr_$returns$__$",
+                              "typeString": "function (string memory) pure"
+                            }
+                          },
+                          "id": 55403,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1587:53:146",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_tuple$__$",
+                            "typeString": "tuple()"
+                          }
+                        },
+                        "id": 55404,
+                        "nodeType": "RevertStatement",
+                        "src": "1580:60:146"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "id": 55434,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 55407,
+                      "name": "order",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 55371,
+                      "src": "1783:5:146",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                        "typeString": "struct GPv2Order.Data memory"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "arguments": [
+                        {
+                          "expression": {
+                            "id": 55410,
+                            "name": "data",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55377,
+                            "src": "1819:4:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                              "typeString": "struct TradeAboveThreshold.Data memory"
+                            }
+                          },
+                          "id": 55411,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "1824:9:146",
+                          "memberName": "sellToken",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 55343,
+                          "src": "1819:14:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_contract$_IERC20_$670",
+                            "typeString": "contract IERC20"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 55412,
+                            "name": "data",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55377,
+                            "src": "1847:4:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                              "typeString": "struct TradeAboveThreshold.Data memory"
+                            }
+                          },
+                          "id": 55413,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "1852:8:146",
+                          "memberName": "buyToken",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 55346,
+                          "src": "1847:13:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_contract$_IERC20_$670",
+                            "typeString": "contract IERC20"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 55414,
+                            "name": "data",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55377,
+                            "src": "1874:4:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                              "typeString": "struct TradeAboveThreshold.Data memory"
+                            }
+                          },
+                          "id": 55415,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "1879:8:146",
+                          "memberName": "receiver",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 55348,
+                          "src": "1874:13:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        {
+                          "id": 55416,
+                          "name": "balance",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 55386,
+                          "src": "1901:7:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        {
+                          "hexValue": "31",
+                          "id": 55417,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "1922:1:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          },
+                          "value": "1"
+                        },
+                        {
+                          "arguments": [
+                            {
+                              "expression": {
+                                "id": 55420,
+                                "name": "data",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 55377,
+                                "src": "1988:4:146",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                                  "typeString": "struct TradeAboveThreshold.Data memory"
+                                }
+                              },
+                              "id": 55421,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberLocation": "1993:21:146",
+                              "memberName": "validityBucketSeconds",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 55350,
+                              "src": "1988:26:146",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint32",
+                                "typeString": "uint32"
+                              }
+                            ],
+                            "expression": {
+                              "id": 55418,
+                              "name": "Utils",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 54593,
+                              "src": "1968:5:146",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_ConditionalOrdersUtilsLib_$54593_$",
+                                "typeString": "type(library ConditionalOrdersUtilsLib)"
+                              }
+                            },
+                            "id": 55419,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "1974:13:146",
+                            "memberName": "validToBucket",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 54539,
+                            "src": "1968:19:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_uint32_$returns$_t_uint32_$",
+                              "typeString": "function (uint32) view returns (uint32)"
+                            }
+                          },
+                          "id": 55422,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1968:47:146",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint32",
+                            "typeString": "uint32"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 55423,
+                            "name": "data",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 55377,
+                            "src": "2029:4:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Data_$55355_memory_ptr",
+                              "typeString": "struct TradeAboveThreshold.Data memory"
+                            }
+                          },
+                          "id": 55424,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberLocation": "2034:7:146",
+                          "memberName": "appData",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 55354,
+                          "src": "2029:12:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "hexValue": "30",
+                          "id": 55425,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2055:1:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        {
+                          "expression": {
+                            "id": 55426,
+                            "name": "GPv2Order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17246,
+                            "src": "2070:9:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                              "typeString": "type(library GPv2Order)"
+                            }
+                          },
+                          "id": 55427,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberLocation": "2080:9:146",
+                          "memberName": "KIND_SELL",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17129,
+                          "src": "2070:19:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "hexValue": "66616c7365",
+                          "id": 55428,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "bool",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2103:5:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          },
+                          "value": "false"
+                        },
+                        {
+                          "expression": {
+                            "id": 55429,
+                            "name": "GPv2Order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17246,
+                            "src": "2122:9:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                              "typeString": "type(library GPv2Order)"
+                            }
+                          },
+                          "id": 55430,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberLocation": "2132:13:146",
+                          "memberName": "BALANCE_ERC20",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17137,
+                          "src": "2122:23:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "expression": {
+                            "id": 55431,
+                            "name": "GPv2Order",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 17246,
+                            "src": "2159:9:146",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                              "typeString": "type(library GPv2Order)"
+                            }
+                          },
+                          "id": 55432,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberLocation": "2169:13:146",
+                          "memberName": "BALANCE_ERC20",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 17137,
+                          "src": "2159:23:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_contract$_IERC20_$670",
+                            "typeString": "contract IERC20"
+                          },
+                          {
+                            "typeIdentifier": "t_contract$_IERC20_$670",
+                            "typeString": "contract IERC20"
+                          },
+                          {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          },
+                          {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          },
+                          {
+                            "typeIdentifier": "t_uint32",
+                            "typeString": "uint32"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          },
+                          {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          },
+                          {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        ],
+                        "expression": {
+                          "id": 55408,
+                          "name": "GPv2Order",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 17246,
+                          "src": "1791:9:146",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_GPv2Order_$17246_$",
+                            "typeString": "type(library GPv2Order)"
+                          }
+                        },
+                        "id": 55409,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberLocation": "1801:4:146",
+                        "memberName": "Data",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 17121,
+                        "src": "1791:14:146",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_struct$_Data_$17121_storage_ptr_$",
+                          "typeString": "type(struct GPv2Order.Data storage pointer)"
+                        }
+                      },
+                      "id": 55433,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "structConstructorCall",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1791:401:146",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                        "typeString": "struct GPv2Order.Data memory"
+                      }
+                    },
+                    "src": "1783:409:146",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                      "typeString": "struct GPv2Order.Data memory"
+                    }
+                  },
+                  "id": 55435,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1783:409:146"
+                }
+              ]
+            },
+            "baseFunctions": [
+              53476
+            ],
+            "documentation": {
+              "id": 55356,
+              "nodeType": "StructuredDocumentation",
+              "src": "780:230:146",
+              "text": " @inheritdoc IConditionalOrderGenerator\n @dev If the `owner`'s balance of `sellToken` is above the specified threshold, sell its entire balance\n for `buyToken` at the current market price (no limit!)."
+            },
+            "functionSelector": "b8296fc4",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTradeableOrder",
+            "nameLocation": "1024:17:146",
+            "overrides": {
+              "id": 55368,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "1155:8:146"
+            },
+            "parameters": {
+              "id": 55367,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 55358,
+                  "mutability": "mutable",
+                  "name": "owner",
+                  "nameLocation": "1050:5:146",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1042:13:146",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 55357,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1042:7:146",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 55360,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1057:7:146",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 55359,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1057:7:146",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 55362,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1066:7:146",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 55361,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1066:7:146",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 55364,
+                  "mutability": "mutable",
+                  "name": "staticInput",
+                  "nameLocation": "1090:11:146",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1075:26:146",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 55363,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1075:5:146",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 55366,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1103:14:146",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 55365,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1103:5:146",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1041:77:146"
+            },
+            "returnParameters": {
+              "id": 55372,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 55371,
+                  "mutability": "mutable",
+                  "name": "order",
+                  "nameLocation": "1203:5:146",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 55437,
+                  "src": "1181:27:146",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Data_$17121_memory_ptr",
+                    "typeString": "struct GPv2Order.Data"
+                  },
+                  "typeName": {
+                    "id": 55370,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 55369,
+                      "name": "GPv2Order.Data",
+                      "nameLocations": [
+                        "1181:9:146",
+                        "1191:4:146"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 17121,
+                      "src": "1181:14:146"
+                    },
+                    "referencedDeclaration": 17121,
+                    "src": "1181:14:146",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Data_$17121_storage_ptr",
+                      "typeString": "struct GPv2Order.Data"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1180:29:146"
+            },
+            "scope": 55438,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 55339,
+              "name": "BaseConditionalOrder",
+              "nameLocations": [
+                "561:20:146"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 53501,
+              "src": "561:20:146"
+            },
+            "id": 55340,
+            "nodeType": "InheritanceSpecifier",
+            "src": "561:20:146"
+          }
+        ],
+        "canonicalName": "TradeAboveThreshold",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 55338,
+          "nodeType": "StructuredDocumentation",
+          "src": "415:113:146",
+          "text": " @title A smart contract that trades whenever its balance of a certain token exceeds a target threshold"
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          55438,
+          53501,
+          54468,
+          52197,
+          54437
+        ],
+        "name": "TradeAboveThreshold",
+        "nameLocation": "538:19:146",
+        "scope": 55439,
+        "usedErrors": [
+          54407
+        ]
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 146
+}

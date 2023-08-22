@@ -1,0 +1,275 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "getValue",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "value",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getValue(bytes)": "b6576bdf"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"getValue\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"value\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"mfw78 <mfw78@rndlabs.xyz>\",\"details\":\"Designed to be used with Safe + ExtensibleFallbackHandler + ComposableCoW\",\"kind\":\"dev\",\"methods\":{\"getValue(bytes)\":{\"params\":{\"data\":\"Implementation specific off-chain data\"},\"returns\":{\"value\":\"The value at the time of the call\"}}},\"title\":\"IValueFactory - An interface for on-chain value determination\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getValue(bytes)\":{\"notice\":\"Return a value at the time of the call\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IValueFactory.sol\":\"IValueFactory\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":20000},\"remappings\":[\":@openzeppelin/=lib/@openzeppelin/contracts/\",\":@openzeppelin/contracts/=lib/@openzeppelin/contracts/\",\":balancer/=lib/balancer/src/\",\":canonical-weth/=lib/canonical-weth/src/\",\":cowprotocol/=lib/cowprotocol/src/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":helpers/=lib/balancer/src/lib/helpers/\",\":math/=lib/balancer/src/lib/math/\",\":murky/=lib/murky/src/\",\":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/\",\":openzeppelin/=lib/@openzeppelin/contracts/\",\":safe/=lib/safe/contracts/\"]},\"sources\":{\"src/interfaces/IValueFactory.sol\":{\"keccak256\":\"0x3304ef8a0a1727258ac8278bf5426daeac37ece4653eaaff87b15143814a8122\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://9934d278069dd9474065777833a81e65af227b85d350b6c1f012b812101be9de\",\"dweb:/ipfs/QmcMBdvY7wLs92FCyutDGQGtHnYryjnaykREvDNBNM8Yih\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.19+commit.7dd6d404"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValue",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "value",
+              "type": "bytes32"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "getValue(bytes)": {
+            "params": {
+              "data": "Implementation specific off-chain data"
+            },
+            "returns": {
+              "value": "The value at the time of the call"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "getValue(bytes)": {
+            "notice": "Return a value at the time of the call"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=lib/@openzeppelin/contracts/",
+        ":@openzeppelin/contracts/=lib/@openzeppelin/contracts/",
+        ":balancer/=lib/balancer/src/",
+        ":canonical-weth/=lib/canonical-weth/src/",
+        ":cowprotocol/=lib/cowprotocol/src/contracts/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":erc4626-tests/=lib/@openzeppelin/lib/erc4626-tests/",
+        ":forge-std/=lib/forge-std/src/",
+        ":helpers/=lib/balancer/src/lib/helpers/",
+        ":math/=lib/balancer/src/lib/math/",
+        ":murky/=lib/murky/src/",
+        ":openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/",
+        ":openzeppelin/=lib/@openzeppelin/contracts/",
+        ":safe/=lib/safe/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 20000
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/interfaces/IValueFactory.sol": "IValueFactory"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IValueFactory.sol": {
+        "keccak256": "0x3304ef8a0a1727258ac8278bf5426daeac37ece4653eaaff87b15143814a8122",
+        "urls": [
+          "bzz-raw://9934d278069dd9474065777833a81e65af227b85d350b6c1f012b812101be9de",
+          "dweb:/ipfs/QmcMBdvY7wLs92FCyutDGQGtHnYryjnaykREvDNBNM8Yih"
+        ],
+        "license": "GPL-3.0"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/interfaces/IValueFactory.sol",
+    "id": 54596,
+    "exportedSymbols": {
+      "IValueFactory": [
+        54595
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "36:517:142",
+    "nodes": [
+      {
+        "id": 54585,
+        "nodeType": "PragmaDirective",
+        "src": "36:31:142",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ]
+      },
+      {
+        "id": 54595,
+        "nodeType": "ContractDefinition",
+        "src": "268:284:142",
+        "nodes": [
+          {
+            "id": 54594,
+            "nodeType": "FunctionDefinition",
+            "src": "473:77:142",
+            "nodes": [],
+            "documentation": {
+              "id": 54587,
+              "nodeType": "StructuredDocumentation",
+              "src": "298:170:142",
+              "text": " Return a value at the time of the call\n @param data Implementation specific off-chain data\n @return value The value at the time of the call"
+            },
+            "functionSelector": "b6576bdf",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValue",
+            "nameLocation": "482:8:142",
+            "parameters": {
+              "id": 54590,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54589,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "506:4:142",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54594,
+                  "src": "491:19:142",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 54588,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "491:5:142",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "490:21:142"
+            },
+            "returnParameters": {
+              "id": 54593,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 54592,
+                  "mutability": "mutable",
+                  "name": "value",
+                  "nameLocation": "543:5:142",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 54594,
+                  "src": "535:13:142",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 54591,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "535:7:142",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "534:15:142"
+            },
+            "scope": 54595,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IValueFactory",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 54586,
+          "nodeType": "StructuredDocumentation",
+          "src": "69:198:142",
+          "text": " @title IValueFactory - An interface for on-chain value determination\n @author mfw78 <mfw78@rndlabs.xyz>\n @dev Designed to be used with Safe + ExtensibleFallbackHandler + ComposableCoW"
+        },
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          54595
+        ],
+        "name": "IValueFactory",
+        "nameLocation": "278:13:142",
+        "scope": 54596,
+        "usedErrors": []
+      }
+    ],
+    "license": "GPL-3.0"
+  },
+  "id": 142
+}
