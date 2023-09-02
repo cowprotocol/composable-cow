@@ -36,11 +36,11 @@ contract GoodAfterTime is BaseConditionalOrder {
         IERC20 sellToken;
         IERC20 buyToken;
         address receiver;
+        bool allowPartialFill;
         uint256 sellAmount; // buy amount comes from offchainInput
         uint256 minSellBalance;
         uint256 startTime; // when the order becomes valid
         uint256 endTime; // when the order expires
-        bool allowPartialFill;
         bytes priceCheckerPayload;
         bytes32 appData;
     }
