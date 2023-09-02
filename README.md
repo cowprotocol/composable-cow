@@ -10,7 +10,7 @@ A detailed explanation on the architecture is available [here](https://hackmd.io
 
 For the purposes of outlining the methodologies, it is assumed that:
 
-1. The `Safe` has already had it's fallback handler set to `ExtensibleFallbackHandler`.
+1. The `Safe` has already had its fallback handler set to `ExtensibleFallbackHandler`.
 2. The `Safe` has set the `domainVerifier` for the `GPv2Settlement.domainSeparator()` to `ComposableCoW`
 
 #### Conditional order creation
@@ -31,7 +31,7 @@ A conditional order is a struct `ConditionalOrderParams`, consisting of:
 2. Populate a merkle tree with the leaves from (1), where each leaf is a double hashed of the ABI-encoded struct.
 3. Determine the merkle root of the tree and set this as the root, calling `ComposableCoW.setRoot`. The `proof` must be set, and currently:
    a. Set a `location` of `0` for no proofs emitted.
-   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpted as an array of proofs and indexed by the watch tower.
+   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpreted as an array of proofs and indexed by the watch tower.
 
 #### Get Tradeable Order With Signature
 
@@ -93,7 +93,7 @@ Example: Alice wants to sell 12,000,000 DAI for at least 7500 WETH. She wants to
 - `t` = 86400 (duration of each part, in seconds)
 - `span` = 0 (duration of `span`, in seconds, or `0` for entire interval)
 
-If Alice also wanted to restrict the duration in which each part traded in each day, she may set `span` to a non-zero duration. For example, if Alice wanted to execute the TWAP, each day for 30 days, however only wanted to trade for the first 12 hours of each day, she would set `span` to `43200` (ie. `60 * 60 * 12`).
+If Alice also wanted to restrict the duration in which each part traded in each day, she may set `span` to a non-zero duration. For example, if Alice wanted to execute the TWAP, each day for 30 days, however only wanted to trade for the first 12 hours of each day, she would set `span` to `43200` (i.e. `60 * 60 * 12`).
 
 Using `span` allows for use cases such as weekend or week-day only trading.
 
@@ -113,7 +113,7 @@ To create a TWAP order:
 Fortunately, when using Safe, it is possible to batch together all the above calls to perform this step atomically, and optimise gas consumption / UX. For code examples on how to do this, please refer to the [CLI](#CLI).
 
 **TODO**
-**NOTE:** For cancelling a TWAP order, follow the instructions at [Conditional order cancellation](#Conditional-order-cancellation).
+**NOTE:** For canceling a TWAP order, follow the instructions at [Conditional order cancellation](#Conditional-order-cancellation).
 
 ## Developers
 
