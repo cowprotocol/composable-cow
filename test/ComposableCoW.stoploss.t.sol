@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 import "./ComposableCoW.base.t.sol";
 import "../src/interfaces/IAggregatorV3Interface.sol";
