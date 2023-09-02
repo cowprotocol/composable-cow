@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "forge-std/Script.sol";
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
+import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 // Safe contracts
 import {Safe} from "safe/Safe.sol";

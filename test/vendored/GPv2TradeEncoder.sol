@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 import {GPv2Signing} from "cowprotocol/mixins/GPv2Signing.sol";
