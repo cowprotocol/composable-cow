@@ -1,6 +1,6 @@
 # `ComposableCoW`: Composable Conditional orders
 
-This repository is the next in evolution of the [`conditional-smart-orders`](https://github.com/cowprotocol/conditional-smart-orders), providing a unified interface for stateless, composable conditional orders. `ComposableCoW` is designed to be used with the [`ExtensibleFallbackHandler`](https://github.com/rndlabs/safe-contracts/tree/merged-efh-sigmuxer), a powerful _extensible_ fallback handler that allows for significant customisation of a `Safe`, while preserving strong security guarantees.
+This repository is the next in evolution of [`conditional-smart-orders`](https://github.com/cowprotocol/conditional-smart-orders), providing a unified interface for limited state, composable conditional orders. `ComposableCoW` is designed to be used with the [`ExtensibleFallbackHandler`](https://github.com/rndlabs/safe-contracts), a powerful _extensible_ fallback handler that allows for significant customisation of a `Safe`, while preserving strong security guarantees.
 
 ## Architecture
 
@@ -10,28 +10,31 @@ A detailed explanation on the architecture is available [here](https://hackmd.io
 
 For the purposes of outlining the methodologies, it is assumed that:
 
-1. The `Safe` has already had it's fallback handler set to `ExtensibleFallbackHandler`.
-2. The `Safe` has set the `domainVerifier` for the `GPv2Settlement.domainSeparator()` to `ComposableCoW`
+1. A `Safe` has already had it's fallback handler set to `ExtensibleFallbackHandler`.
+2. The `Safe` has set the `domainVerifier` for the `GPv2Settlement.domainSeparator()` to `ComposableCoW`.
 
 #### Conditional order creation
 
 A conditional order is a struct `ConditionalOrderParams`, consisting of:
 
-1. The address of handler, ie. type of conditional order (such as `TWAP`).
+1. The `handler` address, ie. this corresponds to the type of conditional order (such as `TWAP`).
 2. A unique salt.
 3. Implementation specific `staticInput` - data that is known at the creation time of the conditional order.
 
+**CAUTION**: The `salt` within the `ConditionalOrderParams` SHOULD be cryptographically random if privacy for the order is desired (ie. privacy until order book placement). 
+
 ##### Single Order
 
-1. From the context of the Safe that is placing the order, call `ComposableCoW.create` with the `ConditionalOrderParams` struct. Optionally set `dispatch = true` to have events emitted that are picked up by a watch tower.
+1. From the context of the Safe that is placing the order, call `ComposableCoW.create` with the `ConditionalOrderParams` struct. Optionally set `dispatch = true` to signal to a `ComposableCoW`-compliant watchtower that the conditional order should be indexed.
 
 ##### Merkle Root
 
 1. Collect all the conditional orders, which are multiple structs of `ConditionalOrderParams`.
-2. Populate a merkle tree with the leaves from (1), where each leaf is a double hashed of the ABI-encoded struct.
+2. Populate a merkle tree with the leaves from (1), where each leaf is a double hash of the ABI-encoded struct.
 3. Determine the merkle root of the tree and set this as the root, calling `ComposableCoW.setRoot`. The `proof` must be set, and currently:
    a. Set a `location` of `0` for no proofs emitted.
-   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpted as an array of proofs and indexed by the watch tower.
+   b. Otherwise, set a `location` of `1` at which case the payload in the proof will be interpreted as an array of proofs and indexed by the watch tower.
+   c. Other `location` values are reserved.
 
 #### Get Tradeable Order With Signature
 
@@ -57,63 +60,7 @@ Conditional orders may generate one or many discrete orders depending on their i
 
 1. Prune the leaf from the merkle tree.
 2. Determine the new root.
-3. Call `ComposableCoW.setRoot` with the new root, which will invalidate any orders that have been pruned from the tree.
-
-## Time-weighted average price (TWAP)
-
-A simple _time-weighted average price_ trade may be thought of as `n` smaller trades happening every `t` time interval, commencing at time `t0`. Additionally, it is possible to limit a part's validity of the order to a certain `span` of time interval `t`.
-
-### Data Structure
-
-```solidity=
-struct Data {
-    IERC20 sellToken;
-    IERC20 buyToken;
-    address receiver; // address(0) if the safe
-    uint256 partSellAmount; // amount to sell in each part
-    uint256 minPartLimit; // minimum buy amount in each part (limit)
-    uint256 t0;
-    uint256 n;
-    uint256 t;
-    uint256 span;
-}
-```
-
-**NOTE:** No direction of trade is specified, as for TWAP it is assumed to be a _sell_ order
-
-Example: Alice wants to sell 12,000,000 DAI for at least 7500 WETH. She wants to do this using a TWAP, executing a part each day over a period of 30 days.
-
-- `sellToken` = DAI
-- `buytoken` = WETH
-- `receiver` = `address(0)`
-- `partSellAmount` = 12000000 / 30 = 400000 DAI
-- `minPartLimit` = 7500 / 30 = 250 WETH
-- `t0` = Nominated start time (unix epoch seconds)
-- `n` = 30 (number of parts)
-- `t` = 86400 (duration of each part, in seconds)
-- `span` = 0 (duration of `span`, in seconds, or `0` for entire interval)
-
-If Alice also wanted to restrict the duration in which each part traded in each day, she may set `span` to a non-zero duration. For example, if Alice wanted to execute the TWAP, each day for 30 days, however only wanted to trade for the first 12 hours of each day, she would set `span` to `43200` (ie. `60 * 60 * 12`).
-
-Using `span` allows for use cases such as weekend or week-day only trading.
-
-### Methodology
-
-To create a TWAP order:
-
-1. ABI-Encode the `IConditionalOrder.ConditionalOrderParams` struct with:
-   - `handler`: set to the `TWAP` smart contract deployment.
-   - `salt`: set to a unique value.
-   - `staticInput`: the ABI-encoded `TWAP.Data` struct.
-2. Use the `struct` from (1) as either a Merkle leaf, or with `ComposableCoW.create` to create a single conditional order.
-3. Approve `GPv2VaultRelayer` to trade `n x partSellAmount` of the safe's `sellToken` tokens (in the example above, `GPv2VaultRelayer` would receive approval for spending 12,000,000 DAI tokens).
-
-**NOTE**: When calling `ComposableCoW.create`, setting `dispatch = true` will cause `ComposableCoW` to emit event logs that are indexed by the watch tower automatically. If you wish to maintain a private order (and will submit to the CoW Protocol API through your own infrastructure, you may set `dispatch` to `false`).
-
-Fortunately, when using Safe, it is possible to batch together all the above calls to perform this step atomically, and optimise gas consumption / UX. For code examples on how to do this, please refer to the [CLI](#CLI).
-
-**TODO**
-**NOTE:** For cancelling a TWAP order, follow the instructions at [Conditional order cancellation](#Conditional-order-cancellation).
+3. Call `ComposableCoW.setRoot` with the new root, invalidating any orders that have been pruned from the tree.
 
 ## Developers
 
