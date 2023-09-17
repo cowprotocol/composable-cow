@@ -26,8 +26,8 @@ A clear and concise description of what you expected to happen.
 ### Screenshots/logs
 If applicable, add screenshots or logs to help explain your problem.
 
-### <!-- repo / package --> version/commit hash
-State the version of <!-- insert package --> where you've encountered the bug or, if built off a specific commit, the relevant commit hash. <!-- If applicable, provide hints as to how to retrieve the commit hash -->.
+### ComposableCoW version/commit hash
+State the version of ComposableCoW where you've encountered the bug or, if built off a specific commit, the relevant commit hash.
 - e.g. `v0.9` or `ed53bcd`
 
 ### Additional context
