@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for the <!-- project --> implementation
+about: Suggest an idea for ComposableCoW
 title: 'feat: '
 labels: track:production
 assignees: ''
