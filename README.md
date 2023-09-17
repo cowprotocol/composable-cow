@@ -62,6 +62,12 @@ Conditional orders may generate one or many discrete orders depending on their i
 2. Determine the new root.
 3. Call `ComposableCoW.setRoot` with the new root, invalidating any orders that have been pruned from the tree.
 
+## Order Types
+
+For a detailed explanation of the respective order types, please see their respective documentation:
+
+- [`TWAP`](./docs/types/TWAP.md)
+
 ## Developers
 
 ### Requirements
