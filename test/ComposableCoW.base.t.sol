@@ -296,4 +296,8 @@ contract MirrorConditionalOrder is IConditionalOrder {
             revert(0, calldatasize())
         }
     }
+
+    function validateData(bytes calldata) external pure override {
+        // --- no-op
+    }
 }
