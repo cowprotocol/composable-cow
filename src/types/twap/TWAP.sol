@@ -59,4 +59,12 @@ contract TWAP is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid(NOT_WITHIN_SPAN);
         }
     }
+
+    /**
+     * @inheritdoc IConditionalOrder
+     */
+    function validateData(bytes memory data) external override pure {
+        TWAPOrder.validate(abi.decode(data, (TWAPOrder.Data)));
+    }
+
 }

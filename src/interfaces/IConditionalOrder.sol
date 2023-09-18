@@ -14,6 +14,16 @@ interface IConditionalOrder {
     ///      A parameter of `string` type is included to allow the caller to specify the reason for the failure.
     error OrderNotValid(string);
 
+    // --- errors specific for polling
+    // Signal to a watch tower that polling should be attempted again.
+    error PollTryNextBlock(string reason);
+    // Signal to a watch tower that polling should be attempted again at a specific block number.
+    error PollTryAtBlock(uint256 blockNumber, string reason);
+    // Signal to a watch tower that polling should be attempted again at a specific epoch (unix timestamp).
+    error PollTryAtEpoch(uint256 timestamp, string reason);
+    // Signal to a watch tower that the conditional order should not be polled again (delete).
+    error PollNever(string reason);
+
     /**
      * @dev This struct is used to uniquely identify a conditional order for an owner.
      *      H(handler || salt || staticInput) **MUST** be unique for an owner.
@@ -50,6 +60,13 @@ interface IConditionalOrder {
         bytes calldata offchainInput,
         GPv2Order.Data calldata order
     ) external view;
+
+    /**
+     * A helper function for SDK users to verify if a given conditional order's data is valid.
+     * @param data The ABI-encoded concrete order type's `Data` struct to be validated.
+     * @dev Throws if the data is invalid.
+     */
+    function validateData(bytes memory data) external view;
 }
 
 /**
