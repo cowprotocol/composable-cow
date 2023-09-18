@@ -57,4 +57,8 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
     function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
         return interfaceId == type(IConditionalOrderGenerator).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
+
+    function validateData(bytes memory data) external view virtual override {
+        // --- no-op
+    }
 }
