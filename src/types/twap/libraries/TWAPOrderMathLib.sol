@@ -39,7 +39,7 @@ library TWAPOrderMathLib {
 
         unchecked {
             /// @dev Order is not valid before the start (order commences at `t0`).
-            if (!(startTime <= block.timestamp)) revert IConditionalOrder.OrderNotValid(BEFORE_TWAP_START);
+            if (!(startTime <= block.timestamp)) revert IConditionalOrder.PollTryAtEpoch(startTime, BEFORE_TWAP_START);
 
             /**
              *  @dev Order is expired after the last part (`n` parts, running at `t` time length).
@@ -51,7 +51,7 @@ library TWAPOrderMathLib {
              * `type(uint32).max` so the sum of `startTime + (numParts * frequency)` is ≈ 2⁵⁵.
              */
             if (!(block.timestamp < startTime + (numParts * frequency))) {
-                revert IConditionalOrder.OrderNotValid(AFTER_TWAP_FINISH);
+                revert IConditionalOrder.PollNever(AFTER_TWAP_FINISH);
             }
 
             /**
