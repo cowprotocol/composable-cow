@@ -54,9 +54,22 @@ contract TWAP is BaseConditionalOrder {
 
         order = TWAPOrder.orderFor(twap);
 
-        /// @dev Revert if the order is outside the TWAP bundle's span.
+        /// @dev As the `TWAPOrder.orderFor` function will revert if the TWAP has not started
+        ///      or if the TWAP has finished, the _only_ time now that `block.timestamp` can be
+        ///      greater than `order.validTo` is if the order is outside the TWAP bundle's span.
         if (!(block.timestamp <= order.validTo)) {
-            revert IConditionalOrder.OrderNotValid(NOT_WITHIN_SPAN);
+            // Handle the case where this is the last part
+            uint256 currentPart = ((block.timestamp - twap.t0) / twap.t) + 1;
+
+            if (currentPart == twap.n) {
+                // This is the last part, and the order is outside the span. The watch tower should
+                // delete the order.
+                revert IConditionalOrder.PollNever(NOT_WITHIN_SPAN);
+            } else {
+                // This is not the last part, so the watch tower should try again at the start of
+                // the next part.
+                revert IConditionalOrder.PollTryAtEpoch(twap.t0 + (currentPart * twap.t), NOT_WITHIN_SPAN);
+            }
         }
     }
 
