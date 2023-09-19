@@ -76,23 +76,15 @@ For a detailed explanation of the respective order types, please see their respe
 
 ### Deployed Contracts
 
-| Contract Name                  | Ethereum Mainnet                                                                                                      | Goerli                                                                                                                       | Gnosis Chain                                                                                                           |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `ExtensibleFallbackHandler`    | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://goerli.etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://gnosisscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) |
-| `ComposableCoW`                | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://goerli.etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://gnosisscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) |
-| `TWAP`                         | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://goerli.etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://gnosisscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) |
-| `GoodAfterTime`                | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://goerli.etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://gnosisscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) |
-| `PerpetualStableSwap`          | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://goerli.etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://gnosisscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) |
-| `TradeAboveThreshold`          | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://goerli.etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://gnosisscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) |
-| `StopLoss`                     | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://goerli.etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://gnosisscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) |
-| `CurrentBlockTimestampFactory` | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://goerli.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://gnosisscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) |
+**WARNING**: No contracts from this branch have been deployed to production (mainnet / Gnosis Chain) and should not be used in production.
+
+| Contract Name                  | Goerli                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+|  |  |
 
 #### Audits
 
-The above deployed contracts have been audited by:
-
-- Ackee Blockchain: [CoW Protocol - `ComposableCoW` and `ExtensibleFallbackHandler`](./audits/ackee-blockchain-cow-protocol-composablecow-extensiblefallbackhandler-report-1.2.pdf)
-- Gnosis internal audit: [ComposableCoW - May/July 2023](./audits/gnosis-ComposableCoWMayJul2023.pdf)
+**WARNING**: This is branch contains changes that have not been audited. Please use the `main` branch for the latest audited version.
 
 ### Environment setup
 
