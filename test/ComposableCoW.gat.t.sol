@@ -32,7 +32,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // Revert when the start time is before the current time
         vm.assume(currentTime < startTime);
 
-        GoodAfterTime.Data memory o = _gatTest(bytes(""));
+        GoodAfterTime.Data memory o = _gatTest(hex"");
         o.startTime = startTime;
 
         // Warp to the current time
@@ -50,7 +50,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // Revert when the current balance is below the minimum balance
         vm.assume(currentBalance < minBalance);
 
-        GoodAfterTime.Data memory o = _gatTest(bytes(""));
+        GoodAfterTime.Data memory o = _gatTest(hex"");
         o.minSellBalance = minBalance;
 
         // Warp to the start time
@@ -117,7 +117,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
             startTime: startTime,
             endTime: endTime,
             allowPartialFill: allowPartialFill,
-            priceCheckerPayload: bytes(""),
+            priceCheckerPayload: hex"",
             appData: keccak256("GoodAfterTime")
         });
 
@@ -168,7 +168,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // Guard against minBalance out of range
         currentBalance = bound(currentBalance, minBalance, type(uint256).max);
 
-        GoodAfterTime.Data memory o = _gatTest(bytes(""));
+        GoodAfterTime.Data memory o = _gatTest(hex"");
         o.startTime = startTime;
         o.endTime = endTime;
         o.minSellBalance = minBalance;
@@ -320,7 +320,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         );
 
         // 5. Execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, order, signature, hex"");
     }
 
     // --- Helper functions ---

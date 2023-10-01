@@ -53,7 +53,7 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
 
         // should work as there is no swap guard set
         (GPv2Order.Data memory order, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", proof);
         settle(address(safe1), bob, order, signature, bytes4(0));
 
         // restores the state
@@ -67,7 +67,7 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
 
         // should not be able to return the order as the swap guard doesn't allow it
         vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", proof);
 
         // should set the swap guard to the odd swap guard
         _setSwapGuard(address(safe1), oddSwapGuard);
