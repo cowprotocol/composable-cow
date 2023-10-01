@@ -17,9 +17,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
     }
 
     function test_setRootWithContext_FuzzSetAndEmit(address owner, bytes32 root, bytes32 data) public {
-        _setRootWithContext(
-            owner, root, emptyProof(), testContextValue, abi.encode(data)
-        );
+        _setRootWithContext(owner, root, emptyProof(), testContextValue, abi.encode(data));
     }
 
     /**
