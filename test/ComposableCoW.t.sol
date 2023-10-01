@@ -51,7 +51,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // should successfully execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, order, signature, hex"");
 
         // restore the state
         vm.revertTo(snapshot);
@@ -93,7 +93,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // should successfully execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, order, signature, hex"");
 
         // restore the state
         vm.revertTo(snapshot);
@@ -207,7 +207,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
             composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", proof);
 
         // should successfully settle the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, order, signature, hex"");
 
         // restores the state
         vm.revertTo(snapshot);
@@ -216,7 +216,9 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _remove(address(safe1), params);
 
         // should fail to settle the order as it has been removed
-        settle(address(safe1), bob, order, signature, ComposableCoW.SingleOrderNotAuthed.selector);
+        settle(
+            address(safe1), bob, order, signature, abi.encodeWithSelector(ComposableCoW.SingleOrderNotAuthed.selector)
+        );
     }
 
     /// @dev `BaseConditionalOrder` enforces that the order hash is valid

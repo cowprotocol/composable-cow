@@ -448,7 +448,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             composableCow.getTradeableOrderWithSignature(address(safe1), leaf, hex"", proof);
 
         // 5. Execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, order, signature, hex"");
     }
 
     /**
@@ -514,7 +514,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
                             == ERC1271.isValidSignature.selector
                 ) {
                     // Have a new order, so let's settle it
-                    settle(address(safe1), bob, order, signature, bytes4(0));
+                    settle(address(safe1), bob, order, signature, hex"");
 
                     orderFills[orderDigest] = 1;
                     totalFills++;
