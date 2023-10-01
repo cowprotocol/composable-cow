@@ -76,8 +76,7 @@ contract TWAP is BaseConditionalOrder {
     /**
      * @inheritdoc IConditionalOrder
      */
-    function validateData(bytes memory data) external override pure {
+    function validateData(bytes memory data) external pure override {
         TWAPOrder.validate(abi.decode(data, (TWAPOrder.Data)));
     }
-
 }
