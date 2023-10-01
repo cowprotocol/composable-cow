@@ -195,7 +195,7 @@ contract BaseComposableCoWTest is Base, Merkle {
     }
 
     function getPassthroughOrder() internal view returns (IConditionalOrder.ConditionalOrderParams memory) {
-        return createOrder(passThrough, keccak256("pass through order"), bytes(""));
+        return createOrder(passThrough, keccak256("pass through order"), hex"");
     }
 
     function getBundle(Safe safe, uint256 n)
@@ -233,6 +233,10 @@ contract BaseComposableCoWTest is Base, Merkle {
             Enum.Operation.Call,
             signers()
         );
+    }
+
+    function emptyProof() internal pure returns (ComposableCoW.Proof memory) {
+        return ComposableCoW.Proof({location: 0, data: hex""});
     }
 }
 

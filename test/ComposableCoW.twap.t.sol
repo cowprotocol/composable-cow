@@ -109,7 +109,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         vm.warp(block.timestamp + (FREQUENCY * (NUM_PARTS - 1)) + SPAN);
         vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollNever.selector, NOT_WITHIN_SPAN));
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
     }
 
     /**
@@ -119,8 +119,12 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         TWAPOrder.Data memory o = _twapTestBundle(block.timestamp);
 
         vm.warp(block.timestamp + (FREQUENCY * (NUM_PARTS - 2)) + SPAN);
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, o.t0 + (FREQUENCY * (NUM_PARTS - 1)), NOT_WITHIN_SPAN));
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.PollTryAtEpoch.selector, o.t0 + (FREQUENCY * (NUM_PARTS - 1)), NOT_WITHIN_SPAN
+            )
+        );
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
     }
 
     /**
@@ -192,13 +196,13 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(startTime);
 
         // Verify that the order is valid - this shouldn't revert
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
 
         // Warp to current time
         vm.warp(currentTime);
 
         vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, startTime, BEFORE_TWAP_START));
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
     }
 
     /**
@@ -218,13 +222,13 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(startTime);
 
         // Verify that the order is valid - this shouldn't revert
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
 
         // Warp to expiry
         vm.warp(currentTime);
 
         vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollNever.selector, AFTER_TWAP_FINISH));
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
     }
 
     /**
@@ -246,7 +250,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(startTime);
 
         // Verify that the order is valid - this shouldn't revert
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
 
         // Warp to outside of the span
         vm.warp(currentTime);
@@ -254,7 +258,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Just check that it reverts, don't reproduce the whole logic for PollNever / PollAtEpoch
         // do that in a concrete tests.
         vm.expectRevert();
-        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
     }
 
     function test_getTradeableOrder_FuzzRevertIfOrderBeforeBlockTimestamp(
@@ -272,9 +276,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(ctxBlockTimestamp);
 
         // Create the order - this signs the order and marks it as valid
-        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
-            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
-        );
+        IConditionalOrder.ConditionalOrderParams memory params =
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, hex"");
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
 
@@ -282,8 +285,10 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // The below should revert
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, ctxBlockTimestamp, BEFORE_TWAP_START));
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, ctxBlockTimestamp, BEFORE_TWAP_START)
+        );
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", new bytes32[](0));
     }
 
     function test_getTradeableOrder_FuzzRevertIfOrderAfterBlocktimestampValidity(
@@ -301,9 +306,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(ctxBlockTimestamp);
 
         // Create the order - this signs the order and marks it as valid
-        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
-            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
-        );
+        IConditionalOrder.ConditionalOrderParams memory params =
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, hex"");
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(ctxBlockTimestamp)));
 
@@ -312,7 +316,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // The below should revert
         vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollNever.selector, AFTER_TWAP_FINISH));
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+        composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", new bytes32[](0));
     }
 
     function test_getTradeableOrder_e2e_fuzz_WithContext(uint32 _blockTimestamp, uint256 currentTime) public {
@@ -332,15 +336,14 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         vm.warp(_blockTimestamp);
 
         // Create the order - this signs the order and marks it a valid
-        IConditionalOrder.ConditionalOrderParams memory params = createOrderWithContext(
-            safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, bytes("")
-        );
+        IConditionalOrder.ConditionalOrderParams memory params =
+            createOrderWithContext(safe1, o, o.sellToken, o.partSellAmount * o.n, currentBlockTimestampFactory, hex"");
 
         assertEq(composableCow.cabinet(address(safe1), composableCow.hash(params)), bytes32(uint256(_blockTimestamp)));
 
         // This should not revert
         (GPv2Order.Data memory part, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", new bytes32[](0));
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
@@ -381,7 +384,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // This should not revert
         (GPv2Order.Data memory part, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0));
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", new bytes32[](0));
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
@@ -410,8 +413,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // Warp to the current time
         vm.warp(currentTime);
 
-        GPv2Order.Data memory order =
-            twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), bytes(""));
+        GPv2Order.Data memory order = twap.getTradeableOrder(address(0), address(0), bytes32(0), abi.encode(o), hex"");
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // Verify that the order is valid - this shouldn't revert
@@ -422,7 +424,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             domainSeparator,
             bytes32(0),
             abi.encode(o),
-            bytes(""),
+            hex"",
             order
         );
     }
@@ -443,7 +445,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // 4. Get the order and signature
         (GPv2Order.Data memory order, bytes memory signature) =
-            composableCow.getTradeableOrderWithSignature(address(safe1), leaf, bytes(""), proof);
+            composableCow.getTradeableOrderWithSignature(address(safe1), leaf, hex"", proof);
 
         // 5. Execute the order
         settle(address(safe1), bob, order, signature, bytes4(0));
@@ -502,8 +504,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         while (true) {
             // Simulate being called by the watch tower
 
-            try composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), new bytes32[](0))
-            returns (GPv2Order.Data memory order, bytes memory signature) {
+            try composableCow.getTradeableOrderWithSignature(address(safe1), params, hex"", new bytes32[](0)) returns (
+                GPv2Order.Data memory order, bytes memory signature
+            ) {
                 bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
                 if (
                     orderFills[orderDigest] == 0
