@@ -125,14 +125,14 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 
 | Contract Name                  | Ethereum Mainnet                                                                                                      | Goerli                                                                                                                       | Gnosis Chain                                                                                                           |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `ExtensibleFallbackHandler`    | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://goerli.etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://gnosisscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) |
-| `ComposableCoW`                | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://goerli.etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://gnosisscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) |
-| `TWAP`                         | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://goerli.etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://gnosisscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) |
-| `GoodAfterTime`                | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://goerli.etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://gnosisscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) |
-| `PerpetualStableSwap`          | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://goerli.etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://gnosisscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) |
-| `TradeAboveThreshold`          | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://goerli.etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://gnosisscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) |
-| `StopLoss`                     | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://goerli.etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://gnosisscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) |
-| `CurrentBlockTimestampFactory` | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://goerli.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://gnosisscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) |
+| `ExtensibleFallbackHandler`    | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://goerli.etherscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5](https://gnosisscan.io/address/0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5) | [0x25D87D801Cb36590b025789084a5f47B89BA8F1F](https://sepolia.etherscan.io/address/0x25D87D801Cb36590b025789084a5f47B89BA8F1F) |
+| `ComposableCoW`                | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://goerli.etherscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74](https://gnosisscan.io/address/0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74) | [0x730bcd4Ca3E2f2A229a0F2B762310C350DF3DD76](https://sepolia.etherscan.io/address/0x730bcd4Ca3E2f2A229a0F2B762310C350DF3DD76) |
+| `TWAP`                         | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://goerli.etherscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5](https://gnosisscan.io/address/0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5) | [0xa3e1AD08340BeAa40c6095ba1970083f8F4d35B3](https://sepolia.etherscan.io/address/0xa3e1AD08340BeAa40c6095ba1970083f8F4d35B3) |
+| `GoodAfterTime`                | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://goerli.etherscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0xd3338f21c89745e46af56aeaf553cf96ba9bc66f](https://gnosisscan.io/address/0xd3338f21c89745e46af56aeaf553cf96ba9bc66f) | [0x706f1d573d1A1FFa5F74c365061A87a2F01fd1A7](https://sepolia.etherscan.io/address/0x706f1d573d1A1FFa5F74c365061A87a2F01fd1A7) |
+| `PerpetualStableSwap`          | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://goerli.etherscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0x519BA24e959E33b3B6220CA98bd353d8c2D89920](https://gnosisscan.io/address/0x519BA24e959E33b3B6220CA98bd353d8c2D89920) | [0xc46203a7a0e9B1A54D038966982a4e87bE4E27D5](https://sepolia.etherscan.io/address/0xc46203a7a0e9B1A54D038966982a4e87bE4E27D5) |
+| `TradeAboveThreshold`          | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://goerli.etherscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0x44569Cbd4E10dd5e97293337964Eff32d58ed352](https://gnosisscan.io/address/0x44569Cbd4E10dd5e97293337964Eff32d58ed352) | [0xe6475A634D702c3D0572a06CdD4A4e0F039F03E7](https://sepolia.etherscan.io/address/0xe6475A634D702c3D0572a06CdD4A4e0F039F03E7) |
+| `StopLoss`                     | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://goerli.etherscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967](https://gnosisscan.io/address/0xE8212F30C28B4AAB467DF3725C14d6e89C2eB967) | [0x26Fe31E72131d9aB75b1dE4d77c2079102B69702](https://sepolia.etherscan.io/address/0x26Fe31E72131d9aB75b1dE4d77c2079102B69702) |
+| `CurrentBlockTimestampFactory` | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://goerli.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://gnosisscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x2058C0a5Dd6e0e871feB2B544cb5C7b823EcEFE9](https://sepolia.etherscan.io/address/0x2058C0a5Dd6e0e871feB2B544cb5C7b823EcEFE9) |
 
 #### Audits
 
@@ -167,13 +167,24 @@ forge coverage -vvv --no-match-test "fork" --report summary
 
 Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
 
+To deploy all contracts in a single run, run:
+
 ```bash
 source .env
+forge script script/deploy_ProdStack.s.sol:DeployProdStack --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+```
+
+To deploy individual contracts:
+
+```bash
 # Deploy ComposableCoW
 forge script script/deploy_ComposableCoW.s.sol:DeployComposableCoW --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 # Deploy order types
 forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
+
+The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
+When the script is ran, the corresponding files can be found in the folder `broadcast/deploy_OrderTypes.s.sol/`.
 
 #### Local deployment
 
@@ -191,7 +202,7 @@ For local integration testing, including the use of [Watch Tower](https://github
 
    ```bash
    source .env
-   forge scirpt script/deploy_AnvilStack.s.sol:DeployAnvilStack --rpc-url http://127.0.0.1:8545 --broadcast -vvvv
+   forge script script/deploy_AnvilStack.s.sol:DeployAnvilStack --rpc-url http://127.0.0.1:8545 --broadcast -vvvv
    ```
 
    **NOTE**: Within the output of the above command, there will be an address for a `Safe` that was deployed to `anvil`. This is needed for the next step.
