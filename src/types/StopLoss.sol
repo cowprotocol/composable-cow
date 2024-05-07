@@ -80,7 +80,7 @@ contract StopLoss is BaseConditionalOrder {
                         && buyUpdatedAt >= block.timestamp - data.maxTimeSinceLastOracleUpdate
                 )
             ) {
-                revert IConditionalOrder.OrderNotValid(ORACLE_STALE_PRICE);
+                Utils.revertPollAtNextBlock(ORACLE_STALE_PRICE);
             }
 
             // Normalize the decimals for basePrice and quotePrice, scaling them to 18 decimals
@@ -90,7 +90,7 @@ contract StopLoss is BaseConditionalOrder {
 
             /// @dev Scale the strike price to 18 decimals.
             if (!(basePrice * SCALING_FACTOR / quotePrice <= data.strike)) {
-                revert IConditionalOrder.OrderNotValid(STRIKE_NOT_REACHED);
+                Utils.revertPollAtNextBlock(STRIKE_NOT_REACHED);
             }
         }
 
