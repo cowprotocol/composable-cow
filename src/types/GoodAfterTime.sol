@@ -67,7 +67,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
         // Require that the sell token balance is above the minimum.
         if (!(data.sellToken.balanceOf(owner) >= data.minSellBalance)) {
-            revert IConditionalOrder.OrderNotValid(BALANCE_INSUFFICIENT);
+            Utils.revertPollAtNextBlock(BALANCE_INSUFFICIENT);
         }
 
         uint256 buyAmount = abi.decode(offchainInput, (uint256));
@@ -82,7 +82,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
             // Don't allow the order to be placed if the buyAmount is less than the minimum out.
             if (!(buyAmount >= (_expectedOut * (Utils.MAX_BPS - p.allowedSlippage)) / Utils.MAX_BPS)) {
-                revert IConditionalOrder.OrderNotValid(PRICE_CHECKER_FAILED);
+                Utils.revertPollAtNextBlock(PRICE_CHECKER_FAILED);
             }
         }
 
