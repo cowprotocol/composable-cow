@@ -71,17 +71,13 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // Warp to the start time
         vm.warp(o.startTime);
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         // set the current balance
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // should revert when the current balance is below the minimum balance
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 BALANCE_INSUFFICIENT
             )
         );
@@ -100,9 +96,6 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         allowedSlippage = bound(allowedSlippage, 0, 10000);
         vm.assume(buyAmount < expectedOut * (10000 - allowedSlippage) / 10000);
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         GoodAfterTime.PriceCheckerPayload memory checker = GoodAfterTime.PriceCheckerPayload({
             checker: testOutCalculator,
             payload: abi.encode(expectedOut),
@@ -119,8 +112,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 PRICE_CHECKER_FAILED
             )
         );

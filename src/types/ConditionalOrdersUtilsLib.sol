@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IWatchtowerCustomErrors} from "../interfaces/IWatchtowerCustomErrors.sol";
-
 /**
  * @title ConditionalOrdersUtilsLib - Utility functions for standardising conditional orders.
  * @author mfw78 <mfw78@rndlabs.xyz>
@@ -31,16 +29,5 @@ library ConditionalOrdersUtilsLib {
             return oraclePrice / int256(10 ** uint256(fromDecimals - toDecimals));
         }
         return oraclePrice;
-    }
-
-    /**
-     * @dev Reverts call execution with a custom error that indicates to the
-     * watchtower to poll for new order when the next block is mined.
-     */
-    function revertPollAtNextBlock(string memory message) internal view {
-        revert IWatchtowerCustomErrors.PollTryAtBlock(
-            block.number + 1,
-            message
-        );
     }
 }

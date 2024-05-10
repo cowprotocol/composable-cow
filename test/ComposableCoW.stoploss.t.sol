@@ -45,9 +45,6 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         // prevents underflow when checking for stale prices
         vm.warp(30 minutes);
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
             buyToken: mockToken(BUY_TOKEN, DEFAULT_DECIMALS),
@@ -68,8 +65,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 STRIKE_NOT_REACHED
             )
         );
@@ -91,9 +87,6 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.warp(currentTime);
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
             buyToken: mockToken(BUY_TOKEN, DEFAULT_DECIMALS),
@@ -112,8 +105,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 STRIKE_NOT_REACHED
             )
         );
@@ -230,9 +222,6 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.warp(currentTime);
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
             buyToken: mockToken(BUY_TOKEN, DEFAULT_DECIMALS),
@@ -251,8 +240,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 ORACLE_STALE_PRICE
             )
         );

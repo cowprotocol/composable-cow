@@ -5,7 +5,6 @@ import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
 import "./ComposableCoW.base.t.sol";
 
-import "../src/interfaces/IWatchtowerCustomErrors.sol";
 import "../src/types/TradeAboveThreshold.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "../src/types/ConditionalOrdersUtilsLib.sol";
 
@@ -32,17 +31,13 @@ contract ComposableCoWTatTest is BaseComposableCoWTest {
         TradeAboveThreshold.Data memory o = _tatTest();
         o.threshold = threshold;
 
-        uint256 currentBlock = 1337;
-        vm.roll(currentBlock);
-
         // set the current balance
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // should revert when the current balance is below the minimum balance
         vm.expectRevert(
             abi.encodeWithSelector(
-                IWatchtowerCustomErrors.PollTryAtBlock.selector,
-                currentBlock + 1,
+                IConditionalOrder.PollTryNextBlock.selector,
                 BALANCE_INSUFFICIENT
             )
         );

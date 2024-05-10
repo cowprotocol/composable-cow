@@ -45,7 +45,7 @@ contract TradeAboveThreshold is BaseConditionalOrder {
         uint256 balance = data.sellToken.balanceOf(owner);
         // Don't allow the order to be placed if the balance is less than the threshold.
         if (!(balance >= data.threshold)) {
-            Utils.revertPollAtNextBlock(BALANCE_INSUFFICIENT);
+            revert IConditionalOrder.PollTryNextBlock(BALANCE_INSUFFICIENT);
         }
         // ensures that orders queried shortly after one another result in the same hash (to avoid spamming the orderbook)
         order = GPv2Order.Data(
