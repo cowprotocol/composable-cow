@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
+import {GPv2Order, IERC20} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
-import "./interfaces/IConditionalOrder.sol";
+import {IERC165, IConditionalOrder, IConditionalOrderGenerator} from "./interfaces/IConditionalOrder.sol";
 
 // --- error strings
 /// @dev This error is returned by the `verify` function if the *generated* order hash does not match

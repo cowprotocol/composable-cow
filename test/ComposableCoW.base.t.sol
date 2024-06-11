@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "forge-std/Test.sol";
-
-import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
 import {Merkle} from "murky/Merkle.sol";
 
-import "safe/Safe.sol";
+import {Safe, IERC165, Enum} from "safe/Safe.sol";
 
 // Testing Libraries
 import {Base} from "./Base.t.sol";
@@ -14,7 +11,7 @@ import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {ComposableCoWLib} from "./libraries/ComposableCoWLib.t.sol";
 
-import "../src/BaseConditionalOrder.sol";
+import {IConditionalOrder, IERC20, BaseConditionalOrder, INVALID_HASH} from "../src/BaseConditionalOrder.sol";
 import {BaseSwapGuard} from "../src/guards/BaseSwapGuard.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
@@ -24,7 +21,7 @@ import {ReceiverLock} from "../src/guards/ReceiverLock.sol";
 
 import {IValueFactory} from "../src/interfaces/IValueFactory.sol";
 
-import "../src/ComposableCoW.sol";
+import {ISwapGuard, ComposableCoW, GPv2Order} from "../src/ComposableCoW.sol";
 
 contract BaseComposableCoWTest is Base, Merkle {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams;

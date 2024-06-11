@@ -1,7 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "./ComposableCoW.base.t.sol";
+import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+
+import {
+    IERC165,
+    IConditionalOrder,
+    GPv2Order,
+    ComposableCoW,
+    BaseComposableCoWTest,
+    ISwapGuard,
+    TestSwapGuard,
+    ReceiverLock
+} from "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWGuardsTest is BaseComposableCoWTest {
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -121,6 +132,6 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
 
         // should revert as the receiver is not the safe
         vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
-        ExtensibleFallbackHandler(address(safe1)).isValidSignature(GPv2Order.hash(order, domainSeparator), signature);
+        ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, domainSeparator), signature);
     }
 }

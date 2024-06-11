@@ -2,12 +2,18 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "safe/handler/ExtensibleFallbackHandler.sol";
+import {
+    ExtensibleFallbackHandler,
+    ERC1271,
+    ISignatureVerifierMuxer,
+    ISafeSignatureVerifier,
+    Safe
+} from "safe/handler/ExtensibleFallbackHandler.sol";
 
-import "./interfaces/IConditionalOrder.sol";
-import "./interfaces/ISwapGuard.sol";
-import "./interfaces/IValueFactory.sol";
-import "./vendored/CoWSettlement.sol";
+import {IConditionalOrder, IConditionalOrderGenerator, GPv2Order} from "./interfaces/IConditionalOrder.sol";
+import {ISwapGuard} from "./interfaces/ISwapGuard.sol";
+import {IValueFactory} from "./interfaces/IValueFactory.sol";
+import {CoWSettlement} from "./vendored/CoWSettlement.sol";
 
 /**
  * @title ComposableCoW - A contract that allows users to create multiple conditional orders

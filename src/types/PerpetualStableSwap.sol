@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
-
-import "../BaseConditionalOrder.sol";
+import {
+    IERC20,
+    GPv2Order,
+    IConditionalOrder,
+    IConditionalOrderGenerator,
+    BaseConditionalOrder
+} from "../BaseConditionalOrder.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 // --- error strings
@@ -84,8 +88,8 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         view
         returns (BuySellData memory buySellData)
     {
-        IERC20Metadata tokenA = IERC20Metadata(address(data.tokenA));
-        IERC20Metadata tokenB = IERC20Metadata(address(data.tokenB));
+        IERC20 tokenA = IERC20(address(data.tokenA));
+        IERC20 tokenB = IERC20(address(data.tokenB));
         uint256 balanceA = tokenA.balanceOf(owner);
         uint256 balanceB = tokenB.balanceOf(owner);
 
@@ -106,7 +110,7 @@ contract PerpetualStableSwap is BaseConditionalOrder {
         }
     }
 
-    function convertAmount(IERC20Metadata srcToken, uint256 srcAmount, IERC20Metadata destToken)
+    function convertAmount(IERC20 srcToken, uint256 srcAmount, IERC20 destToken)
         internal
         view
         returns (uint256 destAmount)

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import "../vendored/Milkman.sol";
-import "../BaseConditionalOrder.sol";
+import {IExpectedOutCalculator} from "../vendored/Milkman.sol";
+import {IERC20, IConditionalOrder, GPv2Order, BaseConditionalOrder} from "../BaseConditionalOrder.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 // --- error strings

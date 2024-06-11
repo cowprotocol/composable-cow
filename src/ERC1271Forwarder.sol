@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
+import {ERC1271, Safe} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
-import "./ComposableCoW.sol";
+import {ComposableCoW} from "./ComposableCoW.sol";
 
 /**
  * @title ERC1271 Forwarder - An abstract contract that implements ERC1271 forwarding to ComposableCoW

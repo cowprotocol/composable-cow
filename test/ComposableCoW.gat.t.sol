@@ -3,9 +3,24 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
-import "./ComposableCoW.base.t.sol";
+import {
+    IERC20,
+    GPv2Order,
+    IConditionalOrder,
+    Safe,
+    SafeLib,
+    BaseComposableCoWTest,
+    ComposableCoW,
+    ComposableCoWLib
+} from "./ComposableCoW.base.t.sol";
 
-import "../src/types/GoodAfterTime.sol";
+import {
+    IExpectedOutCalculator,
+    GoodAfterTime,
+    TOO_EARLY,
+    BALANCE_INSUFFICIENT,
+    PRICE_CHECKER_FAILED
+} from "../src/types/GoodAfterTime.sol";
 
 contract ComposableCoWGatTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
@@ -189,9 +204,8 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
-                GPv2Order.hash(order, settlement.domainSeparator()), signature
-            ) == ERC1271.isValidSignature.selector
+            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, settlement.domainSeparator()), signature)
+                == ERC1271.isValidSignature.selector
         );
     }
 
@@ -238,9 +252,8 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
-                GPv2Order.hash(order, settlement.domainSeparator()), signature
-            ) == ERC1271.isValidSignature.selector
+            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, settlement.domainSeparator()), signature)
+                == ERC1271.isValidSignature.selector
         );
     }
 

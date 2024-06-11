@@ -1,16 +1,38 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
-import "./ComposableCoW.base.t.sol";
+import {
+    IERC20,
+    IConditionalOrder,
+    IValueFactory,
+    GPv2Order,
+    ComposableCoW,
+    ComposableCoWLib,
+    Safe,
+    SafeLib,
+    BaseComposableCoWTest
+} from "./ComposableCoW.base.t.sol";
 
-import "../src/types/twap/TWAP.sol";
-import "../src/types/twap/libraries/TWAPOrder.sol";
-import "../src/types/twap/libraries/TWAPOrderMathLib.sol";
+import {TWAP, NOT_WITHIN_SPAN} from "../src/types/twap/TWAP.sol";
+import {
+    TWAPOrder,
+    INVALID_SAME_TOKEN,
+    INVALID_TOKEN,
+    INVALID_PART_SELL_AMOUNT,
+    INVALID_MIN_PART_LIMIT,
+    INVALID_START_TIME,
+    INVALID_NUM_PARTS,
+    INVALID_FREQUENCY,
+    INVALID_SPAN
+} from "../src/types/twap/libraries/TWAPOrder.sol";
+import {
+    TWAPOrderMathLib, BEFORE_TWAP_START, AFTER_TWAP_FINISH
+} from "../src/types/twap/libraries/TWAPOrderMathLib.sol";
 
-import "../src/value_factories/CurrentBlockTimestampFactory.sol";
+import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
 
 uint256 constant SELL_AMOUNT = 24000e18;
 uint256 constant LIMIT_PRICE = 100e18;
@@ -320,9 +342,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
-                GPv2Order.hash(part, settlement.domainSeparator()), signature
-            ) == ERC1271.isValidSignature.selector
+            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(part, settlement.domainSeparator()), signature)
+                == ERC1271.isValidSignature.selector
         );
 
         // Now remove the order
@@ -361,9 +382,8 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
-                GPv2Order.hash(part, settlement.domainSeparator()), signature
-            ) == ERC1271.isValidSignature.selector
+            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(part, settlement.domainSeparator()), signature)
+                == ERC1271.isValidSignature.selector
         );
     }
 
@@ -483,7 +503,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
                 bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
                 if (
                     orderFills[orderDigest] == 0
-                        && ExtensibleFallbackHandler(address(safe1)).isValidSignature(orderDigest, signature)
+                        && ERC1271(address(safe1)).isValidSignature(orderDigest, signature)
                             == ERC1271.isValidSignature.selector
                 ) {
                     // Have a new order, so let's settle it

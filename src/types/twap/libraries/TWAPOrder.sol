@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
-import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {IERC20, GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
 import {IConditionalOrder} from "../../../interfaces/IConditionalOrder.sol";
 import {TWAPOrderMathLib} from "./TWAPOrderMathLib.sol";

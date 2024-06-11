@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "forge-std/Script.sol";
+import {Script} from "forge-std/Script.sol";
 
-import "../src/ComposableCoW.sol";
+import {ComposableCoW} from "../src/ComposableCoW.sol";
 
 import {TWAP} from "../src/types/twap/TWAP.sol";
 import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
