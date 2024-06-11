@@ -12,3 +12,7 @@
 	path = lib/cowprotocol
 	url = https://github.com/cowprotocol/contracts
 	branch = main
+[submodule "lib/safe"]
+	path = lib/safe
+	url = https://github.com/cowdao-grants/extensible-fallback-handler
+	branch = main
