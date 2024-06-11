@@ -5,9 +5,6 @@
 [submodule "lib/murky"]
 	path = lib/murky
 	url = https://github.com/dmfxyz/murky
-[submodule "lib/safe"]
-	path = lib/safe
-	url = https://github.com/rndlabs/safe-contracts
 [submodule "lib/@openzeppelin"]
 	path = lib/@openzeppelin
 	url = https://github.com/openzeppelin/openzeppelin-contracts
