@@ -11,3 +11,7 @@
 [submodule "lib/@openzeppelin"]
 	path = lib/@openzeppelin
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "lib/cowprotocol"]
+	path = lib/cowprotocol
+	url = https://github.com/cowprotocol/contracts
+	branch = main
