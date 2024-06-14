@@ -1,7 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "./ComposableCoW.base.t.sol";
+import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+
+import {
+    IConditionalOrder,
+    GPv2Order,
+    ComposableCoW,
+    ComposableCoWLib,
+    INVALID_HASH,
+    BaseComposableCoWTest,
+    Safe,
+    TestNonSafeWallet
+} from "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
@@ -340,7 +351,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
                 abi.encode(order),
                 abi.encode(
                     ComposableCoW.PayloadStruct({proof: new bytes32[](0), params: params, offchainInput: offchainInput})
-                    )
+                )
             )
         );
 
@@ -442,9 +453,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
 
         // order should be valid by using the `isValidSignature` function on the safe
         assertEq(
-            ExtensibleFallbackHandler(address(safe1)).isValidSignature(
-                GPv2Order.hash(order, composableCow.domainSeparator()), signature
-            ),
+            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, composableCow.domainSeparator()), signature),
             ERC1271.isValidSignature.selector
         );
     }

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
 import {IERC165} from "safe/interfaces/IERC165.sol";
 
-import {IConditionalOrder} from "./IConditionalOrder.sol";
+import {IConditionalOrder, GPv2Order} from "./IConditionalOrder.sol";
 
 /**
  * @title SwapGuard Interface - Restrict CoW Protocol settlement for an account using `ComposableCoW`.

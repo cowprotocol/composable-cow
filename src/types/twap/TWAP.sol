@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "../../ComposableCoW.sol";
+import {ComposableCoW} from "../../ComposableCoW.sol";
 
-import "../../BaseConditionalOrder.sol";
+import {
+    IConditionalOrder,
+    IConditionalOrderGenerator,
+    GPv2Order,
+    BaseConditionalOrder
+} from "../../BaseConditionalOrder.sol";
 import {TWAPOrder} from "./libraries/TWAPOrder.sol";
 
 // --- error strings

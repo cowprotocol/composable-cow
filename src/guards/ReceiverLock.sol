@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "./BaseSwapGuard.sol";
+import {BaseSwapGuard} from "./BaseSwapGuard.sol";
+import {IConditionalOrder, GPv2Order} from "../interfaces/IConditionalOrder.sol";
 
 /**
  * @title A Swap Guard that only allows orders with a receiver of 0x0 (ie. self)

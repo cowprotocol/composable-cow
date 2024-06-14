@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
-
-import "./ComposableCoW.base.t.sol";
-import "../src/interfaces/IAggregatorV3Interface.sol";
-import "../src/types/StopLoss.sol";
+import {IERC20, GPv2Order, IConditionalOrder, BaseComposableCoWTest} from "./ComposableCoW.base.t.sol";
+import {IAggregatorV3Interface} from "../src/interfaces/IAggregatorV3Interface.sol";
+import {StopLoss, STRIKE_NOT_REACHED, ORACLE_STALE_PRICE, ORACLE_INVALID_PRICE} from "../src/types/StopLoss.sol";
 
 contract ComposableCoWStopLossTest is BaseComposableCoWTest {
-    IERC20Metadata immutable SELL_TOKEN = IERC20Metadata(address(0x1));
-    IERC20Metadata immutable BUY_TOKEN = IERC20Metadata(address(0x2));
+    IERC20 immutable SELL_TOKEN = IERC20(address(0x1));
+    IERC20 immutable BUY_TOKEN = IERC20(address(0x2));
     address constant SELL_ORACLE = address(0x3);
     address constant BUY_ORACLE = address(0x4);
     bytes32 constant APP_DATA = bytes32(0x0);
@@ -38,8 +36,8 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         vm.mockCall(mock, abi.encodeWithSelector(iface.decimals.selector), abi.encode(decimals));
     }
 
-    function mockToken(IERC20Metadata token, uint8 decimals) internal returns (IERC20Metadata iface) {
-        iface = IERC20Metadata(token);
+    function mockToken(IERC20 token, uint8 decimals) internal returns (IERC20 iface) {
+        iface = IERC20(token);
         vm.mockCall(address(token), abi.encodeWithSelector(iface.decimals.selector), abi.encode(decimals));
     }
 
@@ -127,10 +125,10 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             buyToken: mockToken(BUY_TOKEN, buyTokenERC20Decimals),
             sellTokenPriceOracle: mockOracle(
                 SELL_ORACLE, int256(1834 * (10 ** sellTokenOracleDecimals)), block.timestamp, sellTokenOracleDecimals
-                ),
+            ),
             buyTokenPriceOracle: mockOracle(
                 BUY_ORACLE, int256(1 * (10 ** buyTokenOracleDecimals)), block.timestamp, buyTokenOracleDecimals
-                ),
+            ),
             strike: int256(
                 1900
                     * (
@@ -138,7 +136,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
                             ? (10 ** (sellTokenERC20Decimals - buyTokenERC20Decimals + 18))
                             : (10 ** (buyTokenERC20Decimals - sellTokenERC20Decimals + 18))
                     )
-                ), // Strike price is to 18 decimals, base / quote. ie. 1900_000_000_000_000_000_000 = 1900 USDC/ETH
+            ), // Strike price is to 18 decimals, base / quote. ie. 1900_000_000_000_000_000_000 = 1900 USDC/ETH
             sellAmount: 1 ether,
             buyAmount: 1,
             appData: APP_DATA,

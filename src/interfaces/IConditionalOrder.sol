@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order} from "cowprotocol/libraries/GPv2Order.sol";
-import {GPv2Interaction} from "cowprotocol/libraries/GPv2Interaction.sol";
+import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+import {GPv2Interaction} from "cowprotocol/contracts/libraries/GPv2Interaction.sol";
 import {IERC165} from "safe/interfaces/IERC165.sol";
 
 /**

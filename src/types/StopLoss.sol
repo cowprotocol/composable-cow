@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-
-import "../BaseConditionalOrder.sol";
-import "../interfaces/IAggregatorV3Interface.sol";
+import {IERC20, GPv2Order, IConditionalOrder, BaseConditionalOrder} from "../BaseConditionalOrder.sol";
+import {IAggregatorV3Interface} from "../interfaces/IAggregatorV3Interface.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 // --- error strings

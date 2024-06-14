@@ -7,7 +7,7 @@ import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
 import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
-import "safe/handler/ExtensibleFallbackHandler.sol";
+import {ExtensibleFallbackHandler, FallbackHandler, MarshalLib} from "safe/handler/ExtensibleFallbackHandler.sol";
 
 import {SafeLib} from "../libraries/SafeLib.t.sol";
 import {TestAccount, TestAccountLib} from "../libraries/TestAccountLib.t.sol";

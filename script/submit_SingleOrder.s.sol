@@ -1,26 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "forge-std/Script.sol";
+import {Script} from "forge-std/Script.sol";
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/interfaces/IERC20Metadata.sol";
+import {IERC20} from "cowprotocol/contracts/interfaces/IERC20.sol";
 
 // Safe contracts
 import {Safe} from "safe/Safe.sol";
 import {Enum} from "safe/common/Enum.sol";
-import "safe/proxies/SafeProxyFactory.sol";
+import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
 import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
-import "safe/handler/ExtensibleFallbackHandler.sol";
+import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SafeLib} from "../test/libraries/SafeLib.t.sol";
 
 // Composable CoW
-import "../src/ComposableCoW.sol";
-import "../src/types/twap/TWAP.sol";
-import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
-import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
-import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
+import {IConditionalOrder, ComposableCoW} from "../src/ComposableCoW.sol";
+import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
 
 /**
  * @title Submit a single order to ComposableCoW

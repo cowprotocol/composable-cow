@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "./ComposableCoW.base.t.sol";
+import {
+    GPv2Order,
+    IConditionalOrder,
+    BaseComposableCoWTest,
+    TestNonSafeWallet,
+    ERC1271Forwarder
+} from "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWForwarderTest is BaseComposableCoWTest {
     function setUp() public virtual override(BaseComposableCoWTest) {

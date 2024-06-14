@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "../interfaces/ISwapGuard.sol";
+import {ISwapGuard, IERC165} from "../interfaces/ISwapGuard.sol";
 
 /**
  * @title An abstract base contract for Swap Guards to inherit from
