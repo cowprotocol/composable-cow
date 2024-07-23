@@ -54,7 +54,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // should revert when the current time is before the start time
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TOO_EARLY));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryNextBlock.selector, TOO_EARLY));
         gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
@@ -77,7 +77,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // should revert when the current balance is below the minimum balance
         vm.expectRevert(
             abi.encodeWithSelector(
-                IConditionalOrder.PollTryNextBlock.selector,
+                IConditionalOrder.OrderNotValid.selector,
                 BALANCE_INSUFFICIENT
             )
         );
