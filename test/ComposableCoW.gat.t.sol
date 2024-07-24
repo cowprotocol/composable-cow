@@ -54,7 +54,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // should revert when the current time is before the start time
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryNextBlock.selector, TOO_EARLY));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, startTime, TOO_EARLY));
         gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
