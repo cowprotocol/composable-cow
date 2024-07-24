@@ -36,7 +36,7 @@ contract StopLoss is BaseConditionalOrder {
      * @param receiver: The account that should receive the proceeds of the trade
      * @param isSellOrder: Whether this is a sell or buy order
      * @param isPartiallyFillable: Whether solvers are allowed to only fill a fraction of the order (useful if exact sell or buy amount isn't know at time of placement)
-     * @param validTo: The UNIX timestamp that sets how long the order will be valid for
+     * @param validTo: The UNIX timestamp before which this order is valid
      * @param sellTokenPriceOracle: A chainlink-like oracle returning the current sell token price in a given numeraire
      * @param buyTokenPriceOracle: A chainlink-like oracle returning the current buy token price in the same numeraire
      * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below. Specified in base / quote with 18 decimals.
