@@ -287,7 +287,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
-    function test_OracleRevertOnExperiedOrder_fuzz(
+    function test_OracleRevertOnExpiriedOrder_fuzz(
         uint32 currentTime,
         uint32 validTo
     ) public {
