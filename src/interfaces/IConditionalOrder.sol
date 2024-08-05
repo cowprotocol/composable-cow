@@ -10,9 +10,20 @@ import {IERC165} from "safe/interfaces/IERC165.sol";
  * @author CoW Protocol Developers + mfw78 <mfw78@rndlabs.xyz>
  */
 interface IConditionalOrder {
+    
     /// @dev This error is returned by the `getTradeableOrder` function if the order condition is not met.
     ///      A parameter of `string` type is included to allow the caller to specify the reason for the failure.
     error OrderNotValid(string);
+
+    // --- errors specific for polling
+    // Signal to a watch tower that polling should be attempted again.
+    error PollTryNextBlock(string reason);
+    // Signal to a watch tower that polling should be attempted again at a specific block number.
+    error PollTryAtBlock(uint256 blockNumber, string reason);
+    // Signal to a watch tower that polling should be attempted again at a specific epoch (unix timestamp).
+    error PollTryAtEpoch(uint256 timestamp, string reason);
+    // Signal to a watch tower that the conditional order should not be polled again (delete).
+    error PollNever(string reason);
 
     /**
      * @dev This struct is used to uniquely identify a conditional order for an owner.

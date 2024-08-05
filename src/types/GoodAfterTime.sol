@@ -62,7 +62,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
         // Don't allow the order to be placed before it becomes valid.
         if (!(block.timestamp >= data.startTime)) {
-            revert IConditionalOrder.OrderNotValid(TOO_EARLY);
+            revert IConditionalOrder.PollTryAtEpoch(data.startTime, TOO_EARLY);
         }
 
         // Require that the sell token balance is above the minimum.
@@ -82,7 +82,7 @@ contract GoodAfterTime is BaseConditionalOrder {
 
             // Don't allow the order to be placed if the buyAmount is less than the minimum out.
             if (!(buyAmount >= (_expectedOut * (Utils.MAX_BPS - p.allowedSlippage)) / Utils.MAX_BPS)) {
-                revert IConditionalOrder.OrderNotValid(PRICE_CHECKER_FAILED);
+                revert IConditionalOrder.PollTryNextBlock(PRICE_CHECKER_FAILED);
             }
         }
 
