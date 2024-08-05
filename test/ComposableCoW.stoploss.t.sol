@@ -63,7 +63,12 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
 
         createOrder(stopLoss, 0x0, abi.encode(data));
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, STRIKE_NOT_REACHED));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.PollTryNextBlock.selector,
+                STRIKE_NOT_REACHED
+            )
+        );
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
@@ -101,7 +106,12 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             maxTimeSinceLastOracleUpdate: staleTime
         });
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, STRIKE_NOT_REACHED));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.PollTryNextBlock.selector,
+                STRIKE_NOT_REACHED
+            )
+        );
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
@@ -231,7 +241,12 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             maxTimeSinceLastOracleUpdate: maxTimeSinceLastOracleUpdate
         });
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, ORACLE_STALE_PRICE));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.PollTryNextBlock.selector,
+                ORACLE_STALE_PRICE
+            )
+        );
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 

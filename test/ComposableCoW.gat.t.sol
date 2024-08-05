@@ -54,7 +54,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // should revert when the current time is before the start time
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, TOO_EARLY));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, startTime, TOO_EARLY));
         gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
@@ -75,7 +75,12 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // should revert when the current balance is below the minimum balance
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, BALANCE_INSUFFICIENT));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.OrderNotValid.selector,
+                BALANCE_INSUFFICIENT
+            )
+        );
         gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
@@ -105,7 +110,12 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // set the current balance
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, PRICE_CHECKER_FAILED));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.PollTryNextBlock.selector,
+                PRICE_CHECKER_FAILED
+            )
+        );
         gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
     }
 
