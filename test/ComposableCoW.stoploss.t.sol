@@ -327,14 +327,20 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         );
     }
 
-    function test_strikePriceMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike) public {
+    function test_strikePriceMet_fuzz(
+        int256 sellTokenOraclePrice,
+        int256 buyTokenOraclePrice,
+        int256 strike,
+        uint32 validTo
+    ) public {
+        // 25 June 2023 18:40:51
+        vm.warp(1687718451);
+
+        vm.assume(validTo >= block.timestamp);
         vm.assume(buyTokenOraclePrice > 0);
         vm.assume(sellTokenOraclePrice > 0 && sellTokenOraclePrice <= type(int256).max / 10 ** 18);
         vm.assume(strike > 0);
         vm.assume(sellTokenOraclePrice * int256(10 ** 18) / buyTokenOraclePrice <= strike);
-
-        // 25 June 2023 18:40:51
-        vm.warp(1687718451);
 
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
@@ -348,7 +354,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validTo: type(uint32).max,
+            validTo: validTo,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -359,7 +365,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.sellAmount, 1 ether);
         assertEq(order.buyAmount, 1 ether);
         assertEq(order.receiver, address(0x0));
-        assertEq(order.validTo, type(uint32).max);
+        assertEq(order.validTo, validTo);
         assertEq(order.appData, APP_DATA);
         assertEq(order.feeAmount, 0);
         assertEq(order.kind, GPv2Order.KIND_BUY);
