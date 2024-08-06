@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20, GPv2Order, IConditionalOrder, BaseComposableCoWTest} from "./ComposableCoW.base.t.sol";
 import {IAggregatorV3Interface} from "../src/interfaces/IAggregatorV3Interface.sol";
-import {StopLoss, STRIKE_NOT_REACHED, ORACLE_STALE_PRICE, ORACLE_INVALID_PRICE} from "../src/types/StopLoss.sol";
+import {StopLoss, STRIKE_NOT_REACHED, ORACLE_STALE_PRICE, ORACLE_INVALID_PRICE, ORDER_EXPIRED} from "../src/types/StopLoss.sol";
 
 contract ComposableCoWStopLossTest is BaseComposableCoWTest {
     IERC20 immutable SELL_TOKEN = IERC20(address(0x1));
@@ -57,7 +57,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -85,6 +85,9 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         vm.assume(sellTokenOraclePrice * int256(10 ** 18) / buyTokenOraclePrice > strike);
         vm.assume(currentTime > staleTime);
 
+        // guard against overflow
+        vm.assume(currentTime < type(uint32).max);
+
         vm.warp(currentTime);
 
         StopLoss.Data memory data = StopLoss.Data({
@@ -99,7 +102,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: staleTime
         });
 
@@ -153,7 +156,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: true,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -164,7 +167,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.sellAmount, 1 ether);
         assertEq(order.buyAmount, 1);
         assertEq(order.receiver, address(0x0));
-        assertEq(order.validTo, 1687718700);
+        assertEq(order.validTo, type(uint32).max);
         assertEq(order.appData, APP_DATA);
         assertEq(order.feeAmount, 0);
         assertEq(order.kind, GPv2Order.KIND_SELL);
@@ -189,7 +192,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: true,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -200,7 +203,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.sellAmount, 1 ether);
         assertEq(order.buyAmount, 1);
         assertEq(order.receiver, address(0x0));
-        assertEq(order.validTo, 1687718700);
+        assertEq(order.validTo, type(uint32).max);
         assertEq(order.appData, APP_DATA);
         assertEq(order.feeAmount, 0);
         assertEq(order.kind, GPv2Order.KIND_SELL);
@@ -234,7 +237,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: maxTimeSinceLastOracleUpdate
         });
 
@@ -268,7 +271,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: type(uint32).max,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -284,14 +287,60 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
     }
 
-    function test_strikePriceMet_fuzz(int256 sellTokenOraclePrice, int256 buyTokenOraclePrice, int256 strike) public {
+    function test_OracleRevertOnExpiredOrder_fuzz(
+        uint32 currentTime,
+        uint32 validTo
+    ) public {
+        // enforce expired order
+        vm.assume(currentTime > validTo);
+
+        vm.warp(currentTime);
+
+        StopLoss.Data memory data = StopLoss.Data({
+            sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
+            buyToken: mockToken(BUY_TOKEN, DEFAULT_DECIMALS),
+            sellTokenPriceOracle: mockOracle(SELL_ORACLE, 100 ether, block.timestamp, DEFAULT_DECIMALS),
+            buyTokenPriceOracle: mockOracle(BUY_ORACLE, 100 ether, block.timestamp, DEFAULT_DECIMALS),
+            strike: 1,
+            sellAmount: 1 ether,
+            buyAmount: 1 ether,
+            appData: APP_DATA,
+            receiver: address(0x0),
+            isSellOrder: false,
+            isPartiallyFillable: false,
+            validTo: validTo,
+            maxTimeSinceLastOracleUpdate: 15 minutes
+        });
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IConditionalOrder.OrderNotValid.selector,
+                ORDER_EXPIRED
+            )
+        );
+        stopLoss.getTradeableOrder(
+            safe,
+            address(0),
+            bytes32(0),
+            abi.encode(data),
+            bytes("")
+        );
+    }
+
+    function test_strikePriceMet_fuzz(
+        int256 sellTokenOraclePrice,
+        int256 buyTokenOraclePrice,
+        int256 strike,
+        uint32 validTo
+    ) public {
+        // 25 June 2023 18:40:51
+        vm.warp(1687718451);
+
+        vm.assume(validTo >= block.timestamp);
         vm.assume(buyTokenOraclePrice > 0);
         vm.assume(sellTokenOraclePrice > 0 && sellTokenOraclePrice <= type(int256).max / 10 ** 18);
         vm.assume(strike > 0);
         vm.assume(sellTokenOraclePrice * int256(10 ** 18) / buyTokenOraclePrice <= strike);
-
-        // 25 June 2023 18:40:51
-        vm.warp(1687718451);
 
         StopLoss.Data memory data = StopLoss.Data({
             sellToken: mockToken(SELL_TOKEN, DEFAULT_DECIMALS),
@@ -305,7 +354,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
             receiver: address(0x0),
             isSellOrder: false,
             isPartiallyFillable: false,
-            validityBucketSeconds: 15 minutes,
+            validTo: validTo,
             maxTimeSinceLastOracleUpdate: 15 minutes
         });
 
@@ -316,43 +365,12 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         assertEq(order.sellAmount, 1 ether);
         assertEq(order.buyAmount, 1 ether);
         assertEq(order.receiver, address(0x0));
-        assertEq(order.validTo, 1687718700);
+        assertEq(order.validTo, validTo);
         assertEq(order.appData, APP_DATA);
         assertEq(order.feeAmount, 0);
         assertEq(order.kind, GPv2Order.KIND_BUY);
         assertEq(order.partiallyFillable, false);
         assertEq(order.sellTokenBalance, GPv2Order.BALANCE_ERC20);
         assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
-    }
-
-    function test_validTo() public {
-        uint256 BLOCK_TIMESTAMP = 1687712399;
-
-        StopLoss.Data memory data = StopLoss.Data({
-            sellToken: mockToken(SELL_TOKEN, 18),
-            buyToken: mockToken(BUY_TOKEN, 18),
-            sellTokenPriceOracle: mockOracle(SELL_ORACLE, 99 ether, BLOCK_TIMESTAMP, DEFAULT_DECIMALS),
-            buyTokenPriceOracle: mockOracle(BUY_ORACLE, 100 ether, BLOCK_TIMESTAMP, DEFAULT_DECIMALS),
-            strike: 1e18, // required as the strike price has 18 decimals
-            sellAmount: 1 ether,
-            buyAmount: 1 ether,
-            appData: APP_DATA,
-            receiver: address(0x0),
-            isSellOrder: false,
-            isPartiallyFillable: false,
-            validityBucketSeconds: 1 hours,
-            maxTimeSinceLastOracleUpdate: 15 minutes
-        });
-
-        // 25 June 2023 18:59:59
-        vm.warp(BLOCK_TIMESTAMP);
-        GPv2Order.Data memory order =
-            stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
-        assertEq(order.validTo, BLOCK_TIMESTAMP + 1); // 25 June 2023 19:00:00
-
-        // 25 June 2023 19:00:00
-        vm.warp(BLOCK_TIMESTAMP + 1);
-        order = stopLoss.getTradeableOrder(safe, address(0), bytes32(0), abi.encode(data), bytes(""));
-        assertEq(order.validTo, BLOCK_TIMESTAMP + 1 + 1 hours); // 25 June 2023 20:00:00
     }
 }

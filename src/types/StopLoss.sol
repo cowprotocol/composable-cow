@@ -13,6 +13,8 @@ string constant ORACLE_INVALID_PRICE = "oracle invalid price";
 string constant ORACLE_STALE_PRICE = "oracle stale price";
 /// @dev The strike price has not been reached
 string constant STRIKE_NOT_REACHED = "strike not reached";
+/// @dev The order is not valid anymore
+string constant ORDER_EXPIRED = "order expired";
 
 /**
  * @title StopLoss conditional order
@@ -34,7 +36,7 @@ contract StopLoss is BaseConditionalOrder {
      * @param receiver: The account that should receive the proceeds of the trade
      * @param isSellOrder: Whether this is a sell or buy order
      * @param isPartiallyFillable: Whether solvers are allowed to only fill a fraction of the order (useful if exact sell or buy amount isn't know at time of placement)
-     * @param validityBucketSeconds: How long the order will be valid. E.g. if the validityBucket is set to 15 minutes and the order is placed at 00:08, it will be valid until 00:15
+     * @param validTo: The UNIX timestamp before which this order is valid
      * @param sellTokenPriceOracle: A chainlink-like oracle returning the current sell token price in a given numeraire
      * @param buyTokenPriceOracle: A chainlink-like oracle returning the current buy token price in the same numeraire
      * @param strike: The exchange rate (denominated in sellToken/buyToken) which triggers the StopLoss order if the oracle price falls below. Specified in base / quote with 18 decimals.
@@ -49,7 +51,7 @@ contract StopLoss is BaseConditionalOrder {
         address receiver;
         bool isSellOrder;
         bool isPartiallyFillable;
-        uint32 validityBucketSeconds;
+        uint32 validTo;
         IAggregatorV3Interface sellTokenPriceOracle;
         IAggregatorV3Interface buyTokenPriceOracle;
         int256 strike;
@@ -65,6 +67,11 @@ contract StopLoss is BaseConditionalOrder {
         Data memory data = abi.decode(staticInput, (Data));
         // scope variables to avoid stack too deep error
         {
+            /// @dev Guard against expired orders
+            if (data.validTo < block.timestamp) {
+                revert IConditionalOrder.OrderNotValid(ORDER_EXPIRED);
+            }
+
             (, int256 basePrice,, uint256 sellUpdatedAt,) = data.sellTokenPriceOracle.latestRoundData();
             (, int256 quotePrice,, uint256 buyUpdatedAt,) = data.buyTokenPriceOracle.latestRoundData();
 
@@ -100,7 +107,7 @@ contract StopLoss is BaseConditionalOrder {
             data.receiver,
             data.sellAmount,
             data.buyAmount,
-            Utils.validToBucket(data.validityBucketSeconds),
+            data.validTo,
             data.appData,
             0, // use zero fee for limit orders
             data.isSellOrder ? GPv2Order.KIND_SELL : GPv2Order.KIND_BUY,
