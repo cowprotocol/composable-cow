@@ -20,7 +20,7 @@ string constant ORDER_EXPIRED = "order expired";
  * @title StopLoss conditional order
  * Requires providing two price oracles (e.g. chainlink) and a strike price. If the sellToken price falls below the strike price, the order will be triggered
  * @notice Both oracles need to be denominated in the same quote currency (e.g. GNO/ETH and USD/ETH for GNO/USD stop loss orders)
- * @dev This order type does not have any replay protection, meaning it may trigger again in the next validityBucket (e.g. 00:15-00:30)
+ * @dev This order type has replay protection due to the `validTo` parameter, ensuring it will just execute one time
  */
 contract StopLoss is BaseConditionalOrder {
     /// @dev Scaling factor for the strike price
