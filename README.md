@@ -201,7 +201,7 @@ How to verify the contracts:
 
 - Some contracts will auto-verify themselves (rare), because they exist in other networks
 - Some contracts can be verified with forge, e.g., `forge verify-contract --etherscan-api-key $BASESCAN_API_KEY --rpc-url $RPC_URL 0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5 lib/safe/contracts/handler/ExtensibleFallbackHandler.sol:ExtensibleFallbackHandler`
-- For the contracts which can't be verified neither way, the standard json input has to be generated with forge: `forge verify-contract --verifier sourcify --show-standard-json-input --etherscan-api-key $BASESCAN_API_KEY --rpc-url $RPC_URL 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 src/ComposableCoW.sol:ComposableCoW > ComposableCoW.json`, and submit the json to the corresponding block explorer
+- For the contracts which can't be verified either way, the standard json input has to be generated with forge: `forge verify-contract --verifier sourcify --show-standard-json-input --etherscan-api-key $BASESCAN_API_KEY --rpc-url $RPC_URL 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 src/ComposableCoW.sol:ComposableCoW > ComposableCoW.json`, and submit the json to the corresponding block explorer through the "standard-json" option on its web interface
 
 #### Local deployment
 
