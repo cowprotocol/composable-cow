@@ -84,7 +84,7 @@ struct Data {
 Example: Alice wants to sell 12,000,000 DAI for at least 7500 WETH. She wants to do this using a TWAP, executing a part each day over a period of 30 days.
 
 - `sellToken` = DAI
-- `buytoken` = WETH
+- `buyToken` = WETH
 - `receiver` = `address(0)`
 - `partSellAmount` = 12000000 / 30 = 400000 DAI
 - `minPartLimit` = 7500 / 30 = 250 WETH
