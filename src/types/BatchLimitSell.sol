@@ -73,16 +73,16 @@ contract BatchLimitSell is BaseConditionalOrder {
         _validate(data); 
 
         // Get the sell price for the part
-        uint256 sellPrice = _getSellPrice(data);
+        uint256 minPartLimit = _getMinPartLimit(data);
 
-        if (!(sellPrice > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
+        if (!(minPartLimit > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
         
         order = GPv2Order.Data({
             sellToken: data.sellToken,
             buyToken: data.buyToken,
             receiver: data.receiver,
             sellAmount: data.partSellAmount,
-            buyAmount: sellPrice,
+            buyAmount: minPartLimit,
             validTo: uint32(data.validTo),
             appData: data.appData,
             feeAmount: 0,
@@ -118,15 +118,15 @@ contract BatchLimitSell is BaseConditionalOrder {
 
     /// @dev Compute the sell price for a given part index in a TWAP order.
     /// @param data The TWAP order data containing startPrice, endPrice, n (total parts), and current part index.
-    /// @return sellPrice The calculated sell price for the given part.
-    function _getSellPrice(Data memory data) internal pure returns (uint256 sellPrice) {
+    /// @return minPartLimit The calculated minimum buy amount in each part (limit).
+    function _getMinPartLimit(Data memory data) internal pure returns (uint256 minPartLimit) {
         if (data.part == 1) {
             return data.startPrice;
         }
 
         uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16); // Convert % to WAD (5% = 1.05e18)
         uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
-        sellPrice = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
+        minPartLimit = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
     }
 
 }
