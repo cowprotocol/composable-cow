@@ -27,7 +27,7 @@ string constant INVALID_TOKEN = "invalid token";
 string constant INVALID_PART_SELL_AMOUNT = "invalid part sell amount";
 /// @dev The minimum buy amount in each part (limit) is not gretater than zero.
 string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
-/// @dev The valid until time is 
+/// @dev The valid until time is invalid.
 string constant INVALID_VALID_TO_TIME = "invalid valid until time";
 
 /// @title BatchLimitSell Conditional Order
@@ -76,7 +76,7 @@ contract BatchLimitSell is BaseConditionalOrder {
 
         _validate(data); 
 
-        // Get the sell price for the part
+        // Get the min part limit for the part
         uint256 minPartLimit = _getMinPartLimit(data);
 
         if (!(minPartLimit > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
@@ -118,7 +118,7 @@ contract BatchLimitSell is BaseConditionalOrder {
         return uint256(wadPow(int256(base), int256(exponent)));
     }
 
-    /// @dev Compute the sell price for a given part index in a TWAP order.
+    /// @dev Compute the minimum buy amount in each part (limit).
     /// @param data The TWAP order data containing startPrice, endPrice, n (total parts), and current part index.
     /// @return minPartLimit The calculated minimum buy amount in each part (limit).
     function _getMinPartLimit(Data memory data) internal pure returns (uint256 minPartLimit) {
@@ -126,7 +126,7 @@ contract BatchLimitSell is BaseConditionalOrder {
             return data.startPrice;
         }
 
-        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16); // Convert % to WAD (e.g., 5% = 1.05e18)
+        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16);
         uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
         minPartLimit = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
     }
