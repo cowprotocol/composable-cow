@@ -30,6 +30,10 @@ string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
 /// @dev The valid until time is 
 string constant INVALID_VALID_TO_TIME = "invalid valid until time";
 
+/// @title BatchLimitSell Conditional Order
+/// @notice A custom order type for the CoW Protocol Conditional Order Framework.
+/// @dev This order allows placing a batch limit sell order, where each part in the batch 
+///      is sold at a price incremented by a fixed percentage relative to the previous part.
 contract BatchLimitSell is BaseConditionalOrder {
     // --- types
 
