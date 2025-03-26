@@ -32,7 +32,7 @@ string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
 /// @dev The valid until time is 
 string constant INVALID_VALID_TO_TIME = "invalid valid until time";
 
-contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
+contract BatchLimitSell is BaseConditionalOrder {
     // --- types
 
     struct Data {
