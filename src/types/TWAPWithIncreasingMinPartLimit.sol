@@ -10,18 +10,29 @@ import {
     GPv2Order,
     BaseConditionalOrder
 } from "../BaseConditionalOrder.sol";
-import {TWAPOrder} from "./twap/libraries/TWAPOrder.sol";
 
 // --- error strings
 
-/// @dev The order is not within the TWAP bundle's span.
-string constant NOT_WITHIN_SPAN = "not within span";
+/// @dev If the trade is called before the time it becomes valid.
+string constant TOO_EARLY = "too early";
 /// @dev The order count is not > 1.
 string constant INVALID_ORDER_COUNT = "invalid order count";
 /// @dev The part id is not > 0 and <= n or total number of parts.
 string constant PART_NUMBER_OUT_OF_RANGE = "part number out of range";
 /// @dev Invalid number of total number of parts, i.e., not greater than 1 and <= type(uint32).max.
 string constant INVALID_NUM_PARTS = "invalid num parts";
+/// @dev The sell token and buy token are the same.
+string constant INVALID_SAME_TOKEN = "same token";
+/// @dev The sell token and buy token addresses should both not be address(0).
+string constant INVALID_TOKEN = "invalid token";
+/// @dev The part sell amount is not greater than zero.
+string constant INVALID_PART_SELL_AMOUNT = "invalid part sell amount";
+/// @dev The minimum buy amount in each part (limit) is not gretater than zero.
+string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
+/// @dev The start time is greater than max uint32
+string constant INVALID_START_TIME = "invalid start time";
+/// @dev The valid until time is 
+string constant INVALID_VALID_UNTIL_TIME = "invalid valid until time";
 
 contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
     // --- types
@@ -33,18 +44,17 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
         uint256 partSellAmount; // The amount to sell in each part
         uint256 startPrice; // Sell price for the first part
         uint256 endPrice; // Sell price for the last part
-        uint256 t0; // Start timestamp
-        uint256 t; // Time interval for each part
+        uint256 startTime; // when the order becomes valid
+        uint256 validTo; // when the order expires
         uint256 n; // Number of parts
         uint256 part; // Part number or identifier from 1...n
-        uint256 span; // Time span of interval t for each part
         bytes32 appData; // Application-specific data
     }
 
-    ComposableCoW public immutable composableCow;
+    ComposableCoW public immutable COMPOSABLE_COW;
 
     constructor(ComposableCoW _composableCow) {
-        composableCow = _composableCow;
+        COMPOSABLE_COW = _composableCow;
     }
 
     /// @inheritdoc IConditionalOrderGenerator
@@ -58,35 +68,52 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
         // Decode the payload into the twap with increasing minPartLimit parameters.
         Data memory data = abi.decode(staticInput, (Data));
 
+        // Validate part and generate GPv2Order data for the part
+        /// @dev If `startTime` is set to 0, then get the start time from the context.
+        if (data.startTime == 0) {
+            data.startTime = uint256(COMPOSABLE_COW.cabinet(owner, ctx));
+        }
+
+        _validate(data); 
+
         // Get the sell price for the part
         uint256 sellPrice = _getSellPrice(data);
 
-        // Set up the TWAPData for order generation
-        TWAPOrder.Data memory twap = TWAPOrder.Data({
+        if (!(sellPrice > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
+
+        order = GPv2Order.Data({
             sellToken: data.sellToken,
             buyToken: data.buyToken,
             receiver: data.receiver,
-            partSellAmount: data.partSellAmount,
-            minPartLimit: sellPrice, // Replace minPartLimit with the computed sellPrice for the specific part
-            t0: data.t0,
-            n: data.n,
-            t: data.t,
-            span: data.span,
-            appData: data.appData
+            sellAmount: data.partSellAmount,
+            buyAmount: sellPrice,
+            validTo: uint32(data.validTo),
+            appData: data.appData,
+            feeAmount: 0,
+            kind: GPv2Order.KIND_SELL,
+            partiallyFillable: false,
+            sellTokenBalance: GPv2Order.BALANCE_ERC20,
+            buyTokenBalance: GPv2Order.BALANCE_ERC20
         });
-
-        // Validate part and generate GPv2Order data for the part
-        /// @dev If `twap.t0` is set to 0, then get the start time from the context.
-        if (twap.t0 == 0) {
-            twap.t0 = uint256(composableCow.cabinet(owner, ctx));
+    }
+    
+    /**
+     * @dev revert if the order is invalid
+     * @param data The TWAP order to validate
+     */
+    function _validate(Data memory data) internal view {
+        // Don't allow the order to be placed before it becomes valid.
+        if (!(block.timestamp >= data.startTime)) {
+            revert IConditionalOrder.PollTryAtEpoch(data.startTime, TOO_EARLY);
         }
-
-        order = TWAPOrder.orderFor(twap);
-
-        /// @dev Revert if the order is outside the TWAP bundle's span.
-        if (!(block.timestamp <= order.validTo)) {
-            revert IConditionalOrder.OrderNotValid(NOT_WITHIN_SPAN);
+        if (!(data.sellToken != data.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
+        if (!(address(data.sellToken) != address(0) && address(data.buyToken) != address(0))) {
+            revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
         }
+        if (!(data.partSellAmount > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PART_SELL_AMOUNT);
+        if (!(data.startTime < type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_START_TIME);
+        if (!(data.validTo > data.startTime && data.validTo > block.timestamp && data.validTo <= 365 days)) revert IConditionalOrder.OrderNotValid(INVALID_VALID_UNTIL_TIME);
+        if (!(data.n > 1 && data.n <= type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
     }
 
     /// @dev Calculate the increment factor to increase the price.
