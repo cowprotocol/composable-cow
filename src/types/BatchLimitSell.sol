@@ -27,6 +27,8 @@ string constant INVALID_PART_SELL_AMOUNT = "invalid part sell amount";
 string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
 /// @dev The valid until time is invalid.
 string constant INVALID_VALID_TO_TIME = "invalid valid until time";
+/// @dev The percentage increase is zero.
+string constant INVALID_PERCENTAGE_INCREASE = "invalid percentage increase";
 
 /// @title BatchLimitSell Conditional Order
 /// @notice A custom order type for the CoW Protocol Conditional Order Framework.
@@ -107,6 +109,7 @@ contract BatchLimitSell is BaseConditionalOrder {
         }
         if (!(data.partSellAmount > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PART_SELL_AMOUNT);
         if (!(data.validTo > block.timestamp && data.validTo <= 365 days)) revert IConditionalOrder.OrderNotValid(INVALID_VALID_TO_TIME);
+        if (!(data.percentageIncrease > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PERCENTAGE_INCREASE);
     }
 
     /// @dev Power function to calculate the increment factor.
@@ -124,7 +127,6 @@ contract BatchLimitSell is BaseConditionalOrder {
         if (data.part == 1) {
             return data.startPrice;
         }
-
         uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16);
         uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
         minPartLimit = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
