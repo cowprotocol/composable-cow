@@ -11,6 +11,8 @@ import {
     BaseConditionalOrder
 } from "../BaseConditionalOrder.sol";
 
+import {wadPow} from "../vendored/SignedWadMath.sol";
+
 // --- error strings
 
 /// @dev The order count is not > 1.
@@ -28,7 +30,7 @@ string constant INVALID_PART_SELL_AMOUNT = "invalid part sell amount";
 /// @dev The minimum buy amount in each part (limit) is not gretater than zero.
 string constant INVALID_MIN_PART_LIMIT = "invalid min part limit";
 /// @dev The valid until time is 
-string constant INVALID_VALID_UNTIL_TIME = "invalid valid until time";
+string constant INVALID_VALID_TO_TIME = "invalid valid until time";
 
 contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
     // --- types
@@ -39,7 +41,7 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
         address receiver; // The order owner (user who initiated the order)
         uint256 partSellAmount; // The amount to sell in each part
         uint256 startPrice; // Sell price for the first part
-        uint256 endPrice; // Sell price for the last part
+        uint256 percentageIncrease; // Percentage increase for each part in wad
         uint256 validTo; // when the order expires
         uint256 n; // Number of parts
         uint256 part; // Part number or identifier from 1...n
@@ -76,7 +78,7 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
         uint256 sellPrice = _getSellPrice(data);
 
         if (!(sellPrice > 0)) revert IConditionalOrder.OrderNotValid(INVALID_MIN_PART_LIMIT);
-
+        
         order = GPv2Order.Data({
             sellToken: data.sellToken,
             buyToken: data.buyToken,
@@ -103,27 +105,8 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
             revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
         }
         if (!(data.partSellAmount > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PART_SELL_AMOUNT);
-        if (!(data.validTo > block.timestamp && data.validTo <= 365 days)) revert IConditionalOrder.OrderNotValid(INVALID_VALID_UNTIL_TIME);
+        if (!(data.validTo > block.timestamp && data.validTo <= 365 days)) revert IConditionalOrder.OrderNotValid(INVALID_VALID_TO_TIME);
         if (!(data.n > 1 && data.n <= type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
-    }
-
-    /// @dev Calculate the increment factor to increase the price.
-    /// i.e., incrementFactor = (endPrice / startPrice) ^ (1 / (n - 1))
-    /// @param startPrice The starting price.
-    /// @param endPrice The ending price.
-    /// @param orderCount The number of orders.
-    /// @return incrementFactor The factor by which the price will increase between orders.
-    function _getIncrementFactor(uint256 startPrice, uint256 endPrice, uint256 orderCount)
-        internal
-        pure
-        returns (uint256)
-    {
-        if (!(orderCount > 1)) {
-            revert IConditionalOrder.OrderNotValid(INVALID_ORDER_COUNT);
-        }
-
-        uint256 fraction = (endPrice * 1e18) / startPrice;
-        return _pow(fraction, 1e18 / (orderCount - 1));
     }
 
     /// @dev Power function to calculate the increment factor.
@@ -131,15 +114,7 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
     /// @param exponent The exponent to raise the base to.
     /// @return result The result of raising the base to the exponent.
     function _pow(uint256 base, uint256 exponent) internal pure returns (uint256) {
-        uint256 result = 1e18;
-        while (exponent > 0) {
-            if (exponent % 2 == 1) {
-                result = (result * base) / 1e18;
-            }
-            base = (base * base) / 1e18;
-            exponent /= 2;
-        }
-        return result;
+        return uint256(wadPow(int256(base), int256(exponent)));
     }
 
     /// @dev Compute the sell price for a given part index in a TWAP order.
@@ -149,17 +124,13 @@ contract TWAPWithIncreasingMinPartLimit is BaseConditionalOrder {
         if (!(data.part > 0 && data.part <= data.n)) revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
         if (!(data.n > 1 && data.n <= type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
 
-        // Avoid overflow when exponent is small
         if (data.part == 1) {
             return data.startPrice;
         }
 
-        // Calculate the incremental factor
-        uint256 incrementFactor = _getIncrementFactor(data.startPrice, data.endPrice, data.n);
-
-        // Calculate the sell price for the given part using exponential growth formula
-        // i.e., incrementFactor^(part-1), multiplied by startPrice
-        uint256 exponent = ((data.part - 1) * 1e18) / (data.n - 1);
+        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16); // Convert % to WAD (5% = 1.05e18)
+        uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
         sellPrice = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
     }
+
 }
