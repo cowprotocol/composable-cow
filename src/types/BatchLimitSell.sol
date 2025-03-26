@@ -17,6 +17,8 @@ import {wadPow} from "../vendored/SignedWadMath.sol";
 
 /// @dev The part id is not > 0 and <= n or total number of parts.
 string constant PART_NUMBER_OUT_OF_RANGE = "part number out of range";
+/// @dev The number of parts should be > 1 and <= max uint32.
+string constant INVALID_NUM_PARTS = "invalid number of parts";
 /// @dev The sell token and buy token are the same.
 string constant INVALID_SAME_TOKEN = "same token";
 /// @dev The sell token and buy token addresses should both not be address(0).
@@ -100,7 +102,10 @@ contract BatchLimitSell is BaseConditionalOrder {
     /// @dev revert if the order is invalid
     /// @param data The TWAP order to validate
     function _validate(Data memory data) internal view {
-        if (!(data.n > 1 && data.n <= type(uint32).max && data.part > 0 && data.part <= data.n)) {
+        if (!(data.n > 1 && data.n <= type(uint32).max)) {
+            revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
+        }
+        if (!(data.part > 0 && data.part <= data.n)) {
             revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
         }
         if (!(data.sellToken != data.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
@@ -127,7 +132,7 @@ contract BatchLimitSell is BaseConditionalOrder {
         if (data.part == 1) {
             return data.startPrice;
         }
-        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16);
+        uint256 incrementFactor = 1e18 + data.percentageIncrease;
         uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
         minPartLimit = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
     }
