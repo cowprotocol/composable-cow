@@ -124,9 +124,8 @@ contract BatchLimitSell is BaseConditionalOrder {
             return data.startPrice;
         }
 
-        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16); // Convert % to WAD (5% = 1.05e18)
+        uint256 incrementFactor = 1e18 + (data.percentageIncrease * 1e16); // Convert % to WAD (e.g., 5% = 1.05e18)
         uint256 exponent = (data.part - 1) * 1e18 / (data.n - 1);
         minPartLimit = (data.startPrice * _pow(incrementFactor, exponent)) / 1e18;
     }
-
 }
