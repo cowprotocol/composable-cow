@@ -15,8 +15,6 @@ import {wadPow} from "../vendored/SignedWadMath.sol";
 
 // --- error strings
 
-/// @dev The order count is not > 1.
-string constant INVALID_ORDER_COUNT = "invalid order count";
 /// @dev The part id is not > 0 and <= n or total number of parts.
 string constant PART_NUMBER_OUT_OF_RANGE = "part number out of range";
 /// @dev Invalid number of total number of parts, i.e., not greater than 1 and <= type(uint32).max.
@@ -100,6 +98,7 @@ contract BatchLimitSell is BaseConditionalOrder {
      * @param data The TWAP order to validate
      */
     function _validate(Data memory data) internal view {
+        if (!(data.part > 0 && data.part <= data.n)) revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
         if (!(data.sellToken != data.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
         if (!(address(data.sellToken) != address(0) && address(data.buyToken) != address(0))) {
             revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
@@ -121,9 +120,6 @@ contract BatchLimitSell is BaseConditionalOrder {
     /// @param data The TWAP order data containing startPrice, endPrice, n (total parts), and current part index.
     /// @return sellPrice The calculated sell price for the given part.
     function _getSellPrice(Data memory data) internal pure returns (uint256 sellPrice) {
-        if (!(data.part > 0 && data.part <= data.n)) revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
-        if (!(data.n > 1 && data.n <= type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
-
         if (data.part == 1) {
             return data.startPrice;
         }
