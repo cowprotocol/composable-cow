@@ -17,8 +17,6 @@ import {wadPow} from "../vendored/SignedWadMath.sol";
 
 /// @dev The part id is not > 0 and <= n or total number of parts.
 string constant PART_NUMBER_OUT_OF_RANGE = "part number out of range";
-/// @dev Invalid number of total number of parts, i.e., not greater than 1 and <= type(uint32).max.
-string constant INVALID_NUM_PARTS = "invalid num parts";
 /// @dev The sell token and buy token are the same.
 string constant INVALID_SAME_TOKEN = "same token";
 /// @dev The sell token and buy token addresses should both not be address(0).
@@ -100,14 +98,15 @@ contract BatchLimitSell is BaseConditionalOrder {
     /// @dev revert if the order is invalid
     /// @param data The TWAP order to validate
     function _validate(Data memory data) internal view {
-        if (!(data.part > 0 && data.part <= data.n)) revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
+        if (!(data.n > 1 && data.n <= type(uint32).max && data.part > 0 && data.part <= data.n)) {
+            revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
+        }
         if (!(data.sellToken != data.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
         if (!(address(data.sellToken) != address(0) && address(data.buyToken) != address(0))) {
             revert IConditionalOrder.OrderNotValid(INVALID_TOKEN);
         }
         if (!(data.partSellAmount > 0)) revert IConditionalOrder.OrderNotValid(INVALID_PART_SELL_AMOUNT);
         if (!(data.validTo > block.timestamp && data.validTo <= 365 days)) revert IConditionalOrder.OrderNotValid(INVALID_VALID_TO_TIME);
-        if (!(data.n > 1 && data.n <= type(uint32).max)) revert IConditionalOrder.OrderNotValid(INVALID_NUM_PARTS);
     }
 
     /// @dev Power function to calculate the increment factor.
