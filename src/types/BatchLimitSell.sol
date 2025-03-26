@@ -93,10 +93,8 @@ contract BatchLimitSell is BaseConditionalOrder {
         });
     }
     
-    /**
-     * @dev revert if the order is invalid
-     * @param data The TWAP order to validate
-     */
+    /// @dev revert if the order is invalid
+    /// @param data The TWAP order to validate
     function _validate(Data memory data) internal view {
         if (!(data.part > 0 && data.part <= data.n)) revert IConditionalOrder.OrderNotValid(PART_NUMBER_OUT_OF_RANGE);
         if (!(data.sellToken != data.buyToken)) revert IConditionalOrder.OrderNotValid(INVALID_SAME_TOKEN);
