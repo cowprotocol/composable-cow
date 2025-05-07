@@ -148,7 +148,7 @@ Copy the `.env.example` to `.env` and set the applicable configuration variables
 
 ### Testing
 
-Effort has been made to adhere as close as possible to [best practices](https://book.getfoundry.sh/tutorials/best-practices), with _unit_, _fuzzing_ and _fork_ tests being implemented.
+Effort has been made to adhere as close as possible to [best practices](https://book.getfoundry.sh/guides/best-practices), with _unit_, _fuzzing_ and _fork_ tests being implemented.
 
 **NOTE:** Fuzz tests also include a `simulate` that runs full end-to-end integration testing, including the ability to settle conditional orders. Fork testing simulates end-to-end against production ethereum mainnet contracts, and as such requires `ETH_RPC_URL` to be defined (this should correspond to an archive node).
 
