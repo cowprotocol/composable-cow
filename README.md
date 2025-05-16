@@ -164,7 +164,20 @@ forge test -vvv # Unit, fuzz, and fork testing
 forge coverage -vvv --no-match-test "fork" --report summary
 ```
 
-### Deployment
+#### Deterministic deployment
+
+Because of the issue [#39](https://github.com/cowprotocol/composable-cow/issues/93), in order to achieve deterministic deployment it is needed to:
+
+- Go to a deployed contract in another network, open the creation TX (e.g. [ExtensibleFallbackHandler](https://etherscan.io/tx/0x33dcbc73a8797c69a5b3956539dd8d191cf3f190bcb27a4d4eca8556f030f574) in mainnet)
+- Go to `Click to show more` and copy the `Input Data` in Original format, also copy the `to` address
+- Use your favourite tool to make a transaction (e.g., [swiss-knife](https://transact.swiss-knife.xyz/send-tx?chainId=1))
+- Use the corresponding `Input Data` and `to` and send the tx
+- A new contract will be deployed using `CREATE2` to the same deterministic address
+
+### Script-based deployment
+
+⚠ This approach won't deploy the contracts to the official addresses.
+It's mainly useful for testing or when introducing a new contract type.
 
 Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
 
@@ -187,21 +200,17 @@ forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_
 The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
 When the script is ran, the corresponding files can be found in the folder `broadcast/deploy_OrderTypes.s.sol/`.
 
-#### Manual deployment
+#### Contract verification on block explorer
 
-Because of the issue [#39](https://github.com/cowprotocol/composable-cow/issues/93), in order to achieve deterministic deployment it is needed to:
+There's a dedicated script to verify all contracts at the same time once they have been deployed on a new chain:
 
-- Go to a deployed contract in another network, open the creation TX (e.g. [ExtensibleFallbackHandler](https://etherscan.io/tx/0x33dcbc73a8797c69a5b3956539dd8d191cf3f190bcb27a4d4eca8556f030f574) in mainnet)
-- Go to `Click to show more` and copy the `Input Data` in Original format, also copy the `to` address
-- Use your favourite tool to make a transaction (e.g., [swiss-knife](https://transact.swiss-knife.xyz/send-tx?chainId=1))
-- Use the corresponding `Input Data` and `to` and send the tx
-- A new contract will be deployed using `CREATE2` to the same deterministic address
+```sh
+export ETHERSCAN_API_KEY="your API key here"
+chain_id=1337
+dev/verify-contracts.sh "$chain_id"
+```
 
-How to verify the contracts:
-
-- Some contracts will auto-verify themselves (rare), because they exist in other networks
-- Some contracts can be verified with forge, e.g., `forge verify-contract --etherscan-api-key $BASESCAN_API_KEY --rpc-url $RPC_URL 0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5 lib/safe/contracts/handler/ExtensibleFallbackHandler.sol:ExtensibleFallbackHandler`
-- For the contracts which can't be verified either way, the standard json input has to be generated with forge: `forge verify-contract --verifier sourcify --show-standard-json-input --etherscan-api-key $BASESCAN_API_KEY --rpc-url $RPC_URL 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 src/ComposableCoW.sol:ComposableCoW > ComposableCoW.json`, and submit the json to the corresponding block explorer through the "standard-json" option on its web interface
+If this doesn't work, check out [broadcast/StandardJsonInput/README.md](./broadcast/StandardJsonInput/README.md).
 
 #### Local deployment
 
