@@ -197,7 +197,9 @@ Because of the issue [#39](https://github.com/cowprotocol/composable-cow/issues/
 - Use the corresponding `Input Data` and `to` and send the tx
 - A new contract will be deployed using `CREATE2` to the same deterministic address
 
-To verify the contracts:
+#### Contract verification on block explorer
+
+There's a dedicated script to verify all contracts at the same time once they have been deployed on a new chain:
 
 ```sh
 export ETHERSCAN_API_KEY="your API key here"
