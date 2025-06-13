@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - main
     paths-ignore:
       - "**/*.md"
 
@@ -27,7 +25,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: v1.2.3
 
       - name: Run Forge build
         run: |
