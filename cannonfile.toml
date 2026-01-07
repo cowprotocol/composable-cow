@@ -1,0 +1,52 @@
+#:schema https://raw.githubusercontent.com/usecannon/cannon/refs/heads/dev/packages/lsp/src/schema.json
+name = "cow-composable"
+version = "1.0.0"
+
+[import.cow]
+source = "cow-settlement:2.0.1"
+
+[var.main]
+salt = "<%= formatBytes32String('v1.0.0') %>"
+cowSettlement = "<%= cow.Settlement.address %>"
+
+[deploy.ExtensibleFallbackHandler]
+artifact = "ExtensibleFallbackHandler"
+create2 = true
+salt = "<%= settings.salt %>"
+
+[deploy.ComposableCoW]
+artifact = "ComposableCoW"
+create2 = true
+salt = "<%= settings.salt %>"
+args = ["<%= settings.cowSettlement %>"]
+
+[deploy.TWAP]
+artifact = "TWAP"
+create2 = true
+salt = "<%= settings.salt %>"
+args = ["<%= contracts.ComposableCoW.address %>"]
+
+[deploy.GoodAfterTime]
+artifact = "GoodAfterTime"
+create2 = true
+salt = "<%= settings.salt %>"
+
+[deploy.PerpetualStableSwap]
+artifact = "PerpetualStableSwap"
+create2 = true
+salt = "<%= settings.salt %>"
+
+[deploy.TradeAboveThreshold]
+artifact = "TradeAboveThreshold"
+create2 = true
+salt = "<%= settings.salt %>"
+
+[deploy.StopLoss]
+artifact = "StopLoss"
+create2 = true
+salt = "<%= settings.salt %>"
+
+[deploy.CurrentBlockTimestampFactory]
+artifact = "CurrentBlockTimestampFactory"
+create2 = true
+salt = "<%= settings.salt %>"
