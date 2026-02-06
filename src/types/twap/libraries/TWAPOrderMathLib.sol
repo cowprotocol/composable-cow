@@ -3,26 +3,18 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IConditionalOrder} from "../../../interfaces/IConditionalOrder.sol";
 
-// --- error strings
-
-/// @dev No discrete order is valid before the start of the TWAP conditional order.
 string constant BEFORE_TWAP_START = "before twap start";
-/// @dev No discrete order is valid after it's last part.
-string constant AFTER_TWAP_FINISH = "after twap finish";
+string constant AFTER_TWAP_FINISH = "twap finished";
 
-/**
- * @title CoWProtocol TWAP Order Math Library
- * @dev TWAP Math is separated to facilitate easier unit testing / SMT verification.
- * @author mfw78 <mfw78@rndlabs.xyz>
- */
+/// @title CoWProtocol TWAP Order Math Library
+/// @author mfw78 <mfw78@nxm.rs>
+/// @dev TWAP math separated to facilitate easier unit testing / SMT verification.
 library TWAPOrderMathLib {
-    /**
-     * @dev Calculate the `validTo` timestamp for part of a TWAP order.
-     * @param startTime The start time of the TWAP order.
-     * @param numParts The number of parts to split the order into.
-     * @param frequency The frequency of each part (in seconds).
-     * @param span The span of each part (in seconds, or 0 for the whole epoch).
-     */
+    /// @dev Calculate the `validTo` timestamp for part of a TWAP order.
+    /// @param startTime The start time of the TWAP order.
+    /// @param numParts The number of parts to split the order into.
+    /// @param frequency The frequency of each part (in seconds).
+    /// @param span The span of each part (in seconds, or 0 for the whole epoch).
     function calculateValidTo(uint256 startTime, uint256 numParts, uint256 frequency, uint256 span)
         internal
         view
@@ -38,11 +30,13 @@ library TWAPOrderMathLib {
         assert(span <= frequency);
 
         unchecked {
-            /// @dev Order is not valid before the start (order commences at `t0`).
-            if (!(startTime <= block.timestamp)) revert IConditionalOrder.OrderNotValid(BEFORE_TWAP_START);
+            /**
+             * @dev Order is not valid before the start (order commences at `t0`).
+             */
+            require(startTime <= block.timestamp, IConditionalOrder.PollTryAtTimestamp(startTime, BEFORE_TWAP_START));
 
             /**
-             *  @dev Order is expired after the last part (`n` parts, running at `t` time length).
+             * @dev Order is expired after the last part (`n` parts, running at `t` time length).
              *
              * Multiplication overflow: `numParts` is bounded by `type(uint32).max` and `frequency` is bounded by
              * `365 days` which is smaller than `type(uint32).max` so the product of `numParts * frequency` is
@@ -50,9 +44,9 @@ library TWAPOrderMathLib {
              * Addition overflow: `startTime` is bounded by `block.timestamp` which is reasonably bounded by
              * `type(uint32).max` so the sum of `startTime + (numParts * frequency)` is ≈ 2⁵⁵.
              */
-            if (!(block.timestamp < startTime + (numParts * frequency))) {
-                revert IConditionalOrder.OrderNotValid(AFTER_TWAP_FINISH);
-            }
+            require(
+                block.timestamp < startTime + (numParts * frequency), IConditionalOrder.OrderNotValid(AFTER_TWAP_FINISH)
+            );
 
             /**
              * @dev We use integer division to get the part number as we want to round down to the nearest part.
@@ -62,7 +56,8 @@ library TWAPOrderMathLib {
              * Divide by zero: `frequency` is asserted to be greater than zero.
              */
             uint256 part = (block.timestamp - startTime) / frequency;
-            // calculate the `validTo` timestamp (inclusive as per `GPv2Order`)
+
+            // Calculate the `validTo` timestamp (inclusive as per `GPv2Order`)
             if (span == 0) {
                 /**
                  * @dev If the span is zero, then the order is valid for the entire part.
@@ -82,7 +77,7 @@ library TWAPOrderMathLib {
             }
 
             /**
-             *  @dev If the span is non-zero, then the order is valid for the span of the part.
+             * @dev If the span is non-zero, then the order is valid for the span of the part.
              *
              * Multiplication overflow: `part` is bounded by `numParts` which is bounded by `type(uint32).max` with
              * `frequency` bounded by `365 days` which is smaller than `type(uint32).max` so the product of
@@ -101,5 +96,13 @@ library TWAPOrderMathLib {
              * checked during settlement in `GPv2Settlement.settle`.
              */
         }
+    }
+
+    /// @dev Calculate the current part number for a TWAP order.
+    /// @param startTime The start time of the TWAP order.
+    /// @param frequency The frequency of each part (in seconds).
+    function currentPart(uint256 startTime, uint256 frequency) internal view returns (uint256) {
+        if (block.timestamp < startTime) return 0;
+        return (block.timestamp - startTime) / frequency;
     }
 }
