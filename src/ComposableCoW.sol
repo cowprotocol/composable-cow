@@ -15,13 +15,11 @@ import {ISwapGuard} from "./interfaces/ISwapGuard.sol";
 import {IValueFactory} from "./interfaces/IValueFactory.sol";
 import {CoWSettlement} from "./vendored/CoWSettlement.sol";
 
-/**
- * @title ComposableCoW - A contract that allows users to create multiple conditional orders
- * @author mfw78 <mfw78@rndlabs.xyz>
- * @dev Designed to be used with Safe + ExtensibleFallbackHandler
- */
+/// @title ComposableCoW - Conditional order framework for CoW Protocol
+/// @author mfw78 <mfw78@nxm.rs>
+/// @notice Enables Safe wallets to create conditional orders with dual-path verification.
+/// @dev Settlement path (isValidSafeSignature) is gas-optimized; polling path returns rich metadata.
 contract ComposableCoW is ISafeSignatureVerifier {
-    // --- errors
     error ProofNotAuthed();
     error SingleOrderNotAuthed();
     error SwapGuardRestricted();
@@ -29,104 +27,53 @@ contract ComposableCoW is ISafeSignatureVerifier {
     error InvalidFallbackHandler();
     error InterfaceNotSupported();
 
-    // --- types
-
-    // A struct to encapsulate order parameters / offchain input
     struct PayloadStruct {
         bytes32[] proof;
         IConditionalOrder.ConditionalOrderParams params;
         bytes offchainInput;
     }
 
-    // A struct representing where to find the proofs
     struct Proof {
         uint256 location;
         bytes data;
     }
 
-    // --- events
-
-    // An event emitted when a user sets their merkle root
     event MerkleRootSet(address indexed owner, bytes32 root, Proof proof);
     event ConditionalOrderCreated(address indexed owner, IConditionalOrder.ConditionalOrderParams params);
     event SwapGuardSet(address indexed owner, ISwapGuard swapGuard);
 
-    // --- state
-    // Domain separator is only used for generating signatures
+    CoWSettlement public immutable settlement;
     bytes32 public immutable domainSeparator;
-    /// @dev Mapping of owner's merkle roots
     mapping(address => bytes32) public roots;
-    /// @dev Mapping of owner's single orders
     mapping(address => mapping(bytes32 => bool)) public singleOrders;
-    // @dev Mapping of owner's swap guard
     mapping(address => ISwapGuard) public swapGuards;
-    // @dev Mapping of owner's on-chain storage slots
     mapping(address => mapping(bytes32 => bytes32)) public cabinet;
 
-    // --- constructor
-
-    /**
-     * @param _settlement The GPv2 settlement contract
-     */
     constructor(address _settlement) {
-        domainSeparator = CoWSettlement(_settlement).domainSeparator();
+        settlement = CoWSettlement(_settlement);
+        domainSeparator = settlement.domainSeparator();
     }
 
-    // --- setters
-
-    /**
-     * Set the merkle root of the user's conditional orders
-     * @notice Set the merkle root of the user's conditional orders
-     * @param root The merkle root of the user's conditional orders
-     * @param proof Where to find the proofs
-     */
     function setRoot(bytes32 root, Proof calldata proof) public {
         roots[msg.sender] = root;
         emit MerkleRootSet(msg.sender, root, proof);
     }
 
-    /**
-     * Set the merkle root of the user's conditional orders and store a value from on-chain in the cabinet
-     * @param root The merkle root of the user's conditional orders
-     * @param proof Where to find the proofs
-     * @param factory A factory from which to get a value to store in the cabinet related to the merkle root
-     * @param data Implementation specific off-chain data
-     */
     function setRootWithContext(bytes32 root, Proof calldata proof, IValueFactory factory, bytes calldata data)
         external
     {
         setRoot(root, proof);
-
-        // Default to the zero slot for a merkle root as this is the most common use case
-        // and should save gas on calldata when reading the cabinet.
-
-        // Set the cabinet slot
         cabinet[msg.sender][bytes32(0)] = factory.getValue(data);
     }
 
-    /**
-     * Authorise a single conditional order
-     * @param params The parameters of the conditional order
-     * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
-     */
     function create(IConditionalOrder.ConditionalOrderParams calldata params, bool dispatch) public {
-        if (!(address(params.handler) != address(0))) {
-            revert InvalidHandler();
-        }
-
+        require(address(params.handler) != address(0), InvalidHandler());
         singleOrders[msg.sender][hash(params)] = true;
         if (dispatch) {
             emit ConditionalOrderCreated(msg.sender, params);
         }
     }
 
-    /**
-     * Authorise a single conditional order and store a value from on-chain in the cabinet
-     * @param params The parameters of the conditional order
-     * @param factory A factory from which to get a value to store in the cabinet
-     * @param data Implementation specific off-chain data
-     * @param dispatch Whether to dispatch the `ConditionalOrderCreated` event
-     */
     function createWithContext(
         IConditionalOrder.ConditionalOrderParams calldata params,
         IValueFactory factory,
@@ -134,189 +81,158 @@ contract ComposableCoW is ISafeSignatureVerifier {
         bool dispatch
     ) external {
         create(params, dispatch);
-
-        // When setting the slot, an opinionated direction is taken to tie the return value of
-        // the slot to the conditional order, such that there is a guarantee or data integrity
-
-        // Set the cabinet slot
         cabinet[msg.sender][hash(params)] = factory.getValue(data);
     }
 
-    /**
-     * Remove the authorisation of a single conditional order
-     * @param singleOrderHash The hash of the single conditional order to remove
-     */
     function remove(bytes32 singleOrderHash) external {
         singleOrders[msg.sender][singleOrderHash] = false;
         cabinet[msg.sender][singleOrderHash] = bytes32(0);
     }
 
-    /**
-     * Set the swap guard of the user's conditional orders
-     * @param swapGuard The address of the swap guard
-     */
     function setSwapGuard(ISwapGuard swapGuard) external {
         swapGuards[msg.sender] = swapGuard;
         emit SwapGuardSet(msg.sender, swapGuard);
     }
 
-    // --- ISafeSignatureVerifier
-
-    /**
-     * @inheritdoc ISafeSignatureVerifier
-     * @dev This function does not make use of the `typeHash` parameter as CoW Protocol does not
-     *      have more than one type.
-     * @param encodeData Is the abi encoded `GPv2Order.Data`
-     * @param payload Is the abi encoded `PayloadStruct`
-     */
+    /// @inheritdoc ISafeSignatureVerifier
+    /// @dev Gas-sensitive settlement path. Calls handler.verify() directly.
     function isValidSafeSignature(
         Safe safe,
         address sender,
         bytes32 _hash,
         bytes32 _domainSeparator,
-        bytes32, // typeHash
+        bytes32,
         bytes calldata encodeData,
         bytes calldata payload
     ) external view override returns (bytes4 magic) {
-        // First decode the payload
         PayloadStruct memory _payload = abi.decode(payload, (PayloadStruct));
-
-        // Check if the order is authorised
         bytes32 ctx = _auth(address(safe), _payload.params, _payload.proof);
 
-        // It's an authorised order, validate it.
         GPv2Order.Data memory order = abi.decode(encodeData, (GPv2Order.Data));
 
-        // Check with the swap guard if the order is restricted or not
-        if (!(_guardCheck(address(safe), ctx, _payload.params, _payload.offchainInput, order))) {
-            revert SwapGuardRestricted();
-        }
+        require(_guardCheck(address(safe), ctx, _payload.params, _payload.offchainInput, order), SwapGuardRestricted());
 
-        // Proof is valid, guard (if any) is valid, now check the handler
-        _payload.params.handler.verify(
-            address(safe),
-            sender,
-            _hash,
-            _domainSeparator,
-            ctx,
-            _payload.params.staticInput,
-            _payload.offchainInput,
-            order
-        );
+        _payload.params.handler
+            .verify(
+                address(safe),
+                sender,
+                _hash,
+                _domainSeparator,
+                ctx,
+                _payload.params.staticInput,
+                _payload.offchainInput,
+                order
+            );
 
         return ERC1271.isValidSignature.selector;
     }
 
-    // --- getters
-
-    /**
-     * Get the `GPv2Order.Data` and signature for submitting to CoW Protocol API
-     * @param owner of the order
-     * @param params `ConditionalOrderParams` for the order
-     * @param offchainInput any dynamic off-chain input for generating the discrete order
-     * @param proof if using merkle-roots that H(handler || salt || staticInput) is in the merkle tree
-     * @return order discrete order for submitting to CoW Protocol API
-     * @return signature for submitting to CoW Protocol API
-     */
+    /// @notice Poll for a tradeable order with signature and scheduling metadata
+    /// @dev Returns structured result - never reverts for order conditions.
+    /// @param owner The Safe/wallet that owns the order
+    /// @param params The conditional order parameters
+    /// @param offchainInput Dynamic input from watch-tower
+    /// @param proof Merkle proof (empty for single orders)
+    /// @return result Structured polling result with order (if ready) and hints
+    /// @return signature EIP-1271 signature (empty if order not ready)
     function getTradeableOrderWithSignature(
         address owner,
         IConditionalOrder.ConditionalOrderParams calldata params,
         bytes calldata offchainInput,
         bytes32[] calldata proof
-    ) external view returns (GPv2Order.Data memory order, bytes memory signature) {
-        // Check if the order is authorised and in doing so, get the context
+    ) external view returns (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) {
         bytes32 ctx = _auth(owner, params, proof);
 
-        // Make sure the handler supports `IConditionalOrderGenerator`
-        try IConditionalOrderGenerator(address(params.handler)).supportsInterface(
-            type(IConditionalOrderGenerator).interfaceId
-        ) returns (bool supported) {
-            if (!supported) {
-                revert InterfaceNotSupported();
-            }
+        // Verify handler supports IConditionalOrderGenerator
+        try IConditionalOrderGenerator(address(params.handler))
+            .supportsInterface(type(IConditionalOrderGenerator).interfaceId) returns (
+            bool supported
+        ) {
+            require(supported, InterfaceNotSupported());
         } catch {
             revert InterfaceNotSupported();
         }
 
-        order = IConditionalOrderGenerator(address(params.handler)).getTradeableOrder(
-            owner, msg.sender, ctx, params.staticInput, offchainInput
-        );
+        // Call poll() for structured result
+        result = IConditionalOrderGenerator(address(params.handler))
+            .poll(owner, msg.sender, ctx, params.staticInput, offchainInput);
 
-        // Check with the swap guard if the order is restricted or not
-        if (!(_guardCheck(owner, ctx, params, offchainInput, order))) {
-            revert SwapGuardRestricted();
+        // Only build signature for SUCCESS
+        if (result.code != IConditionalOrderGenerator.PollResultCode.SUCCESS) {
+            return (result, "");
         }
 
-        try ExtensibleFallbackHandler(owner).supportsInterface(type(ISignatureVerifierMuxer).interfaceId) returns (
-            bool supported
-        ) {
-            if (!supported) {
-                revert InvalidFallbackHandler();
-            }
-            signature = abi.encodeWithSignature(
-                "safeSignature(bytes32,bytes32,bytes,bytes)",
-                domainSeparator,
-                GPv2Order.TYPE_HASH,
-                abi.encode(order),
-                abi.encode(PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}))
-            );
-        } catch {
-            // Assume that this is the EIP-1271 Forwarder (which does not have a `NAME` function)
-            // The default signature is the abi.encode of the tuple (order, payload)
-            signature = abi.encode(order, PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}));
+        // Check if order has already been filled (partially or fully)
+        uint256 filledAmount = _getFilledAmount(owner, result.order);
+        if (filledAmount > 0) {
+            // For sell orders, compare against sellAmount; for buy orders, compare against buyAmount
+            uint256 totalAmount =
+                result.order.kind == GPv2Order.KIND_SELL ? result.order.sellAmount : result.order.buyAmount;
+            bool isFullyFilled = filledAmount >= totalAmount;
+            result = IConditionalOrderGenerator.PollResult({
+                code: isFullyFilled
+                    ? IConditionalOrderGenerator.PollResultCode.FILLED
+                    : IConditionalOrderGenerator.PollResultCode.PARTIALLY_FILLED,
+                order: result.order,
+                nextPollTimestamp: result.nextPollTimestamp,
+                waitUntil: 0,
+                reason: isFullyFilled ? "order fully filled" : "order partially filled",
+                filledAmount: filledAmount
+            });
+            return (result, "");
         }
+
+        // Check swap guard
+        if (!_guardCheck(owner, ctx, params, offchainInput, result.order)) {
+            result = IConditionalOrderGenerator.PollResult({
+                code: IConditionalOrderGenerator.PollResultCode.INVALID,
+                order: result.order,
+                nextPollTimestamp: 0,
+                waitUntil: 0,
+                reason: "swap guard restricted",
+                filledAmount: 0
+            });
+            return (result, "");
+        }
+
+        signature = _buildSignature(owner, params, offchainInput, proof, result.order);
     }
 
-    // --- helper viewer functions
+    /// @notice Quick check if an order is currently tradeable
+    /// @return code The poll result code
+    /// @return waitUntil For WAIT_* codes, when to retry
+    function checkOrder(
+        address owner,
+        IConditionalOrder.ConditionalOrderParams calldata params,
+        bytes calldata offchainInput,
+        bytes32[] calldata proof
+    ) external view returns (IConditionalOrderGenerator.PollResultCode code, uint256 waitUntil) {
+        bytes32 ctx = _auth(owner, params, proof);
 
-    /**
-     * Return the hash of the conditional order parameters
-     * @param params `ConditionalOrderParams` for the order
-     * @return hash of the conditional order parameters
-     */
+        IConditionalOrderGenerator.PollResult memory result = IConditionalOrderGenerator(address(params.handler))
+            .poll(owner, msg.sender, ctx, params.staticInput, offchainInput);
+
+        return (result.code, result.waitUntil);
+    }
+
     function hash(IConditionalOrder.ConditionalOrderParams memory params) public pure returns (bytes32) {
         return keccak256(abi.encode(params));
     }
 
-    // --- internal functions
-
-    /**
-     * Check if the order has been authorised by the owner
-     * @dev If `proof.length == 0`, then we use the single order auth
-     * @param owner of the order whose authorisation is being checked
-     * @param params that uniquely identify the order
-     * @param proof to assert that H(params) is in the merkle tree (optional)
-     */
     function _auth(address owner, IConditionalOrder.ConditionalOrderParams memory params, bytes32[] memory proof)
         internal
         view
         returns (bytes32 ctx)
     {
         if (proof.length != 0) {
-            /// @dev Computing proof using leaf double hashing
             bytes32 leaf = keccak256(bytes.concat(hash(params)));
-
-            // Check if the proof is valid
-            if (!MerkleProof.verify(proof, roots[owner], leaf)) {
-                revert ProofNotAuthed();
-            }
+            require(MerkleProof.verify(proof, roots[owner], leaf), ProofNotAuthed());
         } else {
-            // Check if the order is authorised
             ctx = hash(params);
-            if (!singleOrders[owner][ctx]) {
-                revert SingleOrderNotAuthed();
-            }
+            require(singleOrders[owner][ctx], SingleOrderNotAuthed());
         }
     }
 
-    /**
-     * Check the swap guard if the order is restricted or not
-     * @param owner who's swap guard to check
-     * @param ctx of the order (bytes32(0) if a merkle tree is used, otherwise H(params))
-     * @param params that uniquely identify the order
-     * @param offchainInput that has been proposed by `sender`
-     * @param order GPv2Order.Data that has been proposed by `sender`
-     */
     function _guardCheck(
         address owner,
         bytes32 ctx,
@@ -329,5 +245,33 @@ contract ComposableCoW is ISafeSignatureVerifier {
             return guard.verify(order, ctx, params, offchainInput);
         }
         return true;
+    }
+
+    function _buildSignature(
+        address owner,
+        IConditionalOrder.ConditionalOrderParams calldata params,
+        bytes calldata offchainInput,
+        bytes32[] calldata proof,
+        GPv2Order.Data memory order
+    ) internal view returns (bytes memory signature) {
+        try ExtensibleFallbackHandler(owner).supportsInterface(type(ISignatureVerifierMuxer).interfaceId) returns (
+            bool supported
+        ) {
+            require(supported, InvalidFallbackHandler());
+            signature = abi.encodeWithSignature(
+                "safeSignature(bytes32,bytes32,bytes,bytes)",
+                domainSeparator,
+                GPv2Order.TYPE_HASH,
+                abi.encode(order),
+                abi.encode(PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}))
+            );
+        } catch {
+            signature = abi.encode(order, PayloadStruct({params: params, offchainInput: offchainInput, proof: proof}));
+        }
+    }
+
+    function _getFilledAmount(address owner, GPv2Order.Data memory order) internal view returns (uint256) {
+        bytes memory orderUid = abi.encodePacked(GPv2Order.hash(order, domainSeparator), owner, order.validTo);
+        return settlement.filledAmount(orderUid);
     }
 }
