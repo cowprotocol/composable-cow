@@ -12,7 +12,6 @@ abstract contract Base is Test, SafeHelper, CoWProtocol {
     using TestAccountLib for TestAccount[];
     using TestAccountLib for TestAccount;
 
-    // --- accounts
     TestAccount alice;
     TestAccount bob;
     TestAccount carol;

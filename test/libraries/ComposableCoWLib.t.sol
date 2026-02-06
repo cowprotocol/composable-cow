@@ -37,8 +37,8 @@ library ComposableCoWLib {
         IConditionalOrder.ConditionalOrderParams[] memory leaves,
         uint256 n,
         mapping(bytes32 => IConditionalOrder.ConditionalOrderParams) storage m,
-        function (bytes32[] memory) internal pure returns (bytes32) getRoot,
-        function (bytes32[] memory, uint256) internal pure returns (bytes32[] memory) getProof
+        function(bytes32[] memory) internal pure returns (bytes32) getRoot,
+        function(bytes32[] memory, uint256) internal pure returns (bytes32[] memory) getProof
     ) internal returns (bytes32, bytes32[] memory, IConditionalOrder.ConditionalOrderParams memory) {
         // 1. Create a mapping of hashes to leaves
         for (uint256 i = 0; i < leaves.length; i++) {

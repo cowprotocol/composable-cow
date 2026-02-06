@@ -26,15 +26,12 @@ import {Tokens} from "./Tokens.t.sol";
 abstract contract CoWProtocol is Test, Tokens {
     using TestAccountLib for TestAccount;
 
-    // --- constants
     uint256 constant PAUSE_WINDOW_DURATION = 7776000;
     uint256 constant BUFFER_PERIOD_DURATION = 2592000;
 
-    // --- contracts
     IVault public vault;
     GPv2Settlement public settlement;
 
-    // --- accounts
     TestAccount admin;
     TestAccount solver;
 
