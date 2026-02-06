@@ -8,6 +8,7 @@ import {
     TestNonSafeWallet,
     ERC1271Forwarder
 } from "./ComposableCoW.base.t.sol";
+import {IConditionalOrderGenerator} from "../src/interfaces/IConditionalOrder.sol";
 
 contract ComposableCoWForwarderTest is BaseComposableCoWTest {
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -24,11 +25,11 @@ contract ComposableCoWForwarderTest is BaseComposableCoWTest {
         _create(address(nonSafe), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(nonSafe), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
-        bytes32 badDigest = GPv2Order.hash(order, keccak256("deadbeef"));
+        bytes32 badDigest = GPv2Order.hash(result.order, keccak256("deadbeef"));
 
         // should revert when substituting the hash with a bad one
         vm.expectRevert(ERC1271Forwarder.InvalidHash.selector);

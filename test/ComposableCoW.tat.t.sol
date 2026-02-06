@@ -5,7 +5,8 @@ import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
 import "./ComposableCoW.base.t.sol";
 
-import "../src/types/TradeAboveThreshold.sol";
+import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
+import {BALANCE_INSUFFICIENT} from "../src/types/GoodAfterTime.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "../src/types/ConditionalOrdersUtilsLib.sol";
 
 contract ComposableCoWTatTest is BaseComposableCoWTest {
@@ -24,7 +25,7 @@ contract ComposableCoWTatTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on balance too low
      */
-    function test_getTradeableOrder_FuzzRevertBelowThreshold(uint256 currentBalance, uint256 threshold) public {
+    function test_generateOrder_FuzzRevertBelowThreshold(uint256 currentBalance, uint256 threshold) public {
         // Revert when the current balance is below the minimum balance
         vm.assume(currentBalance < threshold);
 
@@ -35,21 +36,11 @@ contract ComposableCoWTatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // should revert when the current balance is below the minimum balance
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IConditionalOrder.PollTryNextBlock.selector,
-                BALANCE_INSUFFICIENT
-            )
-        );
-        tat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), bytes(""));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryNextBlock.selector, BALANCE_INSUFFICIENT));
+        tat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(o), bytes(""));
     }
 
-    function test_BalanceMet_fuzz(
-        address receiver,
-        uint256 threshold,
-        bytes32 appData,
-        uint256 currentBalance
-    ) public {
+    function test_BalanceMet_fuzz(address receiver, uint256 threshold, bytes32 appData, uint256 currentBalance) public {
         vm.assume(threshold > 0);
         vm.assume(currentBalance >= threshold);
 
@@ -65,14 +56,12 @@ contract ComposableCoWTatTest is BaseComposableCoWTest {
             appData: appData
         });
 
-
         // // set the current balance
         deal(address(token0), address(safe1), currentBalance);
 
         // This should not revert
         GPv2Order.Data memory order =
-            tat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(data), bytes(""));
-
+            tat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(data), bytes(""));
 
         assertEq(address(order.sellToken), address(token0));
         assertEq(address(order.buyToken), address(token1));
@@ -87,8 +76,6 @@ contract ComposableCoWTatTest is BaseComposableCoWTest {
         assertEq(order.sellTokenBalance, GPv2Order.BALANCE_ERC20);
         assertEq(order.buyTokenBalance, GPv2Order.BALANCE_ERC20);
     }
-
-    // --- Helper functions ---
 
     function _tatTest() internal view returns (TradeAboveThreshold.Data memory) {
         return TradeAboveThreshold.Data({

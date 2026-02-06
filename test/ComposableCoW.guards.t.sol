@@ -13,6 +13,7 @@ import {
     TestSwapGuard,
     ReceiverLock
 } from "./ComposableCoW.base.t.sol";
+import {IConditionalOrderGenerator} from "../src/interfaces/IConditionalOrder.sol";
 
 contract ComposableCoWGuardsTest is BaseComposableCoWTest {
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -63,9 +64,9 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // should work as there is no swap guard set
-        (GPv2Order.Data memory order, bytes memory signature) =
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
 
         // restores the state
         vm.revertTo(snapshot);
@@ -74,17 +75,18 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
         _setSwapGuard(address(safe1), evenSwapGuard);
 
         // should not be able to settle as the swap guard doesn't allow it
-        settle(address(safe1), bob, order, signature, ComposableCoW.SwapGuardRestricted.selector);
+        settle(address(safe1), bob, result.order, signature, ComposableCoW.SwapGuardRestricted.selector);
 
-        // should not be able to return the order as the swap guard doesn't allow it
-        vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
-        composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+        // should return INVALID as the swap guard doesn't allow it
+        (IConditionalOrderGenerator.PollResult memory guardResult,) =
+            composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
+        assertEq(uint256(guardResult.code), uint256(IConditionalOrderGenerator.PollResultCode.INVALID));
 
         // should set the swap guard to the odd swap guard
         _setSwapGuard(address(safe1), oddSwapGuard);
 
         // should be able to settle as the swap guard allows it
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
 
         // can remove the swap guard
         _setSwapGuard(address(safe1), ISwapGuard(address(0)));
@@ -117,21 +119,21 @@ contract ComposableCoWGuardsTest is BaseComposableCoWTest {
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // should return a valid order and signature (no guard is set)
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(orderOtherReceiver), new bytes32[](0)
         );
 
         // should set the swap guard
         _setSwapGuard(address(safe1), lock);
 
-        // should revert as the receiver is not the safe
-        vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
-        composableCow.getTradeableOrderWithSignature(
+        // should return INVALID as the receiver is not the safe (polling path doesn't revert)
+        (IConditionalOrderGenerator.PollResult memory guardResult,) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(orderOtherReceiver), new bytes32[](0)
         );
+        assertEq(uint256(guardResult.code), uint256(IConditionalOrderGenerator.PollResultCode.INVALID));
 
-        // should revert as the receiver is not the safe
+        // should revert as the receiver is not the safe (settlement path still reverts)
         vm.expectRevert(ComposableCoW.SwapGuardRestricted.selector);
-        ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, domainSeparator), signature);
+        ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(result.order, domainSeparator), signature);
     }
 }

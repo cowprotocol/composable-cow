@@ -8,11 +8,11 @@ import {
     GPv2Order,
     ComposableCoW,
     ComposableCoWLib,
-    INVALID_HASH,
     BaseComposableCoWTest,
     Safe,
     TestNonSafeWallet
 } from "./ComposableCoW.base.t.sol";
+import {IConditionalOrderGenerator} from "../src/interfaces/IConditionalOrder.sol";
 
 contract ComposableCoWTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
@@ -55,14 +55,14 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _setRoot(address(safe1), root, proofStruct);
 
         // should pass with the root correctly set
-        (GPv2Order.Data memory order, bytes memory signature) =
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // save the state
         uint256 snapshot = vm.snapshot();
 
         // should successfully execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
 
         // restore the state
         vm.revertTo(snapshot);
@@ -97,14 +97,14 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _setRootWithContext(address(safe1), root, proofStruct, testContextValue, abi.encode(bytes32("testValue")));
 
         // should pass with the root correctly set
-        (GPv2Order.Data memory order, bytes memory signature) =
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // save the state
         uint256 snapshot = vm.snapshot();
 
         // should successfully execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
 
         // restore the state
         vm.revertTo(snapshot);
@@ -120,9 +120,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
     /// @dev Should disallow setting a handler that is address(0)
     function test_create_RevertOnInvalidHandler() public {
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(address(0)),
-            salt: keccak256("zero is invalid handler"),
-            staticInput: ""
+            handler: IConditionalOrder(address(0)), salt: keccak256("zero is invalid handler"), staticInput: ""
         });
 
         vm.expectRevert(ComposableCoW.InvalidHandler.selector);
@@ -139,9 +137,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         vm.assume(handler != address(0));
 
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
         bytes32 orderHash = keccak256(abi.encode(params));
 
@@ -167,9 +163,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         vm.assume(handler != address(0));
 
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
         bytes32 orderHash = keccak256(abi.encode(params));
 
@@ -214,11 +208,11 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         uint256 snapshot = vm.snapshot();
 
         // order can be returned as it is authorized
-        (GPv2Order.Data memory order, bytes memory signature) =
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) =
             composableCow.getTradeableOrderWithSignature(address(safe1), params, bytes(""), proof);
 
         // should successfully settle the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
 
         // restores the state
         vm.revertTo(snapshot);
@@ -227,7 +221,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _remove(address(safe1), params);
 
         // should fail to settle the order as it has been removed
-        settle(address(safe1), bob, order, signature, ComposableCoW.SingleOrderNotAuthed.selector);
+        settle(address(safe1), bob, result.order, signature, ComposableCoW.SingleOrderNotAuthed.selector);
     }
 
     /// @dev `BaseConditionalOrder` enforces that the order hash is valid
@@ -246,7 +240,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // should revert as the order hash mismatches
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, INVALID_HASH));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "invalid hash"));
         composableCow.isValidSafeSignature(
             Safe(payable(address(alice.addr))),
             address(0),
@@ -255,7 +249,9 @@ contract ComposableCoWTest is BaseComposableCoWTest {
             bytes32(0),
             abi.encode(order1),
             abi.encode(
-                ComposableCoW.PayloadStruct({proof: new bytes32[](0), params: params, offchainInput: abi.encode(order2)})
+                ComposableCoW.PayloadStruct({
+                    proof: new bytes32[](0), params: params, offchainInput: abi.encode(order2)
+                })
             )
         );
     }
@@ -273,9 +269,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         vm.assume(proof.length > 0);
 
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
 
         // should set the root
@@ -304,9 +298,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         vm.assume(handler != address(0));
 
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
 
         // should revert as the order has not been created
@@ -327,9 +319,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         // Use the mirror handler as we can use it to inspect the calldata
         // passed to the handler.
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(mirror),
-            salt: keccak256("mirror"),
-            staticInput: bytes("")
+            handler: IConditionalOrder(mirror), salt: keccak256("mirror"), staticInput: bytes("")
         });
 
         // should create a single order
@@ -381,9 +371,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
     function test_getTradeableOrderWithSignature_RevertInterfaceNotSupported() public {
         // use the mirror handler as it does not support the interface
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: mirror,
-            salt: keccak256("mirror"),
-            staticInput: bytes("")
+            handler: mirror, salt: keccak256("mirror"), staticInput: bytes("")
         });
 
         // should create a single order
@@ -407,9 +395,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         vm.assume(proof.length > 0);
 
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
 
         // should set the root
@@ -428,9 +414,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         bytes memory staticInput
     ) public {
         IConditionalOrder.ConditionalOrderParams memory params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
 
         // should revert as the order has not been created
@@ -447,13 +431,14 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _create(address(safe1), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
         // order should be valid by using the `isValidSignature` function on the safe
         assertEq(
-            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, composableCow.domainSeparator()), signature),
+            ERC1271(address(safe1))
+                .isValidSignature(GPv2Order.hash(result.order, composableCow.domainSeparator()), signature),
             ERC1271.isValidSignature.selector
         );
     }
@@ -468,13 +453,13 @@ contract ComposableCoWTest is BaseComposableCoWTest {
         _create(address(nonSafe), params, false);
 
         // should return a valid order and signature
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(nonSafe), params, abi.encode(getBlankOrder()), new bytes32[](0)
         );
 
         // order should be valid by using the `isValidSignature` function on the non-safe
         assertEq(
-            nonSafe.isValidSignature(GPv2Order.hash(order, composableCow.domainSeparator()), signature),
+            nonSafe.isValidSignature(GPv2Order.hash(result.order, composableCow.domainSeparator()), signature),
             ERC1271.isValidSignature.selector
         );
     }

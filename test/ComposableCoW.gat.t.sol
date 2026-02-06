@@ -14,13 +14,8 @@ import {
     ComposableCoWLib
 } from "./ComposableCoW.base.t.sol";
 
-import {
-    IExpectedOutCalculator,
-    GoodAfterTime,
-    TOO_EARLY,
-    BALANCE_INSUFFICIENT,
-    PRICE_CHECKER_FAILED
-} from "../src/types/GoodAfterTime.sol";
+import {IExpectedOutCalculator, GoodAfterTime} from "../src/types/GoodAfterTime.sol";
+import {IConditionalOrderGenerator} from "../src/interfaces/IConditionalOrder.sol";
 
 contract ComposableCoWGatTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
@@ -43,7 +38,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
     /**
      * @dev Fuzz test revert on invalid start time
      */
-    function test_getTradeableOrder_FuzzRevertBeforeStartTime(uint256 currentTime, uint256 startTime) public {
+    function test_generateOrder_FuzzRevertBeforeStartTime(uint256 currentTime, uint256 startTime) public {
         // Revert when the start time is before the current time
         vm.assume(currentTime < startTime);
 
@@ -54,14 +49,14 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(currentTime);
 
         // should revert when the current time is before the start time
-        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtEpoch.selector, startTime, TOO_EARLY));
-        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryAtTimestamp.selector, startTime, "too early"));
+        gat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
     /**
      * @dev Fuzz test revert on balance too low
      */
-    function test_getTradeableOrder_FuzzRevertBelowMinBalance(uint256 currentBalance, uint256 minBalance) public {
+    function test_generateOrder_FuzzRevertBelowMinBalance(uint256 currentBalance, uint256 minBalance) public {
         // Revert when the current balance is below the minimum balance
         vm.assume(currentBalance < minBalance);
 
@@ -75,31 +70,22 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // should revert when the current balance is below the minimum balance
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IConditionalOrder.OrderNotValid.selector,
-                BALANCE_INSUFFICIENT
-            )
-        );
-        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, "balance insufficient"));
+        gat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(uint256(1e18)));
     }
 
     /**
      * @dev Fuzz test revert when oracle supplied buyAmount is less than the price checker
      */
-    function test_getTradeableOrder_FuzzRevertTooLowOutput(
-        uint256 buyAmount,
-        uint256 expectedOut,
-        uint256 allowedSlippage
-    ) public {
+    function test_generateOrder_FuzzRevertTooLowOutput(uint256 buyAmount, uint256 expectedOut, uint256 allowedSlippage)
+        public
+    {
         vm.assume(expectedOut < type(uint256).max / 10000);
         allowedSlippage = bound(allowedSlippage, 0, 10000);
         vm.assume(buyAmount < expectedOut * (10000 - allowedSlippage) / 10000);
 
         GoodAfterTime.PriceCheckerPayload memory checker = GoodAfterTime.PriceCheckerPayload({
-            checker: testOutCalculator,
-            payload: abi.encode(expectedOut),
-            allowedSlippage: allowedSlippage
+            checker: testOutCalculator, payload: abi.encode(expectedOut), allowedSlippage: allowedSlippage
         });
 
         GoodAfterTime.Data memory o = _gatTest(abi.encode(checker));
@@ -110,16 +96,11 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         // set the current balance
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IConditionalOrder.PollTryNextBlock.selector,
-                PRICE_CHECKER_FAILED
-            )
-        );
-        gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
+        vm.expectRevert(abi.encodeWithSelector(IConditionalOrder.PollTryNextBlock.selector, "price checker failed"));
+        gat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
     }
 
-    function test_getTradeableOrder_FuzzContext(
+    function test_generateOrder_FuzzContext(
         IERC20 buyToken,
         address owner,
         address receiver,
@@ -154,7 +135,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // This should not revert
         GPv2Order.Data memory order =
-            gat.getTradeableOrder(owner, address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
+            gat.generateOrder(owner, address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
 
         GPv2Order.Data memory comparison = GPv2Order.Data({
             sellToken: token0,
@@ -177,7 +158,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         );
     }
 
-    function test_getTradeableOrder_e2e_Fuzz(
+    function test_generateOrder_e2e_Fuzz(
         uint256 currentTime,
         uint256 startTime,
         uint256 endTime,
@@ -208,18 +189,20 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), currentBalance);
 
         // This should not revert
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(buyAmount), new bytes32[](0)
         );
+        assertEq(uint256(result.code), uint256(IConditionalOrderGenerator.PollResultCode.SUCCESS));
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, settlement.domainSeparator()), signature)
+            ERC1271(address(safe1))
+                    .isValidSignature(GPv2Order.hash(result.order, settlement.domainSeparator()), signature)
                 == ERC1271.isValidSignature.selector
         );
     }
 
-    function test_getTradeableOrder_e2e_FuzzWithPriceChecker(
+    function test_generateOrder_e2e_FuzzWithPriceChecker(
         uint256 startTime,
         uint256 endTime,
         uint256 buyAmount,
@@ -236,9 +219,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // Create the price checker payload
         GoodAfterTime.PriceCheckerPayload memory checker = GoodAfterTime.PriceCheckerPayload({
-            checker: testOutCalculator,
-            payload: abi.encode(expectedOut),
-            allowedSlippage: allowedSlippage
+            checker: testOutCalculator, payload: abi.encode(expectedOut), allowedSlippage: allowedSlippage
         });
 
         // Create the order payload
@@ -256,13 +237,15 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         // This should not revert
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(buyAmount), new bytes32[](0)
         );
+        assertEq(uint256(result.code), uint256(IConditionalOrderGenerator.PollResultCode.SUCCESS));
 
         // Verify that the order is valid - this shouldn't revert
         assertTrue(
-            ERC1271(address(safe1)).isValidSignature(GPv2Order.hash(order, settlement.domainSeparator()), signature)
+            ERC1271(address(safe1))
+                    .isValidSignature(GPv2Order.hash(result.order, settlement.domainSeparator()), signature)
                 == ERC1271.isValidSignature.selector
         );
     }
@@ -286,9 +269,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
 
         // Create the price checker payload
         GoodAfterTime.PriceCheckerPayload memory checker = GoodAfterTime.PriceCheckerPayload({
-            checker: testOutCalculator,
-            payload: abi.encode(expectedOut),
-            allowedSlippage: allowedSlippage
+            checker: testOutCalculator, payload: abi.encode(expectedOut), allowedSlippage: allowedSlippage
         });
 
         // Create the order payload
@@ -302,7 +283,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         deal(address(o.sellToken), address(safe1), o.minSellBalance);
 
         GPv2Order.Data memory order =
-            gat.getTradeableOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
+            gat.generateOrder(address(safe1), address(0), bytes32(0), abi.encode(o), abi.encode(buyAmount));
         bytes32 domainSeparator = composableCow.domainSeparator();
 
         // Verify that the order is valid - this shouldn't revert
@@ -323,8 +304,9 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
      */
     function test_settle_e2e() public {
         // Create the price checker payload
-        GoodAfterTime.PriceCheckerPayload memory checker =
-            GoodAfterTime.PriceCheckerPayload({checker: testOutCalculator, payload: abi.encode(1), allowedSlippage: 50});
+        GoodAfterTime.PriceCheckerPayload memory checker = GoodAfterTime.PriceCheckerPayload({
+            checker: testOutCalculator, payload: abi.encode(1), allowedSlippage: 50
+        });
 
         // Create the order payload
         GoodAfterTime.Data memory o = _gatTest(abi.encode(checker));
@@ -338,15 +320,14 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
         vm.warp(o.startTime);
 
         // 4. Get the order and signature
-        (GPv2Order.Data memory order, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
+        (IConditionalOrderGenerator.PollResult memory result, bytes memory signature) = composableCow.getTradeableOrderWithSignature(
             address(safe1), params, abi.encode(uint256(100)), new bytes32[](0)
         );
+        assertEq(uint256(result.code), uint256(IConditionalOrderGenerator.PollResultCode.SUCCESS));
 
         // 5. Execute the order
-        settle(address(safe1), bob, order, signature, bytes4(0));
+        settle(address(safe1), bob, result.order, signature, bytes4(0));
     }
-
-    // --- Helper functions ---
 
     function createOrder(Safe safe, GoodAfterTime.Data memory gatOrder, IERC20 sellToken, uint256 sellAmount)
         internal
