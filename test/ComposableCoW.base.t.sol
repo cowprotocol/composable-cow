@@ -11,7 +11,7 @@ import {TestAccount, TestAccountLib} from "./libraries/TestAccountLib.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {ComposableCoWLib} from "./libraries/ComposableCoWLib.t.sol";
 
-import {IConditionalOrder, IERC20, BaseConditionalOrder, INVALID_HASH} from "../src/BaseConditionalOrder.sol";
+import {IConditionalOrder, IERC20, BaseConditionalOrder} from "../src/BaseConditionalOrder.sol";
 import {BaseSwapGuard} from "../src/guards/BaseSwapGuard.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
@@ -78,8 +78,6 @@ contract BaseComposableCoWTest is Base, Merkle {
     function test_SetUpState_ComposableCoWDomainSeparator_is_set() public {
         assertEq(composableCow.domainSeparator(), settlement.domainSeparator());
     }
-
-    // --- Helpers ---
 
     /// @dev Sets the root and checks events / state
     function _setRoot(address owner, bytes32 root, ComposableCoW.Proof memory proof) internal {
@@ -185,9 +183,7 @@ contract BaseComposableCoWTest is Base, Merkle {
         returns (IConditionalOrder.ConditionalOrderParams memory params)
     {
         params = IConditionalOrder.ConditionalOrderParams({
-            handler: IConditionalOrder(handler),
-            salt: salt,
-            staticInput: staticInput
+            handler: IConditionalOrder(handler), salt: salt, staticInput: staticInput
         });
     }
 
@@ -216,9 +212,7 @@ contract BaseComposableCoWTest is Base, Merkle {
         _leaves = new IConditionalOrder.ConditionalOrderParams[](n);
         for (uint256 i = 0; i < _leaves.length; i++) {
             _leaves[i] = IConditionalOrder.ConditionalOrderParams({
-                handler: twap,
-                salt: keccak256(abi.encode(bytes32(i))),
-                staticInput: abi.encode(twapData)
+                handler: twap, salt: keccak256(abi.encode(bytes32(i))), staticInput: abi.encode(twapData)
             });
         }
 
@@ -260,7 +254,7 @@ contract TestSwapGuard is BaseSwapGuard {
 
 /// @dev A conditional order handler used for testing that returns the GPv2Order passed in as `offchainInput`
 contract TestConditionalOrderGenerator is BaseConditionalOrder {
-    function getTradeableOrder(address, address, bytes32, bytes calldata, bytes calldata offchainInput)
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata offchainInput)
         public
         pure
         override
@@ -277,6 +271,15 @@ contract TestNonSafeWallet is ERC1271Forwarder {
 
 /// @dev A conditional order handler used for testing that reverts on verify
 contract MirrorConditionalOrder is IConditionalOrder {
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        external
+        pure
+        override
+        returns (GPv2Order.Data memory)
+    {
+        revert OrderNotValid("mirror: not implemented");
+    }
+
     function verify(
         address,
         address,
@@ -292,5 +295,101 @@ contract MirrorConditionalOrder is IConditionalOrder {
             calldatacopy(0, 0, calldatasize())
             revert(0, calldatasize())
         }
+    }
+}
+
+import {IConditionalOrderGenerator} from "../src/interfaces/IConditionalOrder.sol";
+
+/// @dev Test handler that throws OrderNotValid error
+contract OrderNotValidHandler is BaseConditionalOrder {
+    string public reason;
+
+    constructor(string memory _reason) {
+        reason = _reason;
+    }
+
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory)
+    {
+        revert IConditionalOrder.OrderNotValid(reason);
+    }
+}
+
+/// @dev Test handler that throws PollTryNextBlock error
+contract PollTryNextBlockHandler is BaseConditionalOrder {
+    string public reason;
+
+    constructor(string memory _reason) {
+        reason = _reason;
+    }
+
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory)
+    {
+        revert IConditionalOrder.PollTryNextBlock(reason);
+    }
+}
+
+/// @dev Test handler that throws PollTryAtTimestamp error
+contract PollTryAtTimestampHandler is BaseConditionalOrder {
+    uint256 public timestamp;
+    string public reason;
+
+    constructor(uint256 _timestamp, string memory _reason) {
+        timestamp = _timestamp;
+        reason = _reason;
+    }
+
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory)
+    {
+        revert IConditionalOrder.PollTryAtTimestamp(timestamp, reason);
+    }
+}
+
+/// @dev Test handler that throws PollTryAtBlock error
+contract PollTryAtBlockHandler is BaseConditionalOrder {
+    uint256 public blockNum;
+    string public reason;
+
+    constructor(uint256 _blockNum, string memory _reason) {
+        blockNum = _blockNum;
+        reason = _reason;
+    }
+
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory)
+    {
+        revert IConditionalOrder.PollTryAtBlock(blockNum, reason);
+    }
+}
+
+/// @dev Test handler that returns a successful order
+contract SuccessHandler is BaseConditionalOrder {
+    GPv2Order.Data public order;
+
+    function setOrder(GPv2Order.Data memory _order) external {
+        order = _order;
+    }
+
+    function generateOrder(address, address, bytes32, bytes calldata, bytes calldata)
+        public
+        view
+        override
+        returns (GPv2Order.Data memory)
+    {
+        return order;
     }
 }
