@@ -27,16 +27,13 @@ import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 
 contract DeployAnvilStack is Script {
-    // --- constants
     uint256 constant PAUSE_WINDOW_DURATION = 7776000;
     uint256 constant BUFFER_PERIOD_DURATION = 2592000;
 
-    // --- cow protocol contract stack
     IVault public vault;
     GPv2Settlement public settlement;
     address public relayer;
 
-    // --- safe contract stack
     Safe public singleton;
     SafeProxyFactory public factory;
     CompatibilityFallbackHandler public handler;
