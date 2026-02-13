@@ -8,6 +8,7 @@ import {
     IConditionalOrderGenerator,
     BaseConditionalOrder
 } from "../BaseConditionalOrder.sol";
+import {IOrderManifest} from "../interfaces/IOrderManifest.sol";
 import {IAggregatorV3Interface} from "../interfaces/IAggregatorV3Interface.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
@@ -105,5 +106,98 @@ contract StopLoss is BaseConditionalOrder {
         returns (string memory)
     {
         return "stop-loss triggered";
+    }
+
+    // ============ IOrderManifest Override ============
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Custom implementation that shows order structure even when strike not reached
+    function getManifestPage(
+        address owner,
+        bytes32 ctx,
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        uint256 offset,
+        uint256 limit
+    ) external view override returns (ManifestEntry[] memory entries, bool hasMore) {
+        // Single-shot: only index 0 exists
+        if (offset > 0 || limit == 0) {
+            return (new ManifestEntry[](0), false);
+        }
+
+        Data memory data = abi.decode(staticInput, (Data));
+
+        // Check if order has expired
+        if (data.validTo < block.timestamp) {
+            return (new ManifestEntry[](0), false);
+        }
+
+        // Build the order structure (without condition checks)
+        GPv2Order.Data memory order = GPv2Order.Data(
+            data.sellToken,
+            data.buyToken,
+            data.receiver,
+            data.sellAmount,
+            data.buyAmount,
+            data.validTo,
+            data.appData,
+            0,
+            data.isSellOrder ? GPv2Order.KIND_SELL : GPv2Order.KIND_BUY,
+            data.isPartiallyFillable,
+            GPv2Order.BALANCE_ERC20,
+            GPv2Order.BALANCE_ERC20
+        );
+
+        // Check if currently active (strike reached and oracles valid)
+        bool isActive = _checkStrikeCondition(data);
+
+        entries = new ManifestEntry[](1);
+        entries[0] = ManifestEntry({
+            index: 0,
+            order: order,
+            validFrom: 0, // Condition-based, valid immediately when strike hit
+            isActive: isActive
+        });
+        hasMore = false;
+    }
+
+    /// @dev Check if strike condition is currently met (without reverting)
+    function _checkStrikeCondition(Data memory data) internal view returns (bool) {
+        // Check expiry
+        if (data.validTo < block.timestamp) {
+            return false;
+        }
+
+        // Get oracle prices
+        try data.sellTokenPriceOracle.latestRoundData() returns (
+            uint80, int256 basePrice, uint256, uint256 sellUpdatedAt, uint80
+        ) {
+            try data.buyTokenPriceOracle.latestRoundData() returns (
+                uint80, int256 quotePrice, uint256, uint256 buyUpdatedAt, uint80
+            ) {
+                // Check price validity
+                if (basePrice <= 0 || quotePrice <= 0) {
+                    return false;
+                }
+
+                // Check staleness
+                if (
+                    sellUpdatedAt < block.timestamp - data.maxTimeSinceLastOracleUpdate
+                        || buyUpdatedAt < block.timestamp - data.maxTimeSinceLastOracleUpdate
+                ) {
+                    return false;
+                }
+
+                // Scale prices and check strike
+                int256 scaledBasePrice = Utils.scalePrice(basePrice, data.sellTokenPriceOracle.decimals(), 18);
+                int256 scaledQuotePrice = Utils.scalePrice(quotePrice, data.buyTokenPriceOracle.decimals(), 18);
+
+                return scaledBasePrice * SCALING_FACTOR / scaledQuotePrice <= data.strike;
+            } catch {
+                return false;
+            }
+        } catch {
+            return false;
+        }
     }
 }

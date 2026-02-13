@@ -11,6 +11,7 @@ import {
     GPv2Order,
     BaseConditionalOrder
 } from "../BaseConditionalOrder.sol";
+import {IOrderManifest} from "../interfaces/IOrderManifest.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 string constant TOO_EARLY = "too early";
@@ -104,5 +105,42 @@ contract GoodAfterTime is BaseConditionalOrder {
         returns (string memory)
     {
         return "good-after-time order ready";
+    }
+
+    // ============ IOrderManifest Override ============
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Custom implementation to properly set validFrom to startTime
+    function getManifestPage(
+        address owner,
+        bytes32 ctx,
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        uint256 offset,
+        uint256 limit
+    ) external view override returns (ManifestEntry[] memory entries, bool hasMore) {
+        // Single-shot: only index 0 exists
+        if (offset > 0 || limit == 0) {
+            return (new ManifestEntry[](0), false);
+        }
+
+        Data memory data = abi.decode(staticInput, (Data));
+
+        // Try to generate the order (may fail if before startTime or conditions not met)
+        try this.generateOrder(owner, address(0), ctx, staticInput, offchainInput) returns (
+            GPv2Order.Data memory order
+        ) {
+            entries = new ManifestEntry[](1);
+            entries[0] = ManifestEntry({
+                index: 0,
+                order: order,
+                validFrom: data.startTime,
+                isActive: block.timestamp >= data.startTime && block.timestamp <= data.endTime
+            });
+            hasMore = false;
+        } catch {
+            // If order generation fails, return empty
+            return (new ManifestEntry[](0), false);
+        }
     }
 }

@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IERC20, GPv2Order, IConditionalOrder, BaseConditionalOrder} from "../BaseConditionalOrder.sol";
+import {
+    IERC20,
+    GPv2Order,
+    IConditionalOrder,
+    IConditionalOrderGenerator,
+    BaseConditionalOrder
+} from "../BaseConditionalOrder.sol";
+import {IOrderManifest} from "../interfaces/IOrderManifest.sol";
 import {ConditionalOrdersUtilsLib as Utils} from "./ConditionalOrdersUtilsLib.sol";
 
 /// @title PerpetualStableSwap - 1:1 swaps between token pairs with spread
@@ -51,7 +58,64 @@ contract PerpetualStableSwap is BaseConditionalOrder {
             GPv2Order.BALANCE_ERC20
         );
     }
-    // Uses default getNextPollTimestamp() and describeOrder() from BaseConditionalOrder
+
+    /// @inheritdoc IConditionalOrderGenerator
+    function describeOrder(address, bytes32, bytes calldata, GPv2Order.Data memory)
+        external
+        pure
+        override
+        returns (string memory)
+    {
+        return "perpetual stable swap ready";
+    }
+
+    // ============ IOrderManifest Override (UNBOUNDED) ============
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Perpetual orders have unbounded cardinality - they keep producing orders indefinitely
+    function getManifestInfo(address, bytes32, bytes calldata)
+        external
+        pure
+        override
+        returns (ManifestInfo memory info)
+    {
+        info = ManifestInfo({cardinality: Cardinality.UNBOUNDED, totalOrders: 0});
+    }
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Returns current tradeable order with hasMore=true (always more orders possible)
+    function getManifestPage(
+        address owner,
+        bytes32 ctx,
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        uint256 offset,
+        uint256 limit
+    ) external view override returns (ManifestEntry[] memory entries, bool hasMore) {
+        // For unbounded orders, we only return the current order at offset 0
+        if (offset > 0 || limit == 0) {
+            return (new ManifestEntry[](0), true); // hasMore is always true for unbounded
+        }
+
+        // Try to generate the current order
+        try this.generateOrder(owner, address(0), ctx, staticInput, offchainInput) returns (
+            GPv2Order.Data memory order
+        ) {
+            entries = new ManifestEntry[](1);
+            entries[0] = ManifestEntry({
+                index: 0, // Always 0 for unbounded (current order)
+                order: order,
+                validFrom: 0, // Valid immediately
+                isActive: block.timestamp <= order.validTo
+            });
+            hasMore = true; // Perpetual orders always have more
+        } catch {
+            // If order generation fails (e.g., not funded), return empty but still hasMore
+            return (new ManifestEntry[](0), true);
+        }
+    }
+
+    // ============ Internal Functions ============
 
     function side(address owner, Data memory data) internal view returns (BuySellData memory buySellData) {
         IERC20 tokenA = IERC20(address(data.tokenA));
