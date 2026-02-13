@@ -4,13 +4,15 @@ pragma solidity >=0.8.0 <0.9.0;
 import {GPv2Order, IERC20} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
 import {IERC165, IConditionalOrder, IConditionalOrderGenerator} from "./interfaces/IConditionalOrder.sol";
+import {IOrderManifest} from "./interfaces/IOrderManifest.sol";
 
 string constant INVALID_HASH = "invalid hash";
 
 /// @title BaseConditionalOrder - Base implementation for conditional orders
 /// @author mfw78 <mfw78@nxm.rs>
 /// @notice Provides dual-path support: lean verify() for settlement, rich poll() for watch-towers
-abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
+/// @dev Includes default IOrderManifest implementation for single-shot orders
+abstract contract BaseConditionalOrder is IConditionalOrderGenerator, IOrderManifest {
     /// @dev Signals poll() to use order.validTo + 1 as next poll time
     uint256 internal constant POLL_AT_VALIDTO = 0;
     /// @dev Signals poll() that this is the final order, stop polling after fill
@@ -87,9 +89,57 @@ abstract contract BaseConditionalOrder is IConditionalOrderGenerator {
         bytes calldata offchainInput
     ) public view virtual override returns (GPv2Order.Data memory order);
 
+    // ============ IOrderManifest Default Implementation ============
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Default: single-shot order (FINITE with 1 order). Override for multi-part orders.
+    function getManifestInfo(address, bytes32, bytes calldata)
+        external
+        view
+        virtual
+        override
+        returns (ManifestInfo memory info)
+    {
+        info = ManifestInfo({cardinality: Cardinality.FINITE, totalOrders: 1});
+    }
+
+    /// @inheritdoc IOrderManifest
+    /// @dev Default: wraps generateOrder() for single entry. Override for multi-part orders.
+    function getManifestPage(
+        address owner,
+        bytes32 ctx,
+        bytes calldata staticInput,
+        bytes calldata offchainInput,
+        uint256 offset,
+        uint256 limit
+    ) external view virtual override returns (ManifestEntry[] memory entries, bool hasMore) {
+        // Single-shot: only index 0 exists
+        if (offset > 0 || limit == 0) {
+            return (new ManifestEntry[](0), false);
+        }
+
+        // Try to generate the order
+        try this.generateOrder(owner, address(0), ctx, staticInput, offchainInput) returns (
+            GPv2Order.Data memory order
+        ) {
+            entries = new ManifestEntry[](1);
+            entries[0] = ManifestEntry({
+                index: 0,
+                order: order,
+                validFrom: 0, // Single-shot orders are valid immediately (no explicit validFrom)
+                isActive: block.timestamp <= order.validTo
+            });
+            hasMore = false;
+        } catch {
+            // If order generation fails, return empty (order not ready or invalid)
+            return (new ManifestEntry[](0), false);
+        }
+    }
+
     /// @inheritdoc IERC165
     function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
-        return interfaceId == type(IConditionalOrderGenerator).interfaceId || interfaceId == type(IERC165).interfaceId;
+        return interfaceId == type(IConditionalOrderGenerator).interfaceId
+            || interfaceId == type(IOrderManifest).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
 
     /// @dev Decode revert data into a PollResult
