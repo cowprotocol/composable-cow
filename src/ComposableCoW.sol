@@ -17,7 +17,7 @@ import {CoWSettlement} from "./vendored/CoWSettlement.sol";
 
 /// @title ComposableCoW - Conditional order framework for CoW Protocol
 /// @author mfw78 <mfw78@nxm.rs>
-/// @notice Enables Safe wallets to create conditional orders with dual-path verification.
+/// @notice Enables ERC-1271 compatible wallets to create conditional orders with dual-path verification.
 /// @dev Settlement path (isValidSafeSignature) is gas-optimized; polling path returns rich metadata.
 contract ComposableCoW is ISafeSignatureVerifier {
     error ProofNotAuthed();
@@ -40,6 +40,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
     event MerkleRootSet(address indexed owner, bytes32 root, Proof proof);
     event ConditionalOrderCreated(address indexed owner, IConditionalOrder.ConditionalOrderParams params);
+    event ConditionalOrderRemoved(address indexed owner, bytes32 indexed orderHash);
     event SwapGuardSet(address indexed owner, ISwapGuard swapGuard);
 
     CoWSettlement public immutable settlement;
@@ -87,6 +88,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
     function remove(bytes32 singleOrderHash) external {
         singleOrders[msg.sender][singleOrderHash] = false;
         cabinet[msg.sender][singleOrderHash] = bytes32(0);
+        emit ConditionalOrderRemoved(msg.sender, singleOrderHash);
     }
 
     function setSwapGuard(ISwapGuard swapGuard) external {
