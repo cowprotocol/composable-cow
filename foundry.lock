@@ -1,0 +1,26 @@
+{
+  "lib/@openzeppelin": {
+    "rev": "fd81a96f01cc42ef1c9a5399364968d0e07e9e90"
+  },
+  "lib/cowprotocol": {
+    "branch": {
+      "name": "main",
+      "rev": "a10f40788af29467e87de3dbf2196662b0a6b500"
+    }
+  },
+  "lib/forge-std": {
+    "branch": {
+      "name": "v1.5.3",
+      "rev": "73a504d2cf6f37b7ce285b479f4c681f76e95f1b"
+    }
+  },
+  "lib/murky": {
+    "rev": "1d9566b908b9702c45d354a1caabe8ef5a69938d"
+  },
+  "lib/safe": {
+    "branch": {
+      "name": "main",
+      "rev": "11273c1f08eda18ed8ff49ec1d4abec5e451ff21"
+    }
+  }
+}
