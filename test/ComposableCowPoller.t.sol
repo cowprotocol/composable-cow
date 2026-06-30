@@ -20,6 +20,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     uint256 constant LIMIT = 1e18;
     uint256 constant N = 3;
     uint256 constant FREQ = 1 hours;
+    bytes32 constant SALT = keccak256("twap");
 
     ComposableCowPoller poller;
     IValueFactory currentBlockTimestampFactory;
@@ -39,25 +40,41 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     function _bundle() internal view returns (TWAPOrder.Data memory) {
-        return TWAPOrder.Data({
-            sellToken: token0,
-            buyToken: token1,
-            receiver: address(0), // the owner itself
-            partSellAmount: PART,
-            minPartLimit: LIMIT,
-            t0: 0, // resolved from the cabinet via createWithContext
-            n: N,
-            t: FREQ,
-            span: 0, // valid for the whole epoch
-            appData: keccak256("dca.pull")
-        });
+        return
+            TWAPOrder.Data({
+                sellToken: token0,
+                buyToken: token1,
+                receiver: address(0), // the owner itself
+                partSellAmount: PART,
+                minPartLimit: LIMIT,
+                t0: 0, // resolved from the cabinet via createWithContext
+                n: N,
+                t: FREQ,
+                span: 0, // valid for the whole epoch
+                appData: keccak256("dca.pull")
+            });
     }
 
     /// @dev Creates a JIT-funded TWAP: order via context, the funder funds + approves the poller,
-    ///      and the schedule is registered.
-    function _setupSchedule() internal returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx) {
-        params = super.createOrder(twap, keccak256("dca"), abi.encode(_bundle()));
-        _createWithContext(address(safe1), params, currentBlockTimestampFactory, bytes(""), false);
+    ///      and the schedule is registered. Returns the order's cabinet key `ctx`
+    ///      (`ComposableCoW.hash(params)`, used for cabinet/remove) and the appData-independent
+    ///      poller schedule key `id` (used for topUp/revoke).
+    function _setupSchedule()
+        internal
+        returns (
+            IConditionalOrder.ConditionalOrderParams memory params,
+            bytes32 ctx,
+            bytes32 id
+        )
+    {
+        params = super.createOrder(twap, SALT, abi.encode(_bundle()));
+        _createWithContext(
+            address(safe1),
+            params,
+            currentBlockTimestampFactory,
+            bytes(""),
+            false
+        );
         ctx = composableCow.hash(params);
 
         // Capital lives in the funder (the EOA), which approves the poller for the full notional.
@@ -65,18 +82,30 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.prank(funder);
         token0.approve(address(poller), PART * N);
 
-        // Register the schedule (only the funder may do this). Amount/window/token are derived
-        // from the live order via `getTradeableOrder`, so the schedule only carries the handler,
-        // the funds source, the destination, and the order's staticInput.
+        // Register the schedule (only the funder may do this). The schedule carries the handler,
+        // the funds source, the destination, the order's `salt` (so the poller can rebuild `ctx`
+        // on-chain) and its `staticInput`. The key is appData-independent so `topUp(id)` can live
+        // in the order's own appData.
         vm.prank(funder);
-        poller.register(
-            ctx,
+        id = poller.register(
             ComposableCowPoller.Schedule({
                 handler: IConditionalOrderGenerator(address(twap)),
                 funder: funder,
                 owner: address(safe1),
+                salt: SALT,
                 staticInput: abi.encode(_bundle())
             })
+        );
+
+        assertEq(
+            id,
+            poller.scheduleId(
+                funder,
+                IConditionalOrderGenerator(address(twap)),
+                address(safe1),
+                SALT
+            ),
+            "id matches the off-chain derivation"
         );
     }
 
@@ -86,46 +115,70 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev A single top-up funds the owner with exactly the current part.
     function test_topUp_fundsCurrentPart() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         vm.warp(_t0(ctx));
 
-        assertEq(token0.balanceOf(address(safe1)), 0, "owner empty before pull");
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "owner empty before pull"
+        );
 
-        poller.topUp(ctx);
+        poller.topUp(id);
 
-        assertEq(token0.balanceOf(address(safe1)), PART, "owner funded with exactly one part");
-        assertEq(token0.balanceOf(funder), PART * N - PART, "exactly one part left the funder");
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            PART,
+            "owner funded with exactly one part"
+        );
+        assertEq(
+            token0.balanceOf(funder),
+            PART * N - PART,
+            "exactly one part left the funder"
+        );
     }
 
     /// @dev Repeated calls within a part are idempotent (balance-capped to one part).
     function test_topUp_idempotentWithinPart() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         vm.warp(_t0(ctx));
 
-        poller.topUp(ctx);
-        poller.topUp(ctx); // no-op: this part has already been funded
+        poller.topUp(id);
+        poller.topUp(id); // no-op: this part has already been funded
 
-        assertEq(token0.balanceOf(address(safe1)), PART, "still exactly one part");
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            PART,
+            "still exactly one part"
+        );
         assertEq(token0.balanceOf(funder), PART * N - PART, "no extra pull");
     }
 
     /// @dev The headline flow: each part is funded JIT and the owner holds nothing in between.
     function test_topUp_fundsEachPartAcrossSchedule() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         uint256 t0 = _t0(ctx);
 
         for (uint256 part = 0; part < N; part++) {
             vm.warp(t0 + part * FREQ);
 
-            assertEq(token0.balanceOf(address(safe1)), 0, "owner empty before part");
-            poller.topUp(ctx);
+            assertEq(
+                token0.balanceOf(address(safe1)),
+                0,
+                "owner empty before part"
+            );
+            poller.topUp(id);
             assertEq(token0.balanceOf(address(safe1)), PART, "part funded");
 
             // Simulate the part settling: the owner's balance is consumed.
             vm.prank(address(safe1));
             token0.transfer(bob.addr, PART);
 
-            assertEq(token0.balanceOf(funder), PART * N - PART * (part + 1), "one part funded per window");
+            assertEq(
+                token0.balanceOf(funder),
+                PART * N - PART * (part + 1),
+                "one part funded per window"
+            );
         }
     }
 
@@ -134,34 +187,46 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     ///      drains the owner. Without the per-order guard, the drained owner would be refilled
     ///      immediately and that balance would be sold as the next part, a full interval early.
     function test_topUp_cannotFundFuturePartEarly() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         vm.warp(_t0(ctx)); // part 0 window
 
-        poller.topUp(ctx);
+        poller.topUp(id);
         assertEq(token0.balanceOf(address(safe1)), PART, "part 0 funded");
 
         // Simulate the part settling: the owner's balance is consumed.
         vm.prank(address(safe1));
         token0.transfer(bob.addr, PART);
-        assertEq(token0.balanceOf(address(safe1)), 0, "owner drained by the fill");
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "owner drained by the fill"
+        );
 
         // Still inside part 0's window: a fresh pull must NOT refill.
-        poller.topUp(ctx);
+        poller.topUp(id);
 
-        assertEq(token0.balanceOf(address(safe1)), 0, "next part not funded early");
-        assertEq(token0.balanceOf(funder), PART * N - PART, "exactly one part ever left the funder");
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "next part not funded early"
+        );
+        assertEq(
+            token0.balanceOf(funder),
+            PART * N - PART,
+            "exactly one part ever left the funder"
+        );
     }
 
     /// @dev The pull is bounded to the schedule window: after it ends, `getTradeableOrder` reverts.
     function test_topUp_RevertWhen_scheduleEnded() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         vm.warp(_t0(ctx) + N * FREQ);
 
         vm.expectRevert(); // IConditionalOrder.OrderNotValid(...) from the handler
-        poller.topUp(ctx);
+        poller.topUp(id);
     }
 
-    /// @dev An unregistered context cannot be topped up.
+    /// @dev An unregistered schedule cannot be topped up.
     function test_topUp_RevertWhen_noSchedule() public {
         vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
         poller.topUp(keccak256("unknown"));
@@ -169,26 +234,25 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev Cancelling the order flips `singleOrders` false, which disables the poller for free.
     function test_remove_killsPoller() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
         vm.warp(_t0(ctx));
 
         vm.prank(address(safe1));
         composableCow.remove(ctx);
 
         vm.expectRevert(ComposableCowPoller.OrderNotLive.selector);
-        poller.topUp(ctx);
+        poller.topUp(id);
     }
 
     /// @dev Only the funds source may register a schedule that draws on its own funds.
     function test_register_RevertWhen_notFunder() public {
-        bytes32 ctx = keccak256("some.ctx");
         vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
         poller.register(
-            ctx,
             ComposableCowPoller.Schedule({
                 handler: IConditionalOrderGenerator(address(twap)),
                 funder: funder, // attacker points at someone else's funds
                 owner: address(safe1),
+                salt: SALT,
                 staticInput: abi.encode(_bundle())
             })
         );
@@ -196,15 +260,15 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev Only the funder may revoke, and doing so clears the schedule.
     function test_revoke_clearsSchedule() public {
-        (, bytes32 ctx) = _setupSchedule();
+        (, , bytes32 id) = _setupSchedule();
 
         vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
-        poller.revoke(ctx);
+        poller.revoke(id);
 
         vm.prank(funder);
-        poller.revoke(ctx);
+        poller.revoke(id);
 
         vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
-        poller.topUp(ctx);
+        poller.topUp(id);
     }
 }
