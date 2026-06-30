@@ -38,8 +38,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         deal(address(token0), address(safe1), 0);
     }
 
-    // ============ Helpers ============
-
     function _bundle() internal view returns (TWAPOrder.Data memory) {
         return TWAPOrder.Data({
             sellToken: token0,
@@ -85,8 +83,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     function _t0(bytes32 ctx) internal view returns (uint256) {
         return uint256(composableCow.cabinet(address(safe1), ctx));
     }
-
-    // ============ Tests ============
 
     /// @dev A single top-up funds the owner with exactly the current part.
     function test_topUp_fundsCurrentPart() public {
