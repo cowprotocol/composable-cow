@@ -118,8 +118,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         (, bytes32 ctx) = _setupSchedule();
         uint256 t0 = _t0(ctx);
 
-        for (uint256 k = 0; k < N; k++) {
-            vm.warp(t0 + k * FREQ);
+        for (uint256 part = 0; part < N; part++) {
+            vm.warp(t0 + part * FREQ);
 
             assertEq(token0.balanceOf(address(safe1)), 0, "owner empty before part");
             poller.topUp(ctx);
@@ -129,7 +129,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             vm.prank(address(safe1));
             token0.transfer(bob.addr, PART);
 
-            assertEq(token0.balanceOf(funder), PART * N - PART * (k + 1), "one part funded per window");
+            assertEq(token0.balanceOf(funder), PART * N - PART * (part + 1), "one part funded per window");
         }
     }
 

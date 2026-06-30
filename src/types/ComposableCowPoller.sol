@@ -72,12 +72,12 @@ contract ComposableCowPoller {
     /// @notice Register or update the schedule for a given order context.
     /// @dev Only the funds source itself may register, so nobody can point a pull at someone
     ///      else's funder. `ctx` is `ComposableCoW.hash(params)` of the conditional order.
-    function register(bytes32 ctx, Schedule calldata s) external {
-        if (msg.sender != s.funder) revert OnlyFunder();
-        schedules[ctx] = s;
+    function register(bytes32 ctx, Schedule calldata schedule) external {
+        if (msg.sender != schedule.funder) revert OnlyFunder();
+        schedules[ctx] = schedule;
         // A re-registration starts a fresh funding history for this context.
         delete lastFunded[ctx];
-        emit ScheduleRegistered(ctx, s.owner, s.funder);
+        emit ScheduleRegistered(ctx, schedule.owner, schedule.funder);
     }
 
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
@@ -94,17 +94,17 @@ contract ComposableCowPoller {
     /// @dev Idempotent within an order, and a no-op once that order has been funded. Reverts
     ///      outside an active window (delegated to the handler's `getTradeableOrder`).
     function topUp(bytes32 ctx) external {
-        Schedule memory s = schedules[ctx];
-        if (s.funder == address(0)) revert NoSchedule();
+        Schedule memory schedule = schedules[ctx];
+        if (schedule.funder == address(0)) revert NoSchedule();
 
         // The order must still be authorised. `remove` flips this false, disabling the poller.
-        if (!composableCow.singleOrders(s.owner, ctx)) revert OrderNotLive();
+        if (!composableCow.singleOrders(schedule.owner, ctx)) revert OrderNotLive();
 
         // Reuse the handler's own logic: this reverts outside the active window and yields the
         // exact discrete order. The amount and token come from here, so the caller controls
         // nothing that could change how much moves or in which asset.
         GPv2Order.Data memory order =
-            s.handler.getTradeableOrder(s.owner, address(this), ctx, s.staticInput, bytes(""));
+            schedule.handler.getTradeableOrder(schedule.owner, address(this), ctx, schedule.staticInput, bytes(""));
 
         // Fund each discrete order at most once, keyed by its unique digest. Once the current
         // order is handled we refuse to top up again until time advances into the next one. This
@@ -114,10 +114,10 @@ contract ComposableCowPoller {
         lastFunded[ctx] = digest;
 
         // Top up the owner to exactly the current order. The destination is fixed by the schedule.
-        uint256 bal = order.sellToken.balanceOf(s.owner);
-        if (bal < order.sellAmount) {
-            uint256 deficit = order.sellAmount - bal;
-            order.sellToken.transferFrom(s.funder, s.owner, deficit);
+        uint256 balance = order.sellToken.balanceOf(schedule.owner);
+        if (balance < order.sellAmount) {
+            uint256 deficit = order.sellAmount - balance;
+            order.sellToken.transferFrom(schedule.funder, schedule.owner, deficit);
             emit Pulled(ctx, digest, deficit);
         }
     }
