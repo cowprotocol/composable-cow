@@ -25,6 +25,7 @@ import {TWAP} from "../src/types/twap/TWAP.sol";
 import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
+import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
 
 contract DeployAnvilStack is Script {
     // --- constants
@@ -65,11 +66,14 @@ contract DeployAnvilStack is Script {
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
+        ComposableCowPoller poller = new ComposableCowPoller(composableCow);
 
         vm.stopBroadcast();
 
         console.log("Safe address");
         console.logAddress(address(proxy));
+        console.log("ComposableCowPoller address");
+        console.logAddress(address(poller));
     }
 
     function deploySafe(address owner) internal returns (SafeProxy proxy) {
