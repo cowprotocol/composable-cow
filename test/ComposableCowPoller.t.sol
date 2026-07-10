@@ -31,7 +31,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
-        poller = new ComposableCowPoller();
+        poller = new ComposableCowPoller(composableCow);
         funder = makeAddr("funder");
 
         // The owner (safe1) starts with no sell token: funds arrive just-in-time.
@@ -60,7 +60,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     /// @dev Creates a JIT-funded TWAP: order via context, the funder funds + approves the poller,
     ///      and the schedule is registered. Returns the order's cabinet key `ctx`
     ///      (`ComposableCoW.hash(params)`, used for cabinet/remove) and the appData-independent
-    ///      poller schedule key `id` (used for topUp/revoke).
+    ///      poller schedule key `id` (used for pollFunds/revoke).
     function _setupSchedule()
         internal
         returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx, bytes32 id)
@@ -101,6 +101,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     function _register(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
         vm.prank(funder);
         id = poller.register(schedule);
+    }
+
+    /// @dev The order's resolved start time `t0`, read back from the cabinet where
+    ///      `createWithContext` stored it via `CurrentBlockTimestampFactory`.
+    function _t0(bytes32 ctx) internal view returns (uint256) {
+        return uint256(composableCow.cabinet(address(safe1), ctx));
     }
 
     /// @dev A registered schedule is stored under its appData-independent id.
@@ -193,5 +199,159 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
         poller.revoke(id);
+    }
+
+    /// @dev A single poll moves exactly the current part into the owner.
+    function test_pollFunds_fundsCurrentPart() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "owner empty before pull"
+        );
+
+        poller.pollFunds(id);
+
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            PART,
+            "owner funded with exactly one part"
+        );
+        assertEq(
+            token0.balanceOf(funder),
+            PART * N - PART,
+            "exactly one part left the funder"
+        );
+    }
+
+    /// @dev Funds move unconditionally: even if the owner already holds a balance (e.g. from another
+    ///      concurrent order), the full part is still pulled, so orders never share funding.
+    function test_pollFunds_movesFullAmountUnconditionally() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        // The owner already holds an unrelated balance (e.g. funded for another order).
+        deal(address(token0), address(safe1), PART);
+
+        poller.pollFunds(id);
+
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            PART * 2,
+            "full part pulled on top of the existing balance"
+        );
+        assertEq(
+            token0.balanceOf(funder),
+            PART * N - PART,
+            "a full part left the funder"
+        );
+    }
+
+    /// @dev Repeated calls for the same part are a no-op (guarded by the order digest).
+    function test_pollFunds_idempotentWithinPart() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        poller.pollFunds(id);
+        poller.pollFunds(id); // no-op: this part has already been funded
+
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            PART,
+            "still exactly one part"
+        );
+        assertEq(token0.balanceOf(funder), PART * N - PART, "no extra pull");
+    }
+
+    /// @dev The headline flow: each part is funded JIT and the owner holds nothing in between.
+    function test_pollFunds_fundsEachPartAcrossSchedule() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        uint256 t0 = _t0(ctx);
+
+        for (uint256 part = 0; part < N; part++) {
+            vm.warp(t0 + part * FREQ);
+
+            assertEq(
+                token0.balanceOf(address(safe1)),
+                0,
+                "owner empty before part"
+            );
+            poller.pollFunds(id);
+            assertEq(token0.balanceOf(address(safe1)), PART, "part funded");
+
+            // Simulate the part settling: the owner's balance is consumed.
+            vm.prank(address(safe1));
+            token0.transfer(bob.addr, PART);
+
+            assertEq(
+                token0.balanceOf(funder),
+                PART * N - PART * (part + 1),
+                "one part funded per window"
+            );
+        }
+    }
+
+    /// @dev The anti-premature-execution guard: once a part is funded, the *next* part's funds
+    ///      cannot be pulled until time advances into its window — even after the part settles and
+    ///      drains the owner. Without the per-order guard, the drained owner would be refilled
+    ///      immediately and that balance would be sold as the next part, a full interval early.
+    function test_pollFunds_cannotFundFuturePartEarly() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx)); // part 0 window
+
+        poller.pollFunds(id);
+        assertEq(token0.balanceOf(address(safe1)), PART, "part 0 funded");
+
+        // Simulate the part settling: the owner's balance is consumed.
+        vm.prank(address(safe1));
+        token0.transfer(bob.addr, PART);
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "owner drained by the fill"
+        );
+
+        // Still inside part 0's window: a fresh pull must NOT refill.
+        poller.pollFunds(id);
+
+        assertEq(
+            token0.balanceOf(address(safe1)),
+            0,
+            "next part not funded early"
+        );
+        assertEq(
+            token0.balanceOf(funder),
+            PART * N - PART,
+            "exactly one part ever left the funder"
+        );
+    }
+
+    /// @dev The pull is bounded to the schedule window: after it ends, `getTradeableOrder` reverts.
+    function test_pollFunds_RevertWhen_scheduleEnded() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx) + N * FREQ);
+
+        vm.expectRevert(); // IConditionalOrder.OrderNotValid(...) from the handler
+        poller.pollFunds(id);
+    }
+
+    /// @dev An unregistered schedule cannot be polled.
+    function test_pollFunds_RevertWhen_noSchedule() public {
+        vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
+        poller.pollFunds(keccak256("unknown"));
+    }
+
+    /// @dev Cancelling the order flips `singleOrders` false, which disables the poller for free.
+    function test_remove_killsPoller() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        vm.prank(address(safe1));
+        composableCow.remove(ctx);
+
+        vm.expectRevert(ComposableCowPoller.OrderNotLive.selector);
+        poller.pollFunds(id);
     }
 }
