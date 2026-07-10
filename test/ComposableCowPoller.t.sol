@@ -159,4 +159,24 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             })
         );
     }
+
+    /// @dev The funder can revoke, which clears the schedule.
+    function test_revoke_clearsSchedule() public {
+        (, , bytes32 id) = _setupSchedule();
+
+        vm.prank(funder);
+        poller.revoke(id);
+
+        // The schedule is cleared: its funder is zeroed.
+        (, address scheduleFunder, , ,) = poller.schedules(id);
+        assertEq(scheduleFunder, address(0), "schedule cleared");
+    }
+
+    /// @dev Only the funds source may revoke.
+    function test_revoke_RevertWhen_notFunder() public {
+        (, , bytes32 id) = _setupSchedule();
+
+        vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
+        poller.revoke(id);
+    }
 }
