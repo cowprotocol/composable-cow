@@ -19,13 +19,12 @@ timeout = 100000
 verbosity = 3
 
 # Contract verification via the Etherscan API V2.
-# The legacy per-explorer V1 endpoints (e.g. api.gnosisscan.io) are deprecated; V2 uses a single
-# host with the chain id as a query parameter, and one etherscan.io API key works across all chains.
+# The legacy per-explorer V1 endpoints (e.g. api.gnosisscan.io) are deprecated. 
 # Set ETHERSCAN_API_KEY to a key from https://etherscan.io/myapikey
 [etherscan]
-mainnet = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=1" }
-gnosis = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=100" }
-sepolia = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=11155111" }
-arbitrum = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=42161" }
-bnb = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=56" }
-linea = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=59144" }
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+gnosis = { key = "${ETHERSCAN_API_KEY}" }
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+arbitrum = { key = "${ETHERSCAN_API_KEY}" }
+bnb = { key = "${ETHERSCAN_API_KEY}" }
+linea = { key = "${ETHERSCAN_API_KEY}" }
