@@ -199,6 +199,16 @@ forge script script/deploy_ComposableCoW.s.sol:DeployComposableCoW --rpc-url $ET
 forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
+The `ComposableCowPoller` is not part of `deploy_OrderTypes.s.sol` because it needs the address of the
+`ComposableCoW` instance to bind to. Deploy it on its own with the standalone script, which requires the
+`COMPOSABLE_COW` environment variable (also listed in `.env.example`) to be set — it reverts if unset:
+
+```bash
+# Deploy the just-in-time funding poller, binding it to the canonical ComposableCoW deployment
+COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
+  forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+```
+
 The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
 When the script is ran, the corresponding files can be found in the folder `broadcast/deploy_OrderTypes.s.sol/`.
 
