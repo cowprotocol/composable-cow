@@ -18,13 +18,13 @@ timeout = 100000
 [profile.ci]
 verbosity = 3
 
-# Contract verification via the Etherscan API V2.
-# The legacy per-explorer V1 endpoints (e.g. api.gnosisscan.io) are deprecated. 
-# Set ETHERSCAN_API_KEY to a key from https://etherscan.io/myapikey
+# Contract verification via the Etherscan API V2 (per-explorer V1 endpoints are deprecated).
+# Explicit `url`/`chain` are needed so `forge script --verify` uses V2 too, not just `forge verify-contract`.
+# Requires ETHERSCAN_API_KEY from https://etherscan.io/myapikey.
 [etherscan]
-mainnet = { key = "${ETHERSCAN_API_KEY}" }
-gnosis = { key = "${ETHERSCAN_API_KEY}" }
-sepolia = { key = "${ETHERSCAN_API_KEY}" }
-arbitrum = { key = "${ETHERSCAN_API_KEY}" }
-bnb = { key = "${ETHERSCAN_API_KEY}" }
-linea = { key = "${ETHERSCAN_API_KEY}" }
+mainnet = { key = "${ETHERSCAN_API_KEY}", chain = 1, url = "https://api.etherscan.io/v2/api" }
+gnosis = { key = "${ETHERSCAN_API_KEY}", chain = 100, url = "https://api.etherscan.io/v2/api" }
+sepolia = { key = "${ETHERSCAN_API_KEY}", chain = 11155111, url = "https://api.etherscan.io/v2/api" }
+arbitrum = { key = "${ETHERSCAN_API_KEY}", chain = 42161, url = "https://api.etherscan.io/v2/api" }
+bnb = { key = "${ETHERSCAN_API_KEY}", chain = 56, url = "https://api.etherscan.io/v2/api" }
+linea = { key = "${ETHERSCAN_API_KEY}", chain = 59144, url = "https://api.etherscan.io/v2/api" }
