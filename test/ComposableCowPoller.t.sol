@@ -265,6 +265,28 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(token0.balanceOf(funder), PART * N - PART, "no extra pull");
     }
 
+    /// @dev A failed ERC-20 transfer must not mark this part as funded.
+    function test_pollFunds_RevertWhen_transferFromReturnsFalse() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        vm.mockCall(
+            address(token0),
+            abi.encodeWithSelector(
+                token0.transferFrom.selector,
+                funder,
+                address(safe1),
+                PART
+            ),
+            abi.encode(false)
+        );
+
+        vm.expectRevert(bytes("GPv2: failed transferFrom"));
+        poller.pollFunds(id);
+
+        assertEq(poller.lastFunded(id), bytes32(0), "failed pull is not recorded");
+    }
+
     /// @dev The headline flow: each part is funded JIT and the owner holds nothing in between.
     function test_pollFunds_fundsEachPartAcrossSchedule() public {
         (, bytes32 ctx, bytes32 id) = _setupSchedule();
