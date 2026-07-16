@@ -35,7 +35,12 @@ contract ComposableCowPoller {
     /// @param owner The conditional-order owner and pull destination.
     /// @param funder The token source that registered the schedule.
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
-    event ScheduleRevoked(bytes32 indexed id);
+
+    /// @notice Emitted when a schedule is revoked.
+    /// @param id The deterministic key of the revoked schedule.
+    /// @param owner The conditional-order owner that was the pull destination.
+    /// @param funder The token source that revoked the schedule.
+    event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     /// @notice Computes the deterministic, appData-independent schedule key.
     /// @dev `staticInput` is excluded because its appData can depend on this key.
@@ -61,8 +66,9 @@ contract ComposableCowPoller {
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
     ///         should be revoked separately to fully close the surface.
     function revoke(bytes32 id) external {
-        if (msg.sender != schedules[id].funder) revert OnlyFunder();
+        Schedule storage schedule = schedules[id];
+        if (msg.sender != schedule.funder) revert OnlyFunder();
+        emit ScheduleRevoked(id, schedule.owner, schedule.funder);
         delete schedules[id];
-        emit ScheduleRevoked(id);
     }
 }
