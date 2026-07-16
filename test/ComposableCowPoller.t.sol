@@ -24,6 +24,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     address funder;
 
+    event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
+
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
 
@@ -163,6 +165,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     /// @dev The funder can revoke, which clears the schedule.
     function test_revoke_clearsSchedule() public {
         (, , bytes32 id) = _setupSchedule();
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRevoked(id, address(safe1), funder);
 
         vm.prank(funder);
         poller.revoke(id);
