@@ -17,6 +17,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     uint256 constant N = 3;
     uint256 constant FREQ = 1 hours;
     bytes32 constant SALT = keccak256("twap");
+    bytes32 constant SECOND_SALT = keccak256("second twap");
 
     ComposableCowPoller poller;
     IValueFactory currentBlockTimestampFactory;
@@ -40,19 +41,18 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     function _bundle() internal view returns (TWAPOrder.Data memory) {
-        return
-            TWAPOrder.Data({
-                sellToken: token0,
-                buyToken: token1,
-                receiver: address(0), // the owner itself
-                partSellAmount: PART,
-                minPartLimit: LIMIT,
-                t0: 0, // resolved from the cabinet via createWithContext
-                n: N,
-                t: FREQ,
-                span: 0, // valid for the whole epoch
-                appData: keccak256("dca.pull")
-            });
+        return TWAPOrder.Data({
+            sellToken: token0,
+            buyToken: token1,
+            receiver: address(0), // protocol shorthand for the Safe owner
+            partSellAmount: PART,
+            minPartLimit: LIMIT,
+            t0: 0, // resolved from the cabinet via createWithContext
+            n: N,
+            t: FREQ,
+            span: 0, // each part is valid for its full FREQ interval
+            appData: keccak256("dca.pull")
+        });
     }
 
     /// @dev Creates a JIT-funded TWAP: order via context, the funder funds + approves the poller,
@@ -61,20 +61,10 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     ///      poller schedule key `id` (used for topUp/revoke).
     function _setupSchedule()
         internal
-        returns (
-            IConditionalOrder.ConditionalOrderParams memory params,
-            bytes32 ctx,
-            bytes32 id
-        )
+        returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx, bytes32 id)
     {
         params = super.createOrder(twap, SALT, abi.encode(_bundle()));
-        _createWithContext(
-            address(safe1),
-            params,
-            currentBlockTimestampFactory,
-            bytes(""),
-            false
-        );
+        _createWithContext(address(safe1), params, currentBlockTimestampFactory, bytes(""), false);
         ctx = composableCow.hash(params);
 
         // Capital lives in the funder (the EOA), which approves the poller for the full notional.
@@ -86,39 +76,71 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         // the funds source, the destination, the order's `salt` (so the poller can rebuild `ctx`
         // on-chain) and its `staticInput`. The key is appData-independent so the funding hook can
         // live in the order's own appData.
+        id = _register(SALT, abi.encode(_bundle()));
+
+        assertEq(
+            id,
+            poller.scheduleId(funder, IConditionalOrderGenerator(address(twap)), address(safe1), SALT),
+            "id matches the off-chain derivation"
+        );
+    }
+
+    function _register(bytes32 salt, bytes memory staticInput) internal returns (bytes32 id) {
         vm.prank(funder);
         id = poller.register(
             ComposableCowPoller.Schedule({
                 handler: IConditionalOrderGenerator(address(twap)),
                 funder: funder,
                 owner: address(safe1),
-                salt: SALT,
-                staticInput: abi.encode(_bundle())
+                salt: salt,
+                staticInput: staticInput
             })
-        );
-
-        assertEq(
-            id,
-            poller.scheduleId(
-                funder,
-                IConditionalOrderGenerator(address(twap)),
-                address(safe1),
-                SALT
-            ),
-            "id matches the off-chain derivation"
         );
     }
 
     /// @dev A registered schedule is stored under its appData-independent id.
     function test_register_storesSchedule() public {
-        (, , bytes32 id) = _setupSchedule();
+        (,, bytes32 id) = _setupSchedule();
 
-        (IConditionalOrderGenerator handler, address scheduleFunder, address owner, bytes32 salt,) =
-            poller.schedules(id);
+        (
+            IConditionalOrderGenerator handler,
+            address scheduleFunder,
+            address owner,
+            bytes32 salt,
+            bytes memory staticInput
+        ) = poller.schedules(id);
         assertEq(address(handler), address(twap), "handler stored");
         assertEq(scheduleFunder, funder, "funder stored");
         assertEq(owner, address(safe1), "owner stored");
         assertEq(salt, SALT, "salt stored");
+        assertEq(staticInput, abi.encode(_bundle()), "static input stored");
+    }
+
+    /// @dev Distinct salts allow concurrent schedules with the same funder, handler, and owner.
+    function test_register_storesSchedulesWithDifferentSalts() public {
+        bytes memory staticInput = abi.encode(_bundle());
+        bytes32 firstId = _register(SALT, staticInput);
+        bytes32 secondId = _register(SECOND_SALT, staticInput);
+
+        assertTrue(firstId != secondId, "different salts create different ids");
+
+        (,,, bytes32 firstSalt,) = poller.schedules(firstId);
+        (,,, bytes32 secondSalt,) = poller.schedules(secondId);
+        assertEq(firstSalt, SALT, "first schedule remains stored");
+        assertEq(secondSalt, SECOND_SALT, "second schedule stored");
+    }
+
+    /// @dev Registering the same key updates the one schedule stored under that id.
+    function test_register_replacesScheduleWithSameId() public {
+        bytes32 id = _register(SALT, abi.encode(_bundle()));
+        TWAPOrder.Data memory replacement = _bundle();
+        replacement.appData = keccak256("updated dca pull");
+        bytes memory updatedStaticInput = abi.encode(replacement);
+
+        assertEq(_register(SALT, updatedStaticInput), id, "same key keeps same id");
+
+        (,,,, bytes memory staticInput) = poller.schedules(id);
+        assertEq(staticInput, updatedStaticInput, "replacement input stored");
     }
 
     /// @dev Only the funds source may register a schedule that draws on its own funds.
