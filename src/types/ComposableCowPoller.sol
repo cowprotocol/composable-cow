@@ -2,12 +2,15 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20, GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+import {GPv2SafeERC20} from "cowprotocol/contracts/libraries/GPv2SafeERC20.sol";
 
 import {ComposableCoW} from "src/ComposableCoW.sol";
 import {IConditionalOrder, IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
 /// @title ComposableCowPoller - Just-in-time funding for composable conditional orders.
 contract ComposableCowPoller {
+    using GPv2SafeERC20 for IERC20;
+
     ComposableCoW public immutable composableCow;
 
     /// @notice Parameters for a JIT funding schedule.
@@ -116,7 +119,7 @@ contract ComposableCowPoller {
         if (digest == lastFunded[id]) return;
         lastFunded[id] = digest;
 
-        order.sellToken.transferFrom(schedule.funder, schedule.owner, order.sellAmount);
+        order.sellToken.safeTransferFrom(schedule.funder, schedule.owner, order.sellAmount);
         emit Pulled(id, digest, order.sellAmount);
     }
 }
