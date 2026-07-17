@@ -12,7 +12,7 @@ import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 /// @title ComposableCowPoller unit tests
 /// @notice Exercises registering a schedule for a composable TWAP created via `createWithContext`.
 contract ComposableCowPollerTest is BaseComposableCoWTest {
-    uint256 constant PART = 100e18;
+    uint256 constant TWAP_PART_AMOUNT = 100e18;
     uint256 constant LIMIT = 1e18;
     uint256 constant N = 3;
     uint256 constant FREQ = 1 hours;
@@ -45,7 +45,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             sellToken: token0,
             buyToken: token1,
             receiver: address(0), // protocol shorthand for the Safe owner
-            partSellAmount: PART,
+            partSellAmount: TWAP_PART_AMOUNT,
             minPartLimit: LIMIT,
             t0: 0, // resolved from the cabinet via createWithContext
             n: N,
@@ -68,34 +68,37 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         ctx = composableCow.hash(params);
 
         // Capital lives in the funder (the EOA), which approves the poller for the full notional.
-        deal(address(token0), funder, PART * N);
+        deal(address(token0), funder, TWAP_PART_AMOUNT * N);
         vm.prank(funder);
-        token0.approve(address(poller), PART * N);
+        token0.approve(address(poller), TWAP_PART_AMOUNT * N);
 
         // Register the schedule (only the funder may do this). The schedule carries the handler,
         // the funds source, the destination, the order's `salt` (so the poller can rebuild `ctx`
         // on-chain) and its `staticInput`. The key is appData-independent so the funding hook can
         // live in the order's own appData.
-        id = _register(SALT, abi.encode(_bundle()));
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        id = _register(schedule);
 
-        assertEq(
-            id,
-            poller.scheduleId(funder, IConditionalOrderGenerator(address(twap)), address(safe1), SALT),
-            "id matches the off-chain derivation"
-        );
+        assertEq(id, poller.scheduleId(schedule), "id matches the off-chain derivation");
     }
 
-    function _register(bytes32 salt, bytes memory staticInput) internal returns (bytes32 id) {
+    function _schedule(bytes32 salt, bytes memory staticInput)
+        internal
+        view
+        returns (ComposableCowPoller.Schedule memory)
+    {
+        return ComposableCowPoller.Schedule({
+            handler: IConditionalOrderGenerator(address(twap)),
+            funder: funder,
+            owner: address(safe1),
+            salt: salt,
+            staticInput: staticInput
+        });
+    }
+
+    function _register(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
         vm.prank(funder);
-        id = poller.register(
-            ComposableCowPoller.Schedule({
-                handler: IConditionalOrderGenerator(address(twap)),
-                funder: funder,
-                owner: address(safe1),
-                salt: salt,
-                staticInput: staticInput
-            })
-        );
+        id = poller.register(schedule);
     }
 
     /// @dev A registered schedule is stored under its appData-independent id.
@@ -119,8 +122,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     /// @dev Distinct salts allow concurrent schedules with the same funder, handler, and owner.
     function test_register_storesSchedulesWithDifferentSalts() public {
         bytes memory staticInput = abi.encode(_bundle());
-        bytes32 firstId = _register(SALT, staticInput);
-        bytes32 secondId = _register(SECOND_SALT, staticInput);
+        bytes32 firstId = _register(_schedule(SALT, staticInput));
+        bytes32 secondId = _register(_schedule(SECOND_SALT, staticInput));
 
         assertTrue(firstId != secondId, "different salts create different ids");
 
@@ -132,12 +135,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev Registering the same key updates the one schedule stored under that id.
     function test_register_replacesScheduleWithSameId() public {
-        bytes32 id = _register(SALT, abi.encode(_bundle()));
+        bytes32 id = _register(_schedule(SALT, abi.encode(_bundle())));
         TWAPOrder.Data memory replacement = _bundle();
         replacement.appData = keccak256("updated dca pull");
         bytes memory updatedStaticInput = abi.encode(replacement);
 
-        assertEq(_register(SALT, updatedStaticInput), id, "same key keeps same id");
+        assertEq(_register(_schedule(SALT, updatedStaticInput)), id, "same key keeps same id");
 
         (,,,, bytes memory staticInput) = poller.schedules(id);
         assertEq(staticInput, updatedStaticInput, "replacement input stored");
