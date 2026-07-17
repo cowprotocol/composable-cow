@@ -18,6 +18,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     function test_deployment() public {
-        assertTrue(address(poller) != address(0), "poller deployed");
+        assertTrue(address(poller).code.length > 0, "poller deployed");
     }
 }
