@@ -24,6 +24,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     address funder;
 
+    event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
+
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
 
@@ -158,5 +160,38 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
                 staticInput: abi.encode(_bundle())
             })
         );
+    }
+
+    /// @dev The funder can revoke, which clears the schedule.
+    function test_revoke_clearsSchedule() public {
+        (,, bytes32 id) = _setupSchedule();
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRevoked(id, address(safe1), funder);
+
+        vm.prank(funder);
+        poller.revoke(id);
+
+        // The whole schedule is cleared.
+        (
+            IConditionalOrderGenerator handler,
+            address scheduleFunder,
+            address owner,
+            bytes32 salt,
+            bytes memory staticInput
+        ) = poller.schedules(id);
+        assertEq(address(handler), address(0), "handler cleared");
+        assertEq(scheduleFunder, address(0), "schedule cleared");
+        assertEq(owner, address(0), "owner cleared");
+        assertEq(salt, bytes32(0), "salt cleared");
+        assertEq(staticInput, bytes(""), "static input cleared");
+    }
+
+    /// @dev Only the funds source may revoke.
+    function test_revoke_RevertWhen_notFunder() public {
+        (,, bytes32 id) = _setupSchedule();
+
+        vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
+        poller.revoke(id);
     }
 }
