@@ -7,20 +7,25 @@ import {GPv2SafeERC20} from "cowprotocol/contracts/libraries/GPv2SafeERC20.sol";
 import {ComposableCoW} from "src/ComposableCoW.sol";
 import {IConditionalOrder, IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
+interface ICowShedFactory {
+    function proxyOf(address owner) external view returns (address);
+}
+
 /// @title ComposableCowPoller - Just-in-time funding for composable conditional orders.
 contract ComposableCowPoller {
     using GPv2SafeERC20 for IERC20;
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
+    ICowShedFactory public immutable COW_SHED_FACTORY;
 
     /// @notice Parameters for a JIT funding schedule.
     /// @dev A schedule is uniquely identified by its funder, handler, owner, and salt.
     struct Schedule {
         /// @notice The conditional-order handler to poll, such as the TWAP type.
         IConditionalOrderGenerator handler;
-        /// @notice The address allowed to register this schedule and later debited for sell tokens.
-        /// @dev It can be an EOA or contract and may be the same address as `owner`.
+        /// @notice The address debited for sell tokens and authorized to manage this schedule.
+        /// @dev The funder or its factory-derived CowShed may register and revoke.
         address funder;
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
         /// @dev It can be an EOA or contract and may be the same address as `funder`.
@@ -39,8 +44,9 @@ contract ComposableCowPoller {
     /// @dev `id => digest => funded`. History survives schedule updates so an old order cannot be replayed.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
-    /// @notice Thrown when someone other than the schedule funder registers or updates a schedule.
-    error OnlyFunder();
+    error InvalidComposableCow();
+    error InvalidCowShedFactory();
+    error UnauthorizedCaller();
     error NoSchedule();
     error OrderNotLive();
 
@@ -51,8 +57,11 @@ contract ComposableCowPoller {
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
     event Pulled(bytes32 indexed id, bytes32 orderDigest, uint256 amount);
 
-    constructor(ComposableCoW _composableCow) {
-        COMPOSABLE_COW = _composableCow;
+    constructor(ComposableCoW composableCow, ICowShedFactory cowShedFactory) {
+        if (address(composableCow).code.length == 0) revert InvalidComposableCow();
+        if (address(cowShedFactory).code.length == 0) revert InvalidCowShedFactory();
+        COMPOSABLE_COW = composableCow;
+        COW_SHED_FACTORY = cowShedFactory;
     }
 
     /// @notice Emitted when a schedule is revoked.
@@ -73,24 +82,29 @@ contract ComposableCowPoller {
 
     /// @notice Registers or updates a schedule.
     /// @dev Registering the same funder, handler, owner, and salt replaces the stored schedule.
-    ///      Only the funds source may register, and the ID is namespaced by the funder. Funding
-    ///      history is preserved across updates; use a new salt for a new logical schedule.
+    ///      Only the funder or its factory-derived CowShed may register, and the ID is namespaced
+    ///      by the funder. Funding history is preserved across updates; use a new salt for a new
+    ///      logical schedule.
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(Schedule calldata schedule) external returns (bytes32 id) {
-        if (msg.sender != schedule.funder) revert OnlyFunder();
+        if (!_isAuthorizedCaller(schedule.funder)) revert UnauthorizedCaller();
         id = scheduleId(schedule);
         schedules[id] = schedule;
         emit ScheduleRegistered(id, schedule.owner, schedule.funder);
     }
 
-    /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
-    ///         should be revoked separately to fully close the surface.
+    /// @notice Revoke a schedule. Only the funder or its factory-derived CowShed may do so.
+    ///         A standing ERC-20 allowance should be revoked separately to fully close the surface.
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
-        if (msg.sender != schedule.funder) revert OnlyFunder();
+        if (!_isAuthorizedCaller(schedule.funder)) revert UnauthorizedCaller();
         emit ScheduleRevoked(id, schedule.owner, schedule.funder);
         delete schedules[id];
+    }
+
+    function _isAuthorizedCaller(address funder) internal view returns (bool) {
+        return funder != address(0) && (msg.sender == funder || msg.sender == COW_SHED_FACTORY.proxyOf(funder));
     }
 
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
