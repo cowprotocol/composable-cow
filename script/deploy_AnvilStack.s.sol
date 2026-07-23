@@ -65,7 +65,6 @@ contract DeployAnvilStack is Script {
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
-
         vm.stopBroadcast();
 
         console.log("Safe address");
