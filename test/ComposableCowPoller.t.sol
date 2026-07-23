@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+
 import {IConditionalOrder, IValueFactory, BaseComposableCoWTest} from "test/ComposableCoW.base.t.sol";
 
 import {TWAP} from "src/types/twap/TWAP.sol";
@@ -31,7 +33,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
-        poller = new ComposableCowPoller();
+        poller = new ComposableCowPoller(composableCow);
         funder = makeAddr("funder");
 
         // The owner (safe1) starts with no sell token: funds arrive just-in-time.
@@ -60,7 +62,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     /// @dev Creates a JIT-funded TWAP: order via context, the funder funds + approves the poller,
     ///      and the schedule is registered. Returns the order's cabinet key `ctx`
     ///      (`ComposableCoW.hash(params)`, used for cabinet/remove) and the appData-independent
-    ///      poller schedule key `id` (used for topUp/revoke).
+    ///      poller schedule key `id` (used for pollFunds/revoke).
     function _setupSchedule()
         internal
         returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx, bytes32 id)
@@ -101,6 +103,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     function _register(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
         vm.prank(funder);
         id = poller.register(schedule);
+    }
+
+    /// @dev The order's resolved start time `t0`, read back from the cabinet where
+    ///      `createWithContext` stored it via `CurrentBlockTimestampFactory`.
+    function _t0(bytes32 ctx) internal view returns (uint256) {
+        return uint256(composableCow.cabinet(address(safe1), ctx));
     }
 
     /// @dev A registered schedule is stored under its appData-independent id.
@@ -193,5 +201,155 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
         poller.revoke(id);
+    }
+
+    /// @dev Funds move unconditionally: even if the owner already holds a balance (e.g. from another
+    ///      concurrent order), the full part is still pulled, so orders never share funding.
+    function test_pollFunds_movesFullAmountUnconditionally() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        // The owner already holds an unrelated balance (e.g. funded for another order).
+        deal(address(token0), address(safe1), TWAP_PART_AMOUNT);
+
+        poller.pollFunds(id);
+
+        assertEq(
+            token0.balanceOf(address(safe1)), TWAP_PART_AMOUNT * 2, "full part pulled on top of the existing balance"
+        );
+        assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT * N - TWAP_PART_AMOUNT, "a full part left the funder");
+    }
+
+    /// @dev A repeated call in the same part is a no-op, even after settlement drains the owner.
+    function test_pollFunds_idempotentWithinPartAfterSettlement() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        poller.pollFunds(id);
+
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "part settled");
+        assertEq(token0.balanceOf(address(safe1)), 0, "part settled");
+
+        poller.pollFunds(id); // no-op: this part has already been funded
+
+        assertEq(token0.balanceOf(address(safe1)), 0, "next part not funded early");
+        assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT * N - TWAP_PART_AMOUNT, "no extra pull");
+    }
+
+    /// @dev A handler returning A, then B, then A cannot refund A, even after schedule registration.
+    function test_pollFunds_doesNotRefundEarlierDigestAfterReregister() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        bytes memory staticInput = abi.encode(_bundle());
+        bytes memory handlerCall = abi.encodeCall(
+            IConditionalOrderGenerator.getTradeableOrder, (address(safe1), address(poller), ctx, staticInput, bytes(""))
+        );
+        GPv2Order.Data memory orderA =
+            twap.getTradeableOrder(address(safe1), address(poller), ctx, staticInput, bytes(""));
+        GPv2Order.Data memory orderB = abi.decode(abi.encode(orderA), (GPv2Order.Data));
+        orderB.appData = keccak256("second valid order");
+
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
+        poller.pollFunds(id);
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "first order settled");
+
+        vm.clearMockedCalls();
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderB));
+        poller.pollFunds(id);
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "second order settled");
+
+        vm.prank(funder);
+        assertEq(
+            poller.register(
+                ComposableCowPoller.Schedule({
+                    handler: IConditionalOrderGenerator(address(twap)),
+                    funder: funder,
+                    owner: address(safe1),
+                    salt: SALT,
+                    staticInput: staticInput
+                })
+            ),
+            id,
+            "same schedule id"
+        );
+
+        vm.clearMockedCalls();
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
+        poller.pollFunds(id);
+
+        assertEq(token0.balanceOf(address(safe1)), 0, "first order not funded twice");
+        assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT, "only two distinct orders funded");
+        assertTrue(poller.funded(id, GPv2Order.hash(orderA, composableCow.domainSeparator())));
+        assertTrue(poller.funded(id, GPv2Order.hash(orderB, composableCow.domainSeparator())));
+    }
+
+    /// @dev A failed ERC-20 transfer must not mark this part as funded.
+    function test_pollFunds_RevertWhen_transferFromReturnsFalse() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        vm.mockCall(
+            address(token0),
+            abi.encodeWithSelector(token0.transferFrom.selector, funder, address(safe1), TWAP_PART_AMOUNT),
+            abi.encode(false)
+        );
+
+        vm.expectRevert(bytes("GPv2: failed transferFrom"));
+        poller.pollFunds(id);
+    }
+
+    /// @dev The headline flow: each part is funded JIT and the owner holds nothing in between.
+    function test_pollFunds_fundsEachPartAcrossSchedule() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        uint256 t0 = _t0(ctx);
+
+        for (uint256 part = 0; part < N; part++) {
+            vm.warp(t0 + part * FREQ);
+
+            assertEq(token0.balanceOf(address(safe1)), 0, "owner empty before part");
+            poller.pollFunds(id);
+            assertEq(token0.balanceOf(address(safe1)), TWAP_PART_AMOUNT, "part funded");
+
+            // Simulate the part settling: the owner's balance is consumed.
+            vm.prank(address(safe1));
+            assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "part settled");
+
+            assertEq(
+                token0.balanceOf(funder),
+                TWAP_PART_AMOUNT * N - TWAP_PART_AMOUNT * (part + 1),
+                "one part funded per window"
+            );
+        }
+    }
+
+    /// @dev The pull is bounded to the schedule window: after it ends, `getTradeableOrder` reverts.
+    function test_pollFunds_RevertWhen_scheduleEnded() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx) + N * FREQ);
+
+        vm.expectRevert(); // IConditionalOrder.OrderNotValid(...) from the handler
+        poller.pollFunds(id);
+    }
+
+    /// @dev An unregistered schedule cannot be polled.
+    function test_pollFunds_RevertWhen_noSchedule() public {
+        vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
+        poller.pollFunds(keccak256("unknown"));
+    }
+
+    /// @dev Cancelling the order flips `singleOrders` false, which disables the poller for free.
+    function test_remove_killsPoller() public {
+        (, bytes32 ctx, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(ctx));
+
+        vm.prank(address(safe1));
+        composableCow.remove(ctx);
+
+        vm.expectRevert(ComposableCowPoller.OrderNotLive.selector);
+        poller.pollFunds(id);
     }
 }

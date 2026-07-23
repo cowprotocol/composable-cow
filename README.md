@@ -103,7 +103,8 @@ To create a TWAP order:
 
 1. ABI-Encode the `IConditionalOrder.ConditionalOrderParams` struct with:
    - `handler`: set to the `TWAP` smart contract deployment.
-   - `salt`: set to a unique value.
+   - `salt`: use a value unique to the user and logical order. For poller schedules, a good default is
+     the hash of the order-defining `staticInput` values with any `appData` field set to zero.
    - `staticInput`: the ABI-encoded `TWAP.Data` struct.
 2. Use the `struct` from (1) as either a Merkle leaf, or with `ComposableCoW.create` to create a single conditional order.
 3. Approve `GPv2VaultRelayer` to trade `n x partSellAmount` of the safe's `sellToken` tokens (in the example above, `GPv2VaultRelayer` would receive approval for spending 12,000,000 DAI tokens).
