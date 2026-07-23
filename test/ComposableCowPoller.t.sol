@@ -5,11 +5,20 @@ import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
 import {IConditionalOrder, IValueFactory, BaseComposableCoWTest} from "test/ComposableCoW.base.t.sol";
 
+import {ComposableCoW} from "src/ComposableCoW.sol";
 import {TWAP} from "src/types/twap/TWAP.sol";
 import {TWAPOrder} from "src/types/twap/libraries/TWAPOrder.sol";
-import {ComposableCowPoller} from "src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "src/types/ComposableCowPoller.sol";
 import {CurrentBlockTimestampFactory} from "src/value_factories/CurrentBlockTimestampFactory.sol";
 import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
+
+contract CowShedFactoryMock {
+    mapping(address => address) public proxyOf;
+
+    function setProxy(address owner, address cowShed) external {
+        proxyOf[owner] = cowShed;
+    }
+}
 
 /// @title ComposableCowPoller unit tests
 /// @notice Exercises registering a schedule for a composable TWAP created via `createWithContext`.
@@ -22,10 +31,13 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     bytes32 constant SECOND_SALT = keccak256("second twap");
 
     ComposableCowPoller poller;
+    CowShedFactoryMock cowShedFactory;
     IValueFactory currentBlockTimestampFactory;
 
     address funder;
+    address otherFunder;
 
+    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -33,8 +45,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
-        poller = new ComposableCowPoller(composableCow);
         funder = makeAddr("funder");
+        otherFunder = makeAddr("other funder");
+        cowShedFactory = new CowShedFactoryMock();
+        cowShedFactory.setProxy(funder, address(safe1));
+        cowShedFactory.setProxy(otherFunder, address(safe2));
+        poller = new ComposableCowPoller(composableCow, ICowShedFactory(address(cowShedFactory)));
 
         // The owner (safe1) starts with no sell token: funds arrive just-in-time.
         deal(address(token0), address(safe1), 0);
@@ -42,6 +58,30 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     function test_deployment() public {
         assertTrue(address(poller).code.length > 0, "poller deployed");
+        assertEq(address(poller.COMPOSABLE_COW()), address(composableCow));
+        assertEq(address(poller.COW_SHED_FACTORY()), address(cowShedFactory));
+    }
+
+    function test_constructor_RevertWhen_composableCowIsZero() public {
+        vm.expectRevert(ComposableCowPoller.InvalidComposableCow.selector);
+        new ComposableCowPoller(ComposableCoW(address(0)), ICowShedFactory(address(cowShedFactory)));
+    }
+
+    function test_constructor_RevertWhen_composableCowHasNoCode() public {
+        vm.expectRevert(ComposableCowPoller.InvalidComposableCow.selector);
+        new ComposableCowPoller(
+            ComposableCoW(makeAddr("code-less ComposableCoW")), ICowShedFactory(address(cowShedFactory))
+        );
+    }
+
+    function test_constructor_RevertWhen_cowShedFactoryIsZero() public {
+        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
+        new ComposableCowPoller(composableCow, ICowShedFactory(address(0)));
+    }
+
+    function test_constructor_RevertWhen_cowShedFactoryHasNoCode() public {
+        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
+        new ComposableCowPoller(composableCow, ICowShedFactory(makeAddr("code-less CowShed factory")));
     }
 
     function _bundle() internal view returns (TWAPOrder.Data memory) {
@@ -76,10 +116,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.prank(funder);
         token0.approve(address(poller), TWAP_PART_AMOUNT * N);
 
-        // Register the schedule (only the funder may do this). The schedule carries the handler,
-        // the funds source, the destination, the order's `salt` (so the poller can rebuild `ctx`
-        // on-chain) and its `staticInput`. The key is appData-independent so the funding hook can
-        // live in the order's own appData.
+        // Register as the funder EOA. Its official CowShed may also register. The schedule carries
+        // the handler, funds source, destination, and order data needed to rebuild `ctx` on-chain.
         ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
         id = _register(schedule);
 
@@ -156,9 +194,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(staticInput, updatedStaticInput, "replacement input stored");
     }
 
-    /// @dev Only the funds source may register a schedule that draws on its own funds.
-    function test_register_RevertWhen_notFunder() public {
-        vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
+    /// @dev An unrelated caller cannot register a schedule that draws on the funder's tokens.
+    function test_register_RevertWhen_unauthorizedCaller() public {
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
         poller.register(
             ComposableCowPoller.Schedule({
                 handler: IConditionalOrderGenerator(address(twap)),
@@ -168,6 +206,59 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
                 staticInput: abi.encode(_bundle())
             })
         );
+    }
+
+    /// @dev A funder's factory-derived CowShed can register and revoke its schedule.
+    function test_cowShed_canRegisterAndRevoke() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        bytes32 id = poller.scheduleId(schedule);
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(id, address(safe1), funder);
+        vm.prank(address(safe1));
+        poller.register(schedule);
+        (IConditionalOrderGenerator handler,,,,) = poller.schedules(id);
+        assertEq(address(handler), address(twap), "schedule registered");
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRevoked(id, address(safe1), funder);
+        vm.prank(address(safe1));
+        poller.revoke(id);
+        (handler,,,,) = poller.schedules(id);
+        assertEq(address(handler), address(0), "schedule revoked");
+    }
+
+    function test_register_RevertWhen_funderIsZero() public {
+        address caller = makeAddr("zero funder CowShed");
+        cowShedFactory.setProxy(address(0), caller);
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        schedule.funder = address(0);
+
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        vm.prank(caller);
+        poller.register(schedule);
+    }
+
+    function test_register_RevertWhen_fakeCowShed() public {
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        vm.prank(makeAddr("fake CowShed"));
+        poller.register(_schedule(SALT, abi.encode(_bundle())));
+    }
+
+    function test_register_RevertWhen_otherUsersCowShed() public {
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        vm.prank(address(safe2));
+        poller.register(_schedule(SALT, abi.encode(_bundle())));
+    }
+
+    function test_register_RevertWhen_cowShedActsForDifferentFunder() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        schedule.funder = otherFunder;
+        schedule.owner = address(safe2);
+
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        vm.prank(address(safe1));
+        poller.register(schedule);
     }
 
     /// @dev The funder can revoke, which clears the schedule.
@@ -195,11 +286,19 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(staticInput, bytes(""), "static input cleared");
     }
 
-    /// @dev Only the funds source may revoke.
-    function test_revoke_RevertWhen_notFunder() public {
+    /// @dev An unrelated caller cannot revoke the funder's schedule.
+    function test_revoke_RevertWhen_unauthorizedCaller() public {
         (,, bytes32 id) = _setupSchedule();
 
-        vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        poller.revoke(id);
+    }
+
+    function test_revoke_RevertWhen_otherUsersCowShed() public {
+        (,, bytes32 id) = _setupSchedule();
+
+        vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
+        vm.prank(address(safe2));
         poller.revoke(id);
     }
 
