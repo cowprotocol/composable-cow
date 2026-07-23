@@ -15,7 +15,7 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 import {StopLoss} from "../src/types/StopLoss.sol";
-import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
 
 // Value factories
 import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
@@ -24,6 +24,7 @@ contract DeployProdStack is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address settlement = vm.envAddress("SETTLEMENT");
+        ICowShedFactory cowShedFactory = ICowShedFactory(vm.envAddress("COW_SHED_FACTORY"));
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -41,7 +42,7 @@ contract DeployProdStack is Script {
         new StopLoss{salt: "v1.0.0"}();
 
         // Deploy the just-in-time funding poller
-        new ComposableCowPoller{salt: "v1.0.0"}(composableCow);
+        new ComposableCowPoller{salt: "v1.0.0"}(composableCow, cowShedFactory);
 
         // Deploy value factories
         new CurrentBlockTimestampFactory{salt: "v1.0.0"}();
