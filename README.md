@@ -198,15 +198,15 @@ forge script script/deploy_ComposableCoW.s.sol:DeployComposableCoW --rpc-url $ET
 forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-The `ComposableCowPoller` is not part of `deploy_OrderTypes.s.sol` because it must bind to the intended
-`ComposableCoW` and CowShed factory. Deploy it on its own with the standalone script. Both addresses must
-contain contract code, otherwise the script reverts before broadcasting:
+The `ComposableCowPoller` is not part of `deploy_OrderTypes.s.sol` because it must bind to the canonical
+Gnosis `ComposableCoW` and ComposableCoW-enabled CowShed factory. Deploy it on its own with the standalone
+script. The script rejects other chains, addresses, or contracts without code before broadcasting:
 
 ```bash
 # Deploy the Gnosis just-in-time funding poller with the ComposableCoW-enabled CowShed factory
 COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
 COW_SHED_FACTORY=0x4f4350bf2c74aacd508d598a1ba94ef84378793d \
-  forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $RPC_URL_100 --broadcast -vvvv --verify
+  forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
 The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
