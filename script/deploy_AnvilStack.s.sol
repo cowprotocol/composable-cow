@@ -25,7 +25,7 @@ import {TWAP} from "../src/types/twap/TWAP.sol";
 import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
-import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
 
 contract DeployAnvilStack is Script {
     // --- constants
@@ -47,6 +47,7 @@ contract DeployAnvilStack is Script {
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        ICowShedFactory cowShedFactory = ICowShedFactory(vm.envAddress("COW_SHED_FACTORY"));
         vm.startBroadcast(deployerPrivateKey);
 
         // deploy the CoW Protocol stack
@@ -66,7 +67,7 @@ contract DeployAnvilStack is Script {
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
-        ComposableCowPoller poller = new ComposableCowPoller(composableCow);
+        ComposableCowPoller poller = new ComposableCowPoller(composableCow, cowShedFactory);
 
         vm.stopBroadcast();
 
