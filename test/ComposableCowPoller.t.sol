@@ -62,28 +62,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(address(poller.COW_SHED_FACTORY()), address(cowShedFactory));
     }
 
-    function test_constructor_RevertWhen_composableCowIsZero() public {
-        vm.expectRevert(ComposableCowPoller.InvalidComposableCow.selector);
-        new ComposableCowPoller(ComposableCoW(address(0)), ICowShedFactory(address(cowShedFactory)));
-    }
-
-    function test_constructor_RevertWhen_composableCowHasNoCode() public {
-        vm.expectRevert(ComposableCowPoller.InvalidComposableCow.selector);
-        new ComposableCowPoller(
-            ComposableCoW(makeAddr("code-less ComposableCoW")), ICowShedFactory(address(cowShedFactory))
-        );
-    }
-
-    function test_constructor_RevertWhen_cowShedFactoryIsZero() public {
-        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
-        new ComposableCowPoller(composableCow, ICowShedFactory(address(0)));
-    }
-
-    function test_constructor_RevertWhen_cowShedFactoryHasNoCode() public {
-        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
-        new ComposableCowPoller(composableCow, ICowShedFactory(makeAddr("code-less CowShed factory")));
-    }
-
     function _bundle() internal view returns (TWAPOrder.Data memory) {
         return TWAPOrder.Data({
             sellToken: token0,

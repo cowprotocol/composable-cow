@@ -44,12 +44,6 @@ contract ComposableCowPoller {
     /// @dev `id => digest => funded`. History survives schedule updates so an old order cannot be replayed.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
-    /// @notice Thrown when the `ComposableCoW` address supplied at deployment has no code.
-    error InvalidComposableCow();
-
-    /// @notice Thrown when the CowShed factory address supplied at deployment has no code.
-    error InvalidCowShedFactory();
-
     /// @notice Thrown when someone other than the schedule funder or its factory-derived CowShed
     ///         registers, updates, or revokes a schedule.
     error UnauthorizedCaller();
@@ -75,8 +69,6 @@ contract ComposableCowPoller {
     event Pulled(bytes32 indexed id, bytes32 orderDigest, uint256 amount);
 
     constructor(ComposableCoW composableCow, ICowShedFactory cowShedFactory) {
-        if (address(composableCow).code.length == 0) revert InvalidComposableCow();
-        if (address(cowShedFactory).code.length == 0) revert InvalidCowShedFactory();
         COMPOSABLE_COW = composableCow;
         COW_SHED_FACTORY = cowShedFactory;
     }
@@ -122,6 +114,11 @@ contract ComposableCowPoller {
         delete schedules[id];
     }
 
+    /// @notice Checks whether the caller may manage a funder's schedule.
+    /// @dev Authorizes the funder or its canonical CowShed derived by `COW_SHED_FACTORY`.
+    ///      The zero address is rejected because it represents a missing schedule.
+    /// @param funder The token owner whose schedule is being managed.
+    /// @return Whether the caller is authorized.
     function _isAuthorizedCaller(address funder) internal view returns (bool) {
         return funder != address(0) && (msg.sender == funder || msg.sender == COW_SHED_FACTORY.proxyOf(funder));
     }
