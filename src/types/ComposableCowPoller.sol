@@ -51,8 +51,22 @@ contract ComposableCowPoller {
     /// @notice Emitted when a schedule is registered or updated.
     /// @param id The deterministic key of the schedule.
     /// @param owner The conditional-order owner and pull destination.
+    /// @dev `id` is a one-way hash, so the fields it commits to are logged alongside it: without
+    ///      them an indexer cannot recover the schedule from logs alone, nor tell an update apart
+    ///      from the registration it replaced. `staticInput` is logged as a hash rather than in
+    ///      full, since only its identity is needed to correlate a schedule with its order.
     /// @param funder The token source that registered the schedule.
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
+    /// @param handler The conditional-order handler that will be polled.
+    /// @param salt The salt namespacing this schedule for the funder, handler, and owner.
+    /// @param staticInputHash `keccak256` of the static input passed to the handler.
+    event ScheduleRegistered(
+        bytes32 indexed id,
+        address indexed owner,
+        address indexed funder,
+        IConditionalOrderGenerator handler,
+        bytes32 salt,
+        bytes32 staticInputHash
+    );
     event Pulled(bytes32 indexed id, bytes32 orderDigest, uint256 amount);
 
     constructor(ComposableCoW composableCow, ICowShedFactory cowShedFactory) {
@@ -87,7 +101,9 @@ contract ComposableCowPoller {
         if (!_isAuthorizedCaller(schedule.funder)) revert UnauthorizedCaller();
         id = scheduleId(schedule);
         schedules[id] = schedule;
-        emit ScheduleRegistered(id, schedule.owner, schedule.funder);
+        emit ScheduleRegistered(
+            id, schedule.owner, schedule.funder, schedule.handler, schedule.salt, keccak256(schedule.staticInput)
+        );
     }
 
     /// @notice Revoke a schedule. Only the funder or its factory-derived CowShed may do so.

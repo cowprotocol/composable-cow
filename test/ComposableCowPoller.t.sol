@@ -37,7 +37,14 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     address funder;
     address otherFunder;
 
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
+    event ScheduleRegistered(
+        bytes32 indexed id,
+        address indexed owner,
+        address indexed funder,
+        IConditionalOrderGenerator handler,
+        bytes32 salt,
+        bytes32 staticInputHash
+    );
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -172,6 +179,34 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(staticInput, updatedStaticInput, "replacement input stored");
     }
 
+    /// @dev The log must distinguish an update from the registration it replaces. Two schedules
+    ///      sharing an id but describing different orders share every indexed topic, so the
+    ///      `staticInputHash` in the data is the only thing that tells them apart on-chain.
+    function test_register_logIdentifiesTheReplacedOrder() public {
+        bytes memory firstInput = abi.encode(_bundle());
+        ComposableCowPoller.Schedule memory first = _schedule(SALT, firstInput);
+        bytes32 id = poller.scheduleId(first);
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(
+            id, address(safe1), funder, IConditionalOrderGenerator(address(twap)), SALT, keccak256(firstInput)
+        );
+        _register(first);
+
+        // A genuinely different order, not just an appData refresh.
+        TWAPOrder.Data memory other = _bundle();
+        other.partSellAmount = TWAP_PART_AMOUNT * 2;
+        bytes memory secondInput = abi.encode(other);
+        assertTrue(keccak256(firstInput) != keccak256(secondInput), "inputs differ");
+
+        // Same id, same indexed topics: only `staticInputHash` reveals the clobber.
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(
+            id, address(safe1), funder, IConditionalOrderGenerator(address(twap)), SALT, keccak256(secondInput)
+        );
+        assertEq(_register(_schedule(SALT, secondInput)), id, "same id as the schedule it replaced");
+    }
+
     /// @dev An unrelated caller cannot register a schedule that draws on the funder's tokens.
     function test_register_RevertWhen_unauthorizedCaller() public {
         vm.expectRevert(ComposableCowPoller.UnauthorizedCaller.selector);
@@ -192,7 +227,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes32 id = poller.scheduleId(schedule);
 
         vm.expectEmit(true, true, true, true, address(poller));
-        emit ScheduleRegistered(id, address(safe1), funder);
+        emit ScheduleRegistered(
+            id, address(safe1), funder, IConditionalOrderGenerator(address(twap)), SALT, keccak256(schedule.staticInput)
+        );
         vm.prank(address(safe1));
         poller.register(schedule);
         (IConditionalOrderGenerator handler,,,,) = poller.schedules(id);
