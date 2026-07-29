@@ -106,6 +106,24 @@ contract ComposableCowPoller {
         delete schedules[id];
     }
 
+    /// @notice Derives the ComposableCoW order key a schedule funds.
+    /// @dev Mirrors `ComposableCoW.hash(params)` rather than calling it: the value is identical,
+    ///      and deriving it here avoids re-encoding `staticInput` as calldata for an external
+    ///      call. The equivalence is exercised by the `pollFunds` tests, which revert
+    ///      `OrderNotLive` if the derived key does not match the authorised order.
+    /// @return The order key, as used by `singleOrders`, `cabinet`, and `remove`.
+    function _ctx(IConditionalOrderGenerator handler, bytes32 salt, bytes memory staticInput)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encode(
+                IConditionalOrder.ConditionalOrderParams({handler: handler, salt: salt, staticInput: staticInput})
+            )
+        );
+    }
+
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
@@ -114,11 +132,7 @@ contract ComposableCowPoller {
         if (schedule.funder == address(0)) revert NoSchedule();
 
         // Re-derive `ctx` on-chain, so `pollFunds(id)` stays independent of the order's `appData`.
-        bytes32 ctx = COMPOSABLE_COW.hash(
-            IConditionalOrder.ConditionalOrderParams({
-                handler: schedule.handler, salt: schedule.salt, staticInput: schedule.staticInput
-            })
-        );
+        bytes32 ctx = _ctx(schedule.handler, schedule.salt, schedule.staticInput);
 
         // The order must still be authorised; `remove` disables the poller.
         if (!COMPOSABLE_COW.singleOrders(schedule.owner, ctx)) revert OrderNotLive();
