@@ -42,6 +42,10 @@ contract ComposableCowPoller {
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
     error OnlyFunder();
 
+    /// @notice Thrown when registering a schedule whose key is already taken. Revoke it first to
+    ///         replace it deliberately.
+    error AlreadyRegistered();
+
     /// @notice Thrown when polling an ID that has no registered schedule, because it was never
     ///         registered or has since been revoked.
     error NoSchedule();
@@ -82,10 +86,12 @@ contract ComposableCowPoller {
         return keccak256(abi.encode(schedule.funder, schedule.handler, schedule.owner, schedule.salt));
     }
 
-    /// @notice Registers or updates a schedule.
-    /// @dev Registering the same funder, handler, owner, and salt replaces the stored schedule.
-    ///      Only the funds source may register, and the ID is namespaced by the funder. Funding
-    ///      history is preserved across updates; use a new salt for a new logical schedule.
+    /// @notice Registers a schedule.
+    /// @dev Reverts if the key is taken. The key ignores `staticInput`, so silently overwriting
+    ///      would leave the previous — still authorised — order unfundable with nothing in the
+    ///      logs to show it. `revoke` first to replace a schedule deliberately; funding history
+    ///      survives that, so an old order cannot be replayed.
+    ///      Only the funds source may register, and the ID is namespaced by the funder.
     ///      A zero `owner` or `handler` needs no check: `pollFunds` requires
     ///      `singleOrders[owner][paramsHash]`, which neither can ever satisfy.
     /// @param schedule The schedule to store.
@@ -93,6 +99,7 @@ contract ComposableCowPoller {
     function register(Schedule calldata schedule) external returns (bytes32 id) {
         if (msg.sender != schedule.funder) revert OnlyFunder();
         id = scheduleId(schedule);
+        if (schedules[id].funder != address(0)) revert AlreadyRegistered();
         schedules[id] = schedule;
         emit ScheduleRegistered(id, schedule.owner, schedule.funder);
     }
