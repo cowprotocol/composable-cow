@@ -26,6 +26,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     address funder;
 
+    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 ctx);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -100,6 +101,14 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         });
     }
 
+    function _expectedCtx(bytes32 salt, bytes memory staticInput) internal view returns (bytes32) {
+        return composableCow.hash(
+            IConditionalOrder.ConditionalOrderParams({
+                handler: IConditionalOrder(address(twap)), salt: salt, staticInput: staticInput
+            })
+        );
+    }
+
     function _register(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
         vm.prank(funder);
         id = poller.register(schedule);
@@ -154,6 +163,41 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         (,,,, bytes memory staticInput) = poller.schedules(id);
         assertEq(staticInput, updatedStaticInput, "replacement input stored");
+    }
+
+    /// @dev The `ctx` the poller derives internally must equal `ComposableCoW.hash(params)`, since
+    ///      the contract mirrors that formula instead of calling it. `pollFunds` depends on the
+    ///      match too: it looks the order up in `singleOrders` by the derived key.
+    function test_register_logsTheComposableCowOrderKey() public {
+        (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx,) = _setupSchedule();
+
+        assertEq(ctx, composableCow.hash(params), "ctx is the ComposableCoW order key");
+        assertTrue(composableCow.singleOrders(address(safe1), ctx), "the key resolves to a live order");
+        assertEq(_expectedCtx(SALT, abi.encode(_bundle())), ctx, "the logged key matches");
+    }
+
+    /// @dev A replacement keeps the same `id` and the same indexed topics, so `ctx` is the only
+    ///      thing in the log that reveals which order each registration pointed at.
+    function test_register_logIdentifiesTheReplacedOrder() public {
+        bytes memory firstInput = abi.encode(_bundle());
+        bytes32 id = poller.scheduleId(_schedule(SALT, firstInput));
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(id, address(safe1), funder, _expectedCtx(SALT, firstInput));
+        _register(_schedule(SALT, firstInput));
+
+        // A genuinely different order, not just an appData refresh.
+        TWAPOrder.Data memory other = _bundle();
+        other.partSellAmount = TWAP_PART_AMOUNT * 2;
+        bytes memory secondInput = abi.encode(other);
+
+        bytes32 firstCtx = _expectedCtx(SALT, firstInput);
+        bytes32 secondCtx = _expectedCtx(SALT, secondInput);
+        assertTrue(firstCtx != secondCtx, "the two orders have distinct keys");
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(id, address(safe1), funder, secondCtx);
+        assertEq(_register(_schedule(SALT, secondInput)), id, "same id as the schedule it replaced");
     }
 
     /// @dev Only the funds source may register a schedule that draws on its own funds.
