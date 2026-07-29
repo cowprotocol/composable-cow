@@ -51,7 +51,7 @@ contract ComposableCowPoller {
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(Schedule calldata schedule) external returns (bytes32 id) {
-    require(msg.sender == schedule.funder, OnlyFunder());
+        if (msg.sender != schedule.funder) revert OnlyFunder();
         id = scheduleId(schedule);
         schedules[id] = schedule;
         emit ScheduleRegistered(id, schedule.owner, schedule.funder);
