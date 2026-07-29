@@ -15,7 +15,9 @@ contract ComposableCowPoller {
     ComposableCoW public immutable COMPOSABLE_COW;
 
     /// @notice Parameters for a JIT funding schedule.
-    /// @dev A schedule is uniquely identified by its funder, handler, owner, and salt.
+    /// @dev `handler`, `salt` and `staticInput` are the order's `ConditionalOrderParams` and must
+    ///      match it exactly, since `paramsHash` is derived from them. The schedule key is `funder`,
+    ///      `handler`, `owner`, and `salt`.
     struct Schedule {
         /// @notice The conditional-order handler to poll, such as the TWAP type.
         IConditionalOrderGenerator handler;
@@ -25,11 +27,12 @@ contract ComposableCowPoller {
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
         /// @dev It can be an EOA or contract and may be the same address as `funder`.
         address owner;
-        /// @notice A user-controlled namespace for this schedule.
-        /// @dev Keep it unique to the user and logical order. A good default is the hash of the
-        ///      order-defining static-input values with any appData field set to zero.
+        /// @notice The conditional order's own `salt`.
+        /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
+        ///      a fresh random value per order.
         bytes32 salt;
-        /// @notice The static input passed to the handler when it generates an order.
+        /// @notice The order's `staticInput`, byte-for-byte.
+        /// @dev A mismatch is not caught at registration; `pollFunds` reverts `OrderNotLive`.
         bytes staticInput;
     }
 
@@ -77,9 +80,8 @@ contract ComposableCowPoller {
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     /// @notice Computes the deterministic, appData-independent schedule key.
-    /// @dev `staticInput` is excluded because its appData can depend on this key.
-    ///      Keep the salt unique to the user and logical order. A good default is the hash of the
-    ///      order-defining static-input values with any appData field set to zero.
+    /// @dev `staticInput` is excluded because its appData can depend on this key, which is why a
+    ///      fresh `salt` per order is what keeps distinct orders on distinct keys.
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
