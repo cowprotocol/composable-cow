@@ -67,7 +67,7 @@ contract ComposableCowPoller {
     ///         should be revoked separately to fully close the surface.
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
-    require(msg.sender == schedule.funder, OnlyFunder());
+        if (msg.sender != schedule.funder) revert OnlyFunder();
         emit ScheduleRevoked(id, schedule.owner, schedule.funder);
         delete schedules[id];
     }
