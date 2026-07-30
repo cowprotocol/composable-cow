@@ -75,6 +75,8 @@ contract ComposableCowPoller {
     /// @dev Registering the same funder, handler, owner, and salt replaces the stored schedule.
     ///      Only the funds source may register, and the ID is namespaced by the funder. Funding
     ///      history is preserved across updates; use a new salt for a new logical schedule.
+    ///      A zero `owner` or `handler` needs no check: `pollFunds` requires
+    ///      `singleOrders[owner][ctx]`, which neither can ever satisfy.
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(Schedule calldata schedule) external returns (bytes32 id) {
