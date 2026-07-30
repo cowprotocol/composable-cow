@@ -272,7 +272,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         // The owner already holds an unrelated balance (e.g. funded for another order).
         deal(address(token0), address(safe1), TWAP_PART_AMOUNT);
 
-        poller.pollFunds(id);
+        assertTrue(poller.pollFunds(id), "funds moved");
 
         assertEq(
             token0.balanceOf(address(safe1)), TWAP_PART_AMOUNT * 2, "full part pulled on top of the existing balance"
@@ -285,13 +285,13 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
         vm.warp(_t0(paramsHash));
 
-        poller.pollFunds(id);
+        assertTrue(poller.pollFunds(id), "funds moved");
 
         vm.prank(address(safe1));
         assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "part settled");
         assertEq(token0.balanceOf(address(safe1)), 0, "part settled");
 
-        poller.pollFunds(id); // no-op: this part has already been funded
+        assertFalse(poller.pollFunds(id), "already funded, no-op");
 
         assertEq(token0.balanceOf(address(safe1)), 0, "next part not funded early");
         assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT * N - TWAP_PART_AMOUNT, "no extra pull");
@@ -313,13 +313,13 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         orderB.appData = keccak256("second valid order");
 
         vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
-        poller.pollFunds(id);
+        assertTrue(poller.pollFunds(id), "first order funded");
         vm.prank(address(safe1));
         assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "first order settled");
 
         vm.clearMockedCalls();
         vm.mockCall(address(twap), handlerCall, abi.encode(orderB));
-        poller.pollFunds(id);
+        assertTrue(poller.pollFunds(id), "second order funded");
         vm.prank(address(safe1));
         assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "second order settled");
 
@@ -343,7 +343,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.clearMockedCalls();
         vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
-        poller.pollFunds(id);
+        assertFalse(poller.pollFunds(id), "first order already funded, no-op");
 
         assertEq(token0.balanceOf(address(safe1)), 0, "first order not funded twice");
         assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT, "only two distinct orders funded");
@@ -375,7 +375,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             vm.warp(t0 + part * FREQ);
 
             assertEq(token0.balanceOf(address(safe1)), 0, "owner empty before part");
-            poller.pollFunds(id);
+            assertTrue(poller.pollFunds(id), "funds moved for this part");
             assertEq(token0.balanceOf(address(safe1)), TWAP_PART_AMOUNT, "part funded");
 
             // Simulate the part settling: the owner's balance is consumed.

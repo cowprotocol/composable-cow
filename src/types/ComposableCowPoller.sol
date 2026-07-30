@@ -144,7 +144,10 @@ contract ComposableCowPoller {
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
-    function pollFunds(bytes32 id) external {
+    /// @return Whether funds moved. `false` means this order was already funded, which is the one
+    ///         outcome a caller cannot otherwise tell apart from a transfer without diffing
+    ///         balances; every other case reverts.
+    function pollFunds(bytes32 id) external returns (bool) {
         Schedule memory schedule = schedules[id];
         if (schedule.funder == address(0)) revert NoSchedule();
 
@@ -160,10 +163,11 @@ contract ComposableCowPoller {
 
         // `ComposableCoW` exposes the settlement domain separator it received at deployment.
         bytes32 orderDigest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());
-        if (funded[id][orderDigest]) return;
+        if (funded[id][orderDigest]) return false;
         funded[id][orderDigest] = true;
 
         order.sellToken.safeTransferFrom(schedule.funder, schedule.owner, order.sellAmount);
         emit Pulled(id, orderDigest, order.sellAmount);
+        return true;
     }
 }
