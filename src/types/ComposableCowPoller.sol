@@ -67,11 +67,14 @@ contract ComposableCowPoller {
     ///        which is what makes such a replacement visible off-chain.
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
 
-    /// @notice Emitted when an order's sell amount is moved from the funder to the owner.
-    /// @param id The deterministic key of the schedule that was polled.
-    /// @param orderDigest The EIP-712 digest of the funded order, unique per part of the schedule.
-    /// @param amount The amount of `sellToken` transferred.
-    event Pulled(bytes32 indexed id, bytes32 orderDigest, uint256 amount);
+    /// @notice Emitted when a part's funds are moved.
+    /// @dev `orderDigest` is indexed so a single leg can be looked up directly, rather than only
+    ///      by walking a schedule's history. It is the CoW order struct hash, so it joins to
+    ///      settlement data.
+    /// @param id The deterministic key of the schedule.
+    /// @param orderDigest The digest of the order that was funded.
+    /// @param amount The `sellAmount` moved from the funder to the owner.
+    event Pulled(bytes32 indexed id, bytes32 indexed orderDigest, uint256 amount);
 
     constructor(ComposableCoW _composableCow) {
         COMPOSABLE_COW = _composableCow;

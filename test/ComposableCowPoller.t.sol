@@ -28,6 +28,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
+    event Pulled(bytes32 indexed id, bytes32 indexed orderDigest, uint256 amount);
 
     function setUp() public virtual override(BaseComposableCoWTest) {
         super.setUp();
@@ -271,6 +272,11 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         // The owner already holds an unrelated balance (e.g. funded for another order).
         deal(address(token0), address(safe1), TWAP_PART_AMOUNT);
+
+        GPv2Order.Data memory order =
+            twap.getTradeableOrder(address(safe1), address(poller), ctx, abi.encode(_bundle()), bytes(""));
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit Pulled(id, GPv2Order.hash(order, composableCow.domainSeparator()), order.sellAmount);
 
         assertTrue(poller.pollFunds(id), "funds moved");
 
