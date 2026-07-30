@@ -39,9 +39,15 @@ contract ComposableCowPoller {
     /// @dev `id => digest => funded`. History survives schedule updates so an old order cannot be replayed.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
-    /// @notice Thrown when someone other than the schedule funder registers or updates a schedule.
+    /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
     error OnlyFunder();
+
+    /// @notice Thrown when polling an ID that has no registered schedule, because it was never
+    ///         registered or has since been revoked.
     error NoSchedule();
+
+    /// @notice Thrown when the schedule's conditional order is not authorised in `ComposableCoW`,
+    ///         either because it was never created or because it was removed.
     error OrderNotLive();
 
     /// @notice Emitted when a schedule is registered or updated.
@@ -49,6 +55,11 @@ contract ComposableCowPoller {
     /// @param owner The conditional-order owner and pull destination.
     /// @param funder The token source that registered the schedule.
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
+
+    /// @notice Emitted when an order's sell amount is moved from the funder to the owner.
+    /// @param id The deterministic key of the schedule that was polled.
+    /// @param orderDigest The EIP-712 digest of the funded order, unique per part of the schedule.
+    /// @param amount The amount of `sellToken` transferred.
     event Pulled(bytes32 indexed id, bytes32 orderDigest, uint256 amount);
 
     constructor(ComposableCoW _composableCow) {
