@@ -152,17 +152,33 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(secondSalt, SECOND_SALT, "second schedule stored");
     }
 
-    /// @dev Registering the same key updates the one schedule stored under that id.
-    function test_register_replacesScheduleWithSameId() public {
-        bytes32 id = _register(_schedule(SALT, abi.encode(_bundle())));
-        TWAPOrder.Data memory replacement = _bundle();
-        replacement.appData = keccak256("updated dca pull");
-        bytes memory updatedStaticInput = abi.encode(replacement);
+    /// @dev A taken key is rejected, even for a different order, so a live order is never orphaned.
+    function test_register_RevertWhen_alreadyRegistered() public {
+        _register(_schedule(SALT, abi.encode(_bundle())));
 
-        assertEq(_register(_schedule(SALT, updatedStaticInput)), id, "same key keeps same id");
+        TWAPOrder.Data memory other = _bundle();
+        other.partSellAmount = TWAP_PART_AMOUNT * 2;
 
-        (,,,, bytes memory staticInput) = poller.schedules(id);
-        assertEq(staticInput, updatedStaticInput, "replacement input stored");
+        vm.prank(funder);
+        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
+        poller.register(_schedule(SALT, abi.encode(other)));
+    }
+
+    /// @dev Revoking frees the key, so a schedule can still be replaced deliberately.
+    function test_register_afterRevokeReusesTheKey() public {
+        bytes memory staticInput = abi.encode(_bundle());
+        bytes32 id = _register(_schedule(SALT, staticInput));
+
+        vm.prank(funder);
+        poller.revoke(id);
+
+        TWAPOrder.Data memory other = _bundle();
+        other.partSellAmount = TWAP_PART_AMOUNT * 2;
+        bytes memory updated = abi.encode(other);
+        assertEq(_register(_schedule(SALT, updated)), id, "same key reused");
+
+        (,,,, bytes memory stored) = poller.schedules(id);
+        assertEq(stored, updated, "replacement input stored");
     }
 
     /// @dev The hash the poller derives internally must equal `ComposableCoW.hash(params)`, since
@@ -306,6 +322,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         poller.pollFunds(id);
         vm.prank(address(safe1));
         assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "second order settled");
+
+        vm.prank(funder);
+        poller.revoke(id);
 
         vm.prank(funder);
         assertEq(

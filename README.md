@@ -18,7 +18,7 @@ For the purposes of outlining the methodologies, it is assumed that:
 A conditional order is a struct `ConditionalOrderParams`, consisting of:
 
 1. The address of handler, ie. type of conditional order (such as `TWAP`).
-2. A unique salt.
+2. A unique `salt` - a fresh random value per order, as it is what keeps two otherwise-identical orders distinct.
 3. Implementation specific `staticInput` - data that is known at the creation time of the conditional order.
 
 ##### Single Order
@@ -103,8 +103,8 @@ To create a TWAP order:
 
 1. ABI-Encode the `IConditionalOrder.ConditionalOrderParams` struct with:
    - `handler`: set to the `TWAP` smart contract deployment.
-   - `salt`: use a value unique to the user and logical order. For poller schedules, a good default is
-     the hash of the order-defining `staticInput` values with any `appData` field set to zero.
+   - `salt`: a fresh random value per order. It is what keeps two otherwise-identical orders distinct,
+     so reusing one makes them indistinguishable.
    - `staticInput`: the ABI-encoded `TWAP.Data` struct.
 2. Use the `struct` from (1) as either a Merkle leaf, or with `ComposableCoW.create` to create a single conditional order.
 3. Approve `GPv2VaultRelayer` to trade `n x partSellAmount` of the safe's `sellToken` tokens (in the example above, `GPv2VaultRelayer` would receive approval for spending 12,000,000 DAI tokens).

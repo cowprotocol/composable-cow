@@ -15,7 +15,9 @@ contract ComposableCowPoller {
     ComposableCoW public immutable COMPOSABLE_COW;
 
     /// @notice Parameters for a JIT funding schedule.
-    /// @dev A schedule is uniquely identified by its funder, handler, owner, and salt.
+    /// @dev `handler`, `salt` and `staticInput` are the order's `ConditionalOrderParams` and must
+    ///      match it exactly, since `paramsHash` is derived from them. The schedule key is `funder`,
+    ///      `handler`, `owner`, and `salt`.
     struct Schedule {
         /// @notice The conditional-order handler to poll, such as the TWAP type.
         IConditionalOrderGenerator handler;
@@ -25,11 +27,12 @@ contract ComposableCowPoller {
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
         /// @dev It can be an EOA or contract and may be the same address as `funder`.
         address owner;
-        /// @notice A user-controlled namespace for this schedule.
-        /// @dev Keep it unique to the user and logical order. A good default is the hash of the
-        ///      order-defining static-input values with any appData field set to zero.
+        /// @notice The conditional order's own `salt`.
+        /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
+        ///      a fresh random value per order.
         bytes32 salt;
-        /// @notice The static input passed to the handler when it generates an order.
+        /// @notice The order's `staticInput`, byte-for-byte.
+        /// @dev A mismatch is not caught at registration; `pollFunds` reverts `OrderNotLive`.
         bytes staticInput;
     }
 
@@ -41,6 +44,10 @@ contract ComposableCowPoller {
 
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
     error OnlyFunder();
+
+    /// @notice Thrown when registering a schedule whose key is already taken. Revoke it first to
+    ///         replace it deliberately.
+    error AlreadyRegistered();
 
     /// @notice Thrown when polling an ID that has no registered schedule, because it was never
     ///         registered or has since been revoked.
@@ -77,19 +84,20 @@ contract ComposableCowPoller {
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     /// @notice Computes the deterministic, appData-independent schedule key.
-    /// @dev `staticInput` is excluded because its appData can depend on this key.
-    ///      Keep the salt unique to the user and logical order. A good default is the hash of the
-    ///      order-defining static-input values with any appData field set to zero.
+    /// @dev `staticInput` is excluded because its appData can depend on this key, which is why a
+    ///      fresh `salt` per order is what keeps distinct orders on distinct keys.
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
         return keccak256(abi.encode(schedule.funder, schedule.handler, schedule.owner, schedule.salt));
     }
 
-    /// @notice Registers or updates a schedule.
-    /// @dev Registering the same funder, handler, owner, and salt replaces the stored schedule.
-    ///      Only the funds source may register, and the ID is namespaced by the funder. Funding
-    ///      history is preserved across updates; use a new salt for a new logical schedule.
+    /// @notice Registers a schedule.
+    /// @dev Reverts if the key is taken. The key ignores `staticInput`, so silently overwriting
+    ///      would leave the previous — still authorised — order unfundable with nothing in the
+    ///      logs to show it. `revoke` first to replace a schedule deliberately; funding history
+    ///      survives that, so an old order cannot be replayed.
+    ///      Only the funds source may register, and the ID is namespaced by the funder.
     ///      A zero `owner` or `handler` needs no check: `pollFunds` requires
     ///      `singleOrders[owner][paramsHash]`, which neither can ever satisfy.
     /// @param schedule The schedule to store.
@@ -97,6 +105,7 @@ contract ComposableCowPoller {
     function register(Schedule calldata schedule) external returns (bytes32 id) {
         if (msg.sender != schedule.funder) revert OnlyFunder();
         id = scheduleId(schedule);
+        if (schedules[id].funder != address(0)) revert AlreadyRegistered();
         schedules[id] = schedule;
         emit ScheduleRegistered(
             id, schedule.owner, schedule.funder, _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
