@@ -54,7 +54,11 @@ contract ComposableCowPoller {
     /// @param id The deterministic key of the schedule.
     /// @param owner The conditional-order owner and pull destination.
     /// @param funder The token source that registered the schedule.
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder);
+    /// @param paramsHash The ComposableCoW order key this schedule funds. `id` deliberately excludes
+    ///        `staticInput`, so re-registering the same funder, handler, owner, and salt replaces
+    ///        the stored schedule. Logging the hash names the order each registration points at,
+    ///        which is what makes such a replacement visible off-chain.
+    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
 
     /// @notice Emitted when an order's sell amount is moved from the funder to the owner.
     /// @param id The deterministic key of the schedule that was polled.
@@ -94,7 +98,9 @@ contract ComposableCowPoller {
         if (msg.sender != schedule.funder) revert OnlyFunder();
         id = scheduleId(schedule);
         schedules[id] = schedule;
-        emit ScheduleRegistered(id, schedule.owner, schedule.funder);
+        emit ScheduleRegistered(
+            id, schedule.owner, schedule.funder, _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
+        );
     }
 
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
