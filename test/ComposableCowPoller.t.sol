@@ -26,7 +26,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     address funder;
 
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 ctx);
+    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     function setUp() public virtual override(BaseComposableCoWTest) {
@@ -61,16 +61,16 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     /// @dev Creates a JIT-funded TWAP: order via context, the funder funds + approves the poller,
-    ///      and the schedule is registered. Returns the order's cabinet key `ctx`
-    ///      (`ComposableCoW.hash(params)`, used for cabinet/remove) and the appData-independent
+    ///      and the schedule is registered. Returns the order's `paramsHash`
+    ///      (`ComposableCoW.hash(params)`, the cabinet/remove key) and the appData-independent
     ///      poller schedule key `id` (used for pollFunds/revoke).
     function _setupSchedule()
         internal
-        returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx, bytes32 id)
+        returns (IConditionalOrder.ConditionalOrderParams memory params, bytes32 paramsHash, bytes32 id)
     {
         params = super.createOrder(twap, SALT, abi.encode(_bundle()));
         _createWithContext(address(safe1), params, currentBlockTimestampFactory, bytes(""), false);
-        ctx = composableCow.hash(params);
+        paramsHash = composableCow.hash(params);
 
         // Capital lives in the funder (the EOA), which approves the poller for the full notional.
         deal(address(token0), funder, TWAP_PART_AMOUNT * N);
@@ -78,9 +78,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         token0.approve(address(poller), TWAP_PART_AMOUNT * N);
 
         // Register the schedule (only the funder may do this). The schedule carries the handler,
-        // the funds source, the destination, the order's `salt` (so the poller can rebuild `ctx`
-        // on-chain) and its `staticInput`. The key is appData-independent so the funding hook can
-        // live in the order's own appData.
+        // the funds source, the destination, the order's `salt` (so the poller can rebuild the
+        // hash on-chain) and its `staticInput`. The key is appData-independent so the funding hook
+        // can live in the order's own appData.
         ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
         id = _register(schedule);
 
@@ -101,7 +101,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         });
     }
 
-    function _expectedCtx(bytes32 salt, bytes memory staticInput) internal view returns (bytes32) {
+    function _expectedParamsHash(bytes32 salt, bytes memory staticInput) internal view returns (bytes32) {
         return composableCow.hash(
             IConditionalOrder.ConditionalOrderParams({
                 handler: IConditionalOrder(address(twap)), salt: salt, staticInput: staticInput
@@ -116,8 +116,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev The order's resolved start time `t0`, read back from the cabinet where
     ///      `createWithContext` stored it via `CurrentBlockTimestampFactory`.
-    function _t0(bytes32 ctx) internal view returns (uint256) {
-        return uint256(composableCow.cabinet(address(safe1), ctx));
+    function _t0(bytes32 paramsHash) internal view returns (uint256) {
+        return uint256(composableCow.cabinet(address(safe1), paramsHash));
     }
 
     /// @dev A registered schedule is stored under its appData-independent id.
@@ -165,25 +165,25 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(staticInput, updatedStaticInput, "replacement input stored");
     }
 
-    /// @dev The `ctx` the poller derives internally must equal `ComposableCoW.hash(params)`, since
+    /// @dev The hash the poller derives internally must equal `ComposableCoW.hash(params)`, since
     ///      the contract mirrors that formula instead of calling it. `pollFunds` depends on the
     ///      match too: it looks the order up in `singleOrders` by the derived key.
     function test_register_logsTheComposableCowOrderKey() public {
-        (IConditionalOrder.ConditionalOrderParams memory params, bytes32 ctx,) = _setupSchedule();
+        (IConditionalOrder.ConditionalOrderParams memory params, bytes32 paramsHash,) = _setupSchedule();
 
-        assertEq(ctx, composableCow.hash(params), "ctx is the ComposableCoW order key");
-        assertTrue(composableCow.singleOrders(address(safe1), ctx), "the key resolves to a live order");
-        assertEq(_expectedCtx(SALT, abi.encode(_bundle())), ctx, "the logged key matches");
+        assertEq(paramsHash, composableCow.hash(params), "paramsHash is the ComposableCoW order key");
+        assertTrue(composableCow.singleOrders(address(safe1), paramsHash), "the key resolves to a live order");
+        assertEq(_expectedParamsHash(SALT, abi.encode(_bundle())), paramsHash, "the logged key matches");
     }
 
-    /// @dev A replacement keeps the same `id` and the same indexed topics, so `ctx` is the only
-    ///      thing in the log that reveals which order each registration pointed at.
+    /// @dev A replacement keeps the same `id` and the same indexed topics, so `paramsHash` is the
+    ///      only thing in the log that reveals which order each registration pointed at.
     function test_register_logIdentifiesTheReplacedOrder() public {
         bytes memory firstInput = abi.encode(_bundle());
         bytes32 id = poller.scheduleId(_schedule(SALT, firstInput));
 
         vm.expectEmit(true, true, true, true, address(poller));
-        emit ScheduleRegistered(id, address(safe1), funder, _expectedCtx(SALT, firstInput));
+        emit ScheduleRegistered(id, address(safe1), funder, _expectedParamsHash(SALT, firstInput));
         _register(_schedule(SALT, firstInput));
 
         // A genuinely different order, not just an appData refresh.
@@ -191,12 +191,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         other.partSellAmount = TWAP_PART_AMOUNT * 2;
         bytes memory secondInput = abi.encode(other);
 
-        bytes32 firstCtx = _expectedCtx(SALT, firstInput);
-        bytes32 secondCtx = _expectedCtx(SALT, secondInput);
-        assertTrue(firstCtx != secondCtx, "the two orders have distinct keys");
+        bytes32 firstParamsHash = _expectedParamsHash(SALT, firstInput);
+        bytes32 secondParamsHash = _expectedParamsHash(SALT, secondInput);
+        assertTrue(firstParamsHash != secondParamsHash, "the two orders have distinct keys");
 
         vm.expectEmit(true, true, true, true, address(poller));
-        emit ScheduleRegistered(id, address(safe1), funder, secondCtx);
+        emit ScheduleRegistered(id, address(safe1), funder, secondParamsHash);
         assertEq(_register(_schedule(SALT, secondInput)), id, "same id as the schedule it replaced");
     }
 
@@ -250,8 +250,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     /// @dev Funds move unconditionally: even if the owner already holds a balance (e.g. from another
     ///      concurrent order), the full part is still pulled, so orders never share funding.
     function test_pollFunds_movesFullAmountUnconditionally() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx));
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
 
         // The owner already holds an unrelated balance (e.g. funded for another order).
         deal(address(token0), address(safe1), TWAP_PART_AMOUNT);
@@ -266,8 +266,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev A repeated call in the same part is a no-op, even after settlement drains the owner.
     function test_pollFunds_idempotentWithinPartAfterSettlement() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx));
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
 
         poller.pollFunds(id);
 
@@ -283,15 +283,16 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev A handler returning A, then B, then A cannot refund A, even after schedule registration.
     function test_pollFunds_doesNotRefundEarlierDigestAfterReregister() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx));
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
 
         bytes memory staticInput = abi.encode(_bundle());
         bytes memory handlerCall = abi.encodeCall(
-            IConditionalOrderGenerator.getTradeableOrder, (address(safe1), address(poller), ctx, staticInput, bytes(""))
+            IConditionalOrderGenerator.getTradeableOrder,
+            (address(safe1), address(poller), paramsHash, staticInput, bytes(""))
         );
         GPv2Order.Data memory orderA =
-            twap.getTradeableOrder(address(safe1), address(poller), ctx, staticInput, bytes(""));
+            twap.getTradeableOrder(address(safe1), address(poller), paramsHash, staticInput, bytes(""));
         GPv2Order.Data memory orderB = abi.decode(abi.encode(orderA), (GPv2Order.Data));
         orderB.appData = keccak256("second valid order");
 
@@ -333,8 +334,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev A failed ERC-20 transfer must not mark this part as funded.
     function test_pollFunds_RevertWhen_transferFromReturnsFalse() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx));
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
 
         vm.mockCall(
             address(token0),
@@ -348,8 +349,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev The headline flow: each part is funded JIT and the owner holds nothing in between.
     function test_pollFunds_fundsEachPartAcrossSchedule() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        uint256 t0 = _t0(ctx);
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        uint256 t0 = _t0(paramsHash);
 
         for (uint256 part = 0; part < N; part++) {
             vm.warp(t0 + part * FREQ);
@@ -372,8 +373,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev The pull is bounded to the schedule window: after it ends, `getTradeableOrder` reverts.
     function test_pollFunds_RevertWhen_scheduleEnded() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx) + N * FREQ);
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash) + N * FREQ);
 
         vm.expectRevert(); // IConditionalOrder.OrderNotValid(...) from the handler
         poller.pollFunds(id);
@@ -387,11 +388,11 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev Cancelling the order flips `singleOrders` false, which disables the poller for free.
     function test_remove_killsPoller() public {
-        (, bytes32 ctx, bytes32 id) = _setupSchedule();
-        vm.warp(_t0(ctx));
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
 
         vm.prank(address(safe1));
-        composableCow.remove(ctx);
+        composableCow.remove(paramsHash);
 
         vm.expectRevert(ComposableCowPoller.OrderNotLive.selector);
         poller.pollFunds(id);
