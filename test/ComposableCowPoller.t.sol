@@ -194,7 +194,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     /// @dev A replacement keeps the same `id` and the same indexed topics, so `paramsHash` is the
-    ///      only thing in the log that reveals which order each registration pointed at.
+    ///      only thing in the log that reveals which order each registration pointed at. The key
+    ///      has to be revoked first, since `register` rejects a taken one.
     function test_register_logIdentifiesTheReplacedOrder() public {
         bytes memory firstInput = abi.encode(_bundle());
         bytes32 id = poller.scheduleId(_schedule(SALT, firstInput));
@@ -211,6 +212,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes32 firstParamsHash = _expectedParamsHash(SALT, firstInput);
         bytes32 secondParamsHash = _expectedParamsHash(SALT, secondInput);
         assertTrue(firstParamsHash != secondParamsHash, "the two orders have distinct keys");
+
+        vm.prank(funder);
+        poller.revoke(id);
 
         vm.expectEmit(true, true, true, true, address(poller));
         emit ScheduleRegistered(id, address(safe1), funder, secondParamsHash);
@@ -274,7 +278,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         deal(address(token0), address(safe1), TWAP_PART_AMOUNT);
 
         GPv2Order.Data memory order =
-            twap.getTradeableOrder(address(safe1), address(poller), ctx, abi.encode(_bundle()), bytes(""));
+            twap.getTradeableOrder(address(safe1), address(poller), paramsHash, abi.encode(_bundle()), bytes(""));
         vm.expectEmit(true, true, true, true, address(poller));
         emit Pulled(id, GPv2Order.hash(order, composableCow.domainSeparator()), order.sellAmount);
 
