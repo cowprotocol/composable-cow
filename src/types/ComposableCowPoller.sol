@@ -36,7 +36,7 @@ contract ComposableCowPoller {
     /// @dev Keyed by `id == scheduleId(schedule)`, which excludes the order's `appData`.
     mapping(bytes32 => Schedule) public schedules;
 
-    /// @dev `id => digest => funded`. History survives schedule updates so an old order cannot be replayed.
+    /// @dev `id => orderDigest => funded`. History survives schedule updates so an old order cannot be replayed.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
@@ -144,11 +144,11 @@ contract ComposableCowPoller {
             .getTradeableOrder(schedule.owner, address(this), paramsHash, schedule.staticInput, bytes(""));
 
         // `ComposableCoW` exposes the settlement domain separator it received at deployment.
-        bytes32 digest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());
-        if (funded[id][digest]) return;
-        funded[id][digest] = true;
+        bytes32 orderDigest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());
+        if (funded[id][orderDigest]) return;
+        funded[id][orderDigest] = true;
 
         order.sellToken.safeTransferFrom(schedule.funder, schedule.owner, order.sellAmount);
-        emit Pulled(id, digest, order.sellAmount);
+        emit Pulled(id, orderDigest, order.sellAmount);
     }
 }
