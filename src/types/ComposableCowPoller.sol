@@ -87,7 +87,7 @@ contract ComposableCowPoller {
     ///      Only the funds source may register, and the ID is namespaced by the funder. Funding
     ///      history is preserved across updates; use a new salt for a new logical schedule.
     ///      A zero `owner` or `handler` needs no check: `pollFunds` requires
-    ///      `singleOrders[owner][ctx]`, which neither can ever satisfy.
+    ///      `singleOrders[owner][paramsHash]`, which neither can ever satisfy.
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(Schedule calldata schedule) external returns (bytes32 id) {
@@ -106,13 +106,15 @@ contract ComposableCowPoller {
         delete schedules[id];
     }
 
-    /// @notice Derives the ComposableCoW order key a schedule funds.
+    /// @notice Hashes a schedule's `ConditionalOrderParams`, which is the order key it funds.
     /// @dev Mirrors `ComposableCoW.hash(params)` rather than calling it: the value is identical,
     ///      and deriving it here avoids re-encoding `staticInput` as calldata for an external
     ///      call. The equivalence is exercised by the `pollFunds` tests, which revert
     ///      `OrderNotLive` if the derived key does not match the authorised order.
-    /// @return The order key, as used by `singleOrders`, `cabinet`, and `remove`.
-    function _ctx(IConditionalOrderGenerator handler, bytes32 salt, bytes memory staticInput)
+    /// @return The params hash. `ComposableCoW` calls this the order's `ctx`, though only for
+    ///         single orders: under a merkle root its `ctx` is zero. The poller only funds single
+    ///         orders, so the two always coincide here.
+    function _paramsHash(IConditionalOrderGenerator handler, bytes32 salt, bytes memory staticInput)
         internal
         pure
         returns (bytes32)
@@ -131,15 +133,15 @@ contract ComposableCowPoller {
         Schedule memory schedule = schedules[id];
         if (schedule.funder == address(0)) revert NoSchedule();
 
-        // Re-derive `ctx` on-chain, so `pollFunds(id)` stays independent of the order's `appData`.
-        bytes32 ctx = _ctx(schedule.handler, schedule.salt, schedule.staticInput);
+        // Re-derive the hash on-chain, so `pollFunds(id)` stays independent of the order's `appData`.
+        bytes32 paramsHash = _paramsHash(schedule.handler, schedule.salt, schedule.staticInput);
 
         // The order must still be authorised; `remove` disables the poller.
-        if (!COMPOSABLE_COW.singleOrders(schedule.owner, ctx)) revert OrderNotLive();
+        if (!COMPOSABLE_COW.singleOrders(schedule.owner, paramsHash)) revert OrderNotLive();
 
         // The handler yields the current order and reverts outside its window.
-        GPv2Order.Data memory order =
-            schedule.handler.getTradeableOrder(schedule.owner, address(this), ctx, schedule.staticInput, bytes(""));
+        GPv2Order.Data memory order = schedule.handler
+            .getTradeableOrder(schedule.owner, address(this), paramsHash, schedule.staticInput, bytes(""));
 
         // `ComposableCoW` exposes the settlement domain separator it received at deployment.
         bytes32 digest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());
