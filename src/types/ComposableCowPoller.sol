@@ -3,13 +3,20 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20, GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 import {GPv2SafeERC20} from "cowprotocol/contracts/libraries/GPv2SafeERC20.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 import {ComposableCoW} from "src/ComposableCoW.sol";
 import {IConditionalOrder, IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
 /// @title ComposableCowPoller - Just-in-time funding for composable conditional orders.
-contract ComposableCowPoller {
+contract ComposableCowPoller is EIP712 {
     using GPv2SafeERC20 for IERC20;
+
+    /// @dev EIP-712 Register struct typehash.
+    bytes32 private constant REGISTER_TYPEHASH = keccak256(
+        "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 nonce,uint256 deadline)"
+    );
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
@@ -42,6 +49,9 @@ contract ComposableCowPoller {
     /// @dev `id => orderDigest => funded`. History survives schedule updates so an old order cannot be replayed.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
+    /// @notice The next action nonce for each funder.
+    mapping(address funder => uint256 nonce) public nonces;
+
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
     error OnlyFunder();
 
@@ -56,6 +66,12 @@ contract ComposableCowPoller {
     /// @notice Thrown when the schedule's conditional order is not authorised in `ComposableCoW`,
     ///         either because it was never created or because it was removed.
     error OrderNotLive();
+
+    /// @notice Thrown when a signed action is submitted after its deadline.
+    error SignatureExpired();
+
+    /// @notice Thrown when a signed action cannot be authenticated by its funder.
+    error InvalidSignature();
 
     /// @notice Emitted when a schedule is registered or updated.
     /// @param id The deterministic key of the schedule.
@@ -76,7 +92,7 @@ contract ComposableCowPoller {
     /// @param amount The `sellAmount` moved from the funder to the owner.
     event Pulled(bytes32 indexed id, bytes32 indexed orderDigest, uint256 amount);
 
-    constructor(ComposableCoW _composableCow) {
+    constructor(ComposableCoW _composableCow) EIP712("ComposableCowPoller", "1") {
         COMPOSABLE_COW = _composableCow;
     }
 
@@ -108,11 +124,53 @@ contract ComposableCowPoller {
     function register(Schedule calldata schedule) external returns (bytes32 id) {
         if (msg.sender != schedule.funder) revert OnlyFunder();
         id = scheduleId(schedule);
+        return _register(schedule, id);
+    }
+
+    /// @notice Registers a schedule authorized by the funder's EIP-712 signature.
+    /// @dev Any caller may submit the signature before its deadline.
+    /// @param schedule The schedule to store.
+    /// @param deadline The last block timestamp at which the signature is valid.
+    /// @param signature The funder's EIP-712 signature.
+    /// @return id The deterministic key of the stored schedule.
+    function registerWithSignature(Schedule calldata schedule, uint256 deadline, bytes calldata signature)
+        external
+        returns (bytes32 id)
+    {
+        if (block.timestamp > deadline) revert SignatureExpired();
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                REGISTER_TYPEHASH,
+                schedule.handler,
+                schedule.funder,
+                schedule.owner,
+                schedule.salt,
+                keccak256(schedule.staticInput),
+                nonces[schedule.funder],
+                deadline
+            )
+        );
+        if (!SignatureChecker.isValidSignatureNow(schedule.funder, _hashTypedDataV4(structHash), signature)) {
+            revert InvalidSignature();
+        }
+
+        id = scheduleId(schedule);
+        return _register(schedule, id);
+    }
+
+    /// @dev Stores a schedule and consumes one action nonce for its funder.
+    function _register(ComposableCowPoller.Schedule calldata schedule, bytes32 id)
+        internal
+        returns (bytes32)
+    {
         if (schedules[id].funder != address(0)) revert AlreadyRegistered();
+        nonces[schedule.funder]++;
         schedules[id] = schedule;
         emit ScheduleRegistered(
             id, schedule.owner, schedule.funder, _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
         );
+        return id;
     }
 
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
@@ -120,6 +178,12 @@ contract ComposableCowPoller {
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
         if (msg.sender != schedule.funder) revert OnlyFunder();
+        _revoke(id, schedule);
+    }
+
+    /// @dev Deletes a schedule and consumes one action nonce for its funder.
+    function _revoke(bytes32 id, Schedule storage schedule) internal {
+        nonces[schedule.funder]++;
         emit ScheduleRevoked(id, schedule.owner, schedule.funder);
         delete schedules[id];
     }

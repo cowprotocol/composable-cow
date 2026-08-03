@@ -11,9 +11,30 @@ import {ComposableCowPoller} from "src/types/ComposableCowPoller.sol";
 import {CurrentBlockTimestampFactory} from "src/value_factories/CurrentBlockTimestampFactory.sol";
 import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
+contract TestPollerERC1271Signer {
+    bytes32 private validDigest;
+    bytes32 private validSignatureHash;
+
+    function allow(bytes32 digest, bytes calldata signature) external {
+        validDigest = digest;
+        validSignatureHash = keccak256(signature);
+    }
+
+    function isValidSignature(bytes32 digest, bytes calldata signature) external view returns (bytes4) {
+        return digest == validDigest && keccak256(signature) == validSignatureHash
+            ? this.isValidSignature.selector
+            : bytes4(0xffffffff);
+    }
+}
+
 /// @title ComposableCowPoller unit tests
 /// @notice Exercises registering a schedule for a composable TWAP created via `createWithContext`.
 contract ComposableCowPollerTest is BaseComposableCoWTest {
+    bytes32 constant EIP712_DOMAIN_TYPEHASH =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 constant REGISTER_TYPEHASH = keccak256(
+        "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 nonce,uint256 deadline)"
+    );
     uint256 constant TWAP_PART_AMOUNT = 100e18;
     uint256 constant LIMIT = 1e18;
     uint256 constant N = 3;
@@ -25,6 +46,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     IValueFactory currentBlockTimestampFactory;
 
     address funder;
+    uint256 funderPrivateKey;
 
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
@@ -36,7 +58,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
         poller = new ComposableCowPoller(composableCow);
-        funder = makeAddr("funder");
+        funderPrivateKey = uint256(keccak256("funder"));
+        funder = vm.addr(funderPrivateKey);
+        vm.label(funder, "funder");
 
         // The owner (safe1) starts with no sell token: funds arrive just-in-time.
         deal(address(token0), address(safe1), 0);
@@ -111,8 +135,52 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     function _register(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
-        vm.prank(funder);
+        vm.prank(schedule.funder);
         id = poller.register(schedule);
+    }
+
+    function _domainSeparator(uint256 chainId, address verifyingContract) internal pure returns (bytes32) {
+        return keccak256(
+            abi.encode(EIP712_DOMAIN_TYPEHASH, keccak256("ComposableCowPoller"), keccak256("1"), chainId, verifyingContract)
+        );
+    }
+
+    function _registerDigest(
+        ComposableCowPoller.Schedule memory schedule,
+        uint256 nonce,
+        uint256 deadline,
+        uint256 chainId,
+        address verifyingContract
+    ) internal pure returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                REGISTER_TYPEHASH,
+                schedule.handler,
+                schedule.funder,
+                schedule.owner,
+                schedule.salt,
+                keccak256(schedule.staticInput),
+                nonce,
+                deadline
+            )
+        );
+        return keccak256(abi.encodePacked("\x19\x01", _domainSeparator(chainId, verifyingContract), structHash));
+    }
+
+    function _sign(uint256 privateKey, bytes32 digest) internal pure returns (bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+        return abi.encodePacked(r, s, v);
+    }
+
+    function _signRegister(ComposableCowPoller.Schedule memory schedule, uint256 deadline)
+        internal
+        view
+        returns (bytes memory)
+    {
+        return _sign(
+            funderPrivateKey,
+            _registerDigest(schedule, poller.nonces(schedule.funder), deadline, block.chainid, address(poller))
+        );
     }
 
     /// @dev The order's resolved start time `t0`, read back from the cabinet where
@@ -235,6 +303,157 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         );
     }
 
+    function test_register_incrementsNonce() public {
+        _register(_schedule(SALT, abi.encode(_bundle())));
+
+        assertEq(poller.nonces(funder), 1, "direct registration consumes nonce");
+    }
+
+    function test_registerWithSignature_allowsArbitraryCallerWithEOASignature() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory signature = _signRegister(schedule, deadline);
+
+        vm.prank(bob.addr);
+        bytes32 id = poller.registerWithSignature(schedule, deadline, signature);
+
+        assertEq(id, poller.scheduleId(schedule));
+        assertEq(poller.nonces(funder), 1, "signed registration consumes nonce");
+        (, address storedFunder,,,) = poller.schedules(id);
+        assertEq(storedFunder, funder, "schedule stored");
+    }
+
+    function test_registerWithSignature_allowsERC1271Signature() public {
+        TestPollerERC1271Signer signer = new TestPollerERC1271Signer();
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        schedule.funder = address(signer);
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory signature = hex"c0ffee";
+        bytes32 digest = _registerDigest(schedule, 0, deadline, block.chainid, address(poller));
+        signer.allow(digest, signature);
+
+        vm.prank(bob.addr);
+        bytes32 id = poller.registerWithSignature(schedule, deadline, signature);
+
+        assertEq(poller.nonces(address(signer)), 1, "contract signature consumes nonce");
+        (, address storedFunder,,,) = poller.schedules(id);
+        assertEq(storedFunder, address(signer), "contract-funded schedule stored");
+    }
+
+    function test_registerWithSignature_RevertWhen_replayed() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory signature = _signRegister(schedule, deadline);
+        bytes32 id = poller.registerWithSignature(schedule, deadline, signature);
+
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(schedule, deadline, signature);
+
+        assertEq(poller.nonces(funder), 1, "replay does not consume nonce");
+        (, address storedFunder,,,) = poller.schedules(id);
+        assertEq(storedFunder, funder, "replay does not change schedule");
+    }
+
+    function test_registerWithSignature_RevertWhen_expired() public {
+        vm.warp(1 days);
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp - 1;
+        bytes memory signature = _signRegister(schedule, deadline);
+
+        vm.expectRevert(ComposableCowPoller.SignatureExpired.selector);
+        poller.registerWithSignature(schedule, deadline, signature);
+
+        assertEq(poller.nonces(funder), 0, "expiry does not consume nonce");
+    }
+
+    function test_registerWithSignature_acceptsDeadlineAtCurrentTimestamp() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp;
+
+        poller.registerWithSignature(schedule, deadline, _signRegister(schedule, deadline));
+
+        assertEq(poller.nonces(funder), 1, "inclusive deadline accepted");
+    }
+
+    function test_registerWithSignature_RevertWhen_nonceIsStale() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory staleSignature = _signRegister(schedule, deadline);
+        _register(_schedule(SECOND_SALT, abi.encode(_bundle())));
+
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(schedule, deadline, staleSignature);
+
+        assertEq(poller.nonces(funder), 1, "stale signature does not consume nonce");
+    }
+
+    function test_registerWithSignature_RevertWhen_wrongSigner() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes32 digest = _registerDigest(schedule, 0, deadline, block.chainid, address(poller));
+
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(schedule, deadline, _sign(alice.pk, digest));
+
+        assertEq(poller.nonces(funder), 0, "wrong signer does not consume nonce");
+    }
+
+    function test_registerWithSignature_RevertWhen_scheduleChanges() public {
+        ComposableCowPoller.Schedule memory signedSchedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes memory signature = _signRegister(signedSchedule, deadline);
+        ComposableCowPoller.Schedule memory changed = signedSchedule;
+
+        changed.handler = IConditionalOrderGenerator(address(0x1111));
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
+
+        changed = signedSchedule;
+        changed.funder = address(0x2222);
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
+
+        changed = signedSchedule;
+        changed.owner = address(0x3333);
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
+
+        changed = signedSchedule;
+        changed.salt = SECOND_SALT;
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
+
+        changed = signedSchedule;
+        changed.staticInput = bytes("changed");
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
+
+        assertEq(poller.nonces(funder), 0, "schedule changes do not consume nonce");
+    }
+
+    function test_registerWithSignature_RevertWhen_signedForDifferentChain() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes32 digest = _registerDigest(schedule, 0, deadline, block.chainid + 1, address(poller));
+
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(schedule, deadline, _sign(funderPrivateKey, digest));
+
+        assertEq(poller.nonces(funder), 0, "wrong-chain signature does not consume nonce");
+    }
+
+    function test_registerWithSignature_RevertWhen_signedForDifferentPoller() public {
+        ComposableCowPoller otherPoller = new ComposableCowPoller(composableCow);
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        uint256 deadline = block.timestamp + 1 hours;
+        bytes32 digest = _registerDigest(schedule, 0, deadline, block.chainid, address(otherPoller));
+
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(schedule, deadline, _sign(funderPrivateKey, digest));
+
+        assertEq(poller.nonces(funder), 0, "wrong-poller signature does not consume nonce");
+    }
+
     /// @dev The funder can revoke, which clears the schedule.
     function test_revoke_clearsSchedule() public {
         (,, bytes32 id) = _setupSchedule();
@@ -258,6 +477,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(owner, address(0), "owner cleared");
         assertEq(salt, bytes32(0), "salt cleared");
         assertEq(staticInput, bytes(""), "static input cleared");
+        assertEq(poller.nonces(funder), 2, "registration and revocation consume nonces");
     }
 
     /// @dev Only the funds source may revoke.
