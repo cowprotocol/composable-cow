@@ -178,11 +178,6 @@ contract ComposableCowPoller is EIP712 {
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
         if (msg.sender != schedule.funder) revert OnlyFunder();
-        _revoke(id, schedule);
-    }
-
-    /// @dev Deletes a schedule and consumes one action nonce for its funder.
-    function _revoke(bytes32 id, Schedule storage schedule) internal {
         nonces[schedule.funder]++;
         emit ScheduleRevoked(id, schedule.owner, schedule.funder);
         delete schedules[id];
