@@ -67,6 +67,7 @@ for path in \
   "src/types/PerpetualStableSwap.sol" \
   "src/types/TradeAboveThreshold.sol" \
   "src/types/StopLoss.sol" \
+  "src/types/ComposableCowPoller.sol" \
   "src/value_factories/CurrentBlockTimestampFactory.sol" \
 ; do
   filename="${path##*/}"
