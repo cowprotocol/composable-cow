@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Script} from "forge-std/Script.sol";
+import {DeployScript} from "./DeployScript.sol";
 
 import {ComposableCoW} from "../src/ComposableCoW.sol";
 
@@ -10,16 +10,16 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 
-contract DeployOrderTypes is Script {
+contract DeployOrderTypes is DeployScript {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address composableCow = vm.envAddress("COMPOSABLE_COW");
         vm.startBroadcast(deployerPrivateKey);
 
-        new TWAP(ComposableCoW(composableCow));
-        new GoodAfterTime();
-        new PerpetualStableSwap();
-        new TradeAboveThreshold();
+        new TWAP{salt: deploymentSalt()}(ComposableCoW(composableCow));
+        new GoodAfterTime{salt: deploymentSalt()}();
+        new PerpetualStableSwap{salt: deploymentSalt()}();
+        new TradeAboveThreshold{salt: deploymentSalt()}();
 
         vm.stopBroadcast();
     }
