@@ -35,3 +35,21 @@ jobs:
         run: |
           forge test -vvv --optimize --optimizer-runs 20000 --no-match-test "fork|simulate" --fuzz-seed 672679878
         id: test
+
+  networks-json:
+    name: networks.json is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Regenerate networks.json
+        run: bash dev/generate-networks-file.sh > networks.json
+
+      - name: Check for drift
+        run: |
+          if ! git diff --exit-code -- networks.json; then
+            echo "::error file=networks.json::Out of sync. Regenerate it, or add hand-deployed chains to broadcast/networks-manual.json."
+            exit 1
+          fi
