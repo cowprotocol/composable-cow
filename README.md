@@ -170,7 +170,7 @@ forge test -vvv # Unit, fuzz, and fork testing
 forge coverage -vvv --no-match-test "fork" --report summary
 ```
 
-#### Deterministic deployment
+### Deploying the older contracts (legacy)
 
 The older contracts, like `ComposableCoW`, can no longer be deployed to their official addresses by
 compiling this repository (see [#93](https://github.com/cowprotocol/composable-cow/issues/93)).
@@ -183,7 +183,7 @@ PRIVATE_KEY=... bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL --broadcast
 
 See [`canonical/`](./canonical) for how it works and what it covers.
 
-### Script-based deployment
+### Deploying a new contract type
 
 ⚠️ This approach won't deploy the contracts to the official addresses.
 It's mainly useful for testing or when introducing a new contract type.
