@@ -171,9 +171,8 @@ forge coverage -vvv --no-match-test "fork" --report summary
 ```
 
 ### Deploy the older contracts (legacy)
-
-These eight can no longer be deployed to their official addresses by compiling this repository (see
-[#93](https://github.com/cowprotocol/composable-cow/issues/93)):
+Older contract like `ComposableCoW can no longer be deployed to their official addresses by compiling this repository (see
+[#93](https://github.com/cowprotocol/composable-cow/issues/93)). These are all affected contracts: 
 
 `ComposableCoW`, `CurrentBlockTimestampFactory`, `ExtensibleFallbackHandler`, `GoodAfterTime`,
 `PerpetualStableSwap`, `StopLoss`, `TWAP`, `TradeAboveThreshold`.
@@ -189,13 +188,9 @@ See [`canonical/`](./canonical) for how it works and what it covers.
 
 ### Deploy newer contracts
 
-Everything not listed above, `ComposableCowPoller` and anything added since, is deployed by
-compiling this repository. Running these scripts against one of the older contracts would put it at
-a different address than it has elsewhere, so use the legacy section for those.
+Everything contract not listed in the legacy section, is deployed using the official foundry scripts:
 
-Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
-
-To deploy all contracts in a single run, run:
+To deploy all newer contracts in a single run:
 
 ```bash
 source .env
