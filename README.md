@@ -172,30 +172,18 @@ forge coverage -vvv --no-match-test "fork" --report summary
 
 #### Deterministic deployment
 
-Because of the issue [#93](https://github.com/cowprotocol/composable-cow/issues/93), compiling this
-repository no longer reproduces the official addresses. The runtime code still matches, but the
-Solidity metadata hash embedded in the bytecode changed, and that hash is part of the `CREATE2`
-preimage.
-
-So rather than recompiling, the official deployments are reproduced by replaying the exact initcode
-of the contracts already deployed elsewhere. It is recorded in [`canonical/`](./canonical), together
-with the salt each contract was deployed with, and is deployed with:
+Compiling this repository no longer reproduces the official addresses, see
+[#93](https://github.com/cowprotocol/composable-cow/issues/93). The initcode of the existing
+deployments is recorded in [`canonical/`](./canonical) instead, and replaying it gives the same
+addresses on any chain:
 
 ```bash
-# Reports what is missing without sending anything
-bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL
-
-# Actually deploys the missing contracts
+bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL                                # dry run
 PRIVATE_KEY=... bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL --broadcast
 ```
 
-The script recomputes every address from the recorded initcode before touching the chain, skips
-contracts that are already deployed, and confirms the code landed after each transaction.
-
-It requires the [deterministic deployment proxy](https://github.com/Arachnid/deterministic-deployment-proxy)
-at `0x4e59b44847b379578588920cA78FbF26c0B4956C`, because the deployer address is part of the
-`CREATE2` preimage and the canonical addresses are unreachable without it. The script checks for it
-and stops if it is missing; deploy it first with its keyless transaction and re-run.
+The chain needs the [deterministic deployment proxy](https://github.com/Arachnid/deterministic-deployment-proxy)
+at `0x4e59b44847b379578588920cA78FbF26c0B4956C`; the script stops if it is missing.
 
 To do it by hand instead:
 
