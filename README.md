@@ -172,26 +172,16 @@ forge coverage -vvv --no-match-test "fork" --report summary
 
 #### Deterministic deployment
 
-Compiling this repository no longer reproduces the official addresses, see
-[#93](https://github.com/cowprotocol/composable-cow/issues/93). The initcode of the existing
-deployments is recorded in [`canonical/`](./canonical) instead, and replaying it gives the same
-addresses on any chain:
+The older contracts, like `ComposableCoW`, can no longer be deployed to their official addresses by
+compiling this repository (see [#93](https://github.com/cowprotocol/composable-cow/issues/93)).
+Deploy those with:
 
 ```bash
 bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL                                # dry run
 PRIVATE_KEY=... bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL --broadcast
 ```
 
-The chain needs the [deterministic deployment proxy](https://github.com/Arachnid/deterministic-deployment-proxy)
-at `0x4e59b44847b379578588920cA78FbF26c0B4956C`; the script stops if it is missing.
-
-To do it by hand instead:
-
-- Go to a deployed contract in another network, open the creation TX (e.g. [ExtensibleFallbackHandler](https://etherscan.io/tx/0x33dcbc73a8797c69a5b3956539dd8d191cf3f190bcb27a4d4eca8556f030f574) in mainnet)
-- Go to `Click to show more` and copy the `Input Data` in Original format, also copy the `to` address
-- Use your favourite tool to make a transaction (e.g., [swiss-knife](https://transact.swiss-knife.xyz/send-tx?chainId=1))
-- Use the corresponding `Input Data` and `to` and send the tx
-- A new contract will be deployed using `CREATE2` to the same deterministic address
+See [`canonical/`](./canonical) for how it works and what it covers.
 
 ### Script-based deployment
 
