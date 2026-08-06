@@ -13,7 +13,7 @@ contract DeployComposableCowPoller is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        ComposableCowPoller poller = new ComposableCowPoller(ComposableCoW(composableCow));
+        ComposableCowPoller poller = new ComposableCowPoller{salt: "v1.0.0"}(ComposableCoW(composableCow));
 
         vm.stopBroadcast();
 
