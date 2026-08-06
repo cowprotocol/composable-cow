@@ -15,6 +15,7 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 import {StopLoss} from "../src/types/StopLoss.sol";
+import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
 
 // Value factories
 import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
@@ -38,6 +39,9 @@ contract DeployProdStack is Script {
         new PerpetualStableSwap{salt: "v1.0.0"}();
         new TradeAboveThreshold{salt: "v1.0.0"}();
         new StopLoss{salt: "v1.0.0"}();
+
+        // Deploy the just-in-time funding poller
+        new ComposableCowPoller{salt: "v1.0.0"}(composableCow);
 
         // Deploy value factories
         new CurrentBlockTimestampFactory{salt: "v1.0.0"}();

@@ -134,14 +134,19 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 | `TradeAboveThreshold`          | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://gnosisscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://sepolia.etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://arbiscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://basescan.org/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://bscscan.com/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://snowscan.xyz/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://optimistic.etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://polygonscan.com/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://explorer.lens.xyz/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6)                                                                                                           |
 | `StopLoss`                     | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://gnosisscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://sepolia.etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://arbiscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://basescan.org/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://bscscan.com/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://snowscan.xyz/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://optimistic.etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://polygonscan.com/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://explorer.lens.xyz/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7)                                                                                                           |
 | `CurrentBlockTimestampFactory` | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://gnosisscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://sepolia.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://arbiscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://basescan.org/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://bscscan.com/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://snowscan.xyz/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://optimistic.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://polygonscan.com/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://explorer.lens.xyz/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc)                                                                                                                            |
+| `ComposableCowPoller`          | -                                                                                                                     | [0x5Eda08425781c2C39A28fAAf963C79487dc91bb1](https://gnosisscan.io/address/0x5Eda08425781c2C39A28fAAf963C79487dc91bb1) | -                                                                                                                             | -                                                                                                                    | -                                                                                                                     | -                                                                                                                    | -                                                                                                                     | -                                                                                                                                | -                                                                                                                        | -                                                                                                                                                                                                                                    |
 
 #### Audits
 
-The above deployed contracts have been audited by:
+The core of the framework — `ComposableCoW` and `ExtensibleFallbackHandler` — has been audited by:
 
 - Ackee Blockchain: [CoW Protocol - `ComposableCoW` and `ExtensibleFallbackHandler`](./audits/ackee-blockchain-cow-protocol-composablecow-extensiblefallbackhandler-report-1.2.pdf)
 - Gnosis internal audit: [ComposableCoW - May/July 2023](./audits/gnosis-ComposableCoWMayJul2023.pdf)
 - Gnosis internal audit (August 2024): [ComposableCoW - Diff between May/July 2023 and August 2024](./audits/Composable_CoW_Diff.pdf)
+
+Not every contract in the table above is covered by these reports. Several order types, and
+`ComposableCowPoller`, were added after they were written and are therefore outside their scope. Refer to
+the scope section of each report to check whether a given contract was reviewed.
 
 ### Environment setup
 
@@ -196,6 +201,16 @@ To deploy individual contracts:
 forge script script/deploy_ComposableCoW.s.sol:DeployComposableCoW --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 # Deploy order types
 forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+```
+
+The `ComposableCowPoller` is not part of `deploy_OrderTypes.s.sol` because it needs the address of the
+`ComposableCoW` instance to bind to. Deploy it on its own with the standalone script, which requires the
+`COMPOSABLE_COW` environment variable (also listed in `.env.example`) to be set — it reverts if unset:
+
+```bash
+# Deploy the just-in-time funding poller, binding it to the canonical ComposableCoW deployment
+COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
+  forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
 The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
