@@ -3,17 +3,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Script} from "forge-std/Script.sol";
 
-/**
- * Shared behaviour for the deployment scripts.
- */
 abstract contract DeployScript is Script {
-    /**
-     * The `CREATE2` salt, taken from the `SALT` environment variable and defaulting to `v1.0.0`,
-     * which is the salt the deployed contracts use.
-     *
-     * It is read as text and laid out like a Solidity string literal, so `SALT=v1.1.0` and
-     * `{salt: "v1.1.0"}` produce the same address.
-     */
+    /// `CREATE2` salt from `SALT`, laid out like a Solidity string literal so `SALT=v1.1.0` and
+    /// `{salt: "v1.1.0"}` agree. See `.env.example`.
     function deploymentSalt() internal returns (bytes32 salt) {
         string memory text = vm.envOr("SALT", string("v1.0.0"));
         uint256 length = bytes(text).length;
