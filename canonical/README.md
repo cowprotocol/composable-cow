@@ -1,9 +1,17 @@
 # Canonical initcode
 
-The initcode of the official deployments, one file per contract under `initcode/`, with
-`manifest.json` recording each salt and resulting address. Read back from the deployment
-transactions, not compiled from this repository: a fresh build produces a different metadata hash
-and therefore a different address ([#93](https://github.com/cowprotocol/composable-cow/issues/93)).
+The contracts in this project live at the same address on every chain, so that integrations, docs
+and tooling can refer to one address per contract regardless of the network. That comes from
+`CREATE2`: the same initcode, salt and deployer always produce the same address.
+
+For the older contracts, compiling this repository no longer produces that initcode. The runtime
+code still matches, but the Solidity metadata hash embedded in the bytecode changed, and that hash
+is part of the `CREATE2` preimage, so a fresh build lands somewhere else
+([#93](https://github.com/cowprotocol/composable-cow/issues/93)).
+
+This folder keeps the initcode of the deployments that already exist, read back from their creation
+transactions: one file per contract under `initcode/`, plus `manifest.json` recording each salt and
+resulting address.
 
 Deploy it with [`dev/deploy-canonical.sh`](../dev/deploy-canonical.sh), which checks every file
 against `manifest.json` before sending anything. The target chain needs the
