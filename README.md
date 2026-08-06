@@ -138,11 +138,15 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 
 #### Audits
 
-The above deployed contracts have been audited by:
+The core of the framework — `ComposableCoW` and `ExtensibleFallbackHandler` — has been audited by:
 
 - Ackee Blockchain: [CoW Protocol - `ComposableCoW` and `ExtensibleFallbackHandler`](./audits/ackee-blockchain-cow-protocol-composablecow-extensiblefallbackhandler-report-1.2.pdf)
 - Gnosis internal audit: [ComposableCoW - May/July 2023](./audits/gnosis-ComposableCoWMayJul2023.pdf)
 - Gnosis internal audit (August 2024): [ComposableCoW - Diff between May/July 2023 and August 2024](./audits/Composable_CoW_Diff.pdf)
+
+Not every contract in the table above is covered by these reports. Several order types, and
+`ComposableCowPoller`, were added after they were written and are therefore outside their scope. Refer to
+the scope section of each report to check whether a given contract was reviewed.
 
 ### Environment setup
 
