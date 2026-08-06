@@ -18,3 +18,13 @@ Don't edit these files. The salts are deliberately not uniform: `GoodAfterTime`,
 
 A new contract type is deployed with the regular scripts, using `CREATE2` and a salt, which already
 gives the same address on every chain.
+
+## Doing it by hand
+
+The script replays the same transaction this procedure sends, so either works:
+
+- Go to a deployed contract in another network, open the creation TX (e.g. [ExtensibleFallbackHandler](https://etherscan.io/tx/0x33dcbc73a8797c69a5b3956539dd8d191cf3f190bcb27a4d4eca8556f030f574) in mainnet)
+- Go to `Click to show more` and copy the `Input Data` in Original format, also copy the `to` address
+- Use your favourite tool to make a transaction (e.g., [swiss-knife](https://transact.swiss-knife.xyz/send-tx?chainId=1))
+- Use the corresponding `Input Data` and `to` and send the tx
+- A new contract will be deployed using `CREATE2` to the same deterministic address
