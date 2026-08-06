@@ -233,9 +233,9 @@ The script figures out the official contract address from 2 sources:
 artifact behind. Record those in [`broadcast/networks-manual.json`](./broadcast/networks-manual.json),
 which has the same shape as `networks.json` and is merged on top of the generated result.
 
-Re-running the script on an unchanged repository must leave the file untouched, so a quick way to check there´s no drift is to run:
+Re-running the script on an unchanged repository must reproduce the committed file, so a quick way to check there´s no drift is to run:
 ```bash
-bash dev/generate-networks-file.sh > networks.json && git diff --exit-code networks.json
+diff -u networks.json <(bash dev/generate-networks-file.sh)
 ```
 
 #### Contract verification on block explorer
