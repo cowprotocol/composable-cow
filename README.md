@@ -216,6 +216,24 @@ COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
 The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
 When the script is ran, the corresponding files can be found in the folder `broadcast/deploy_OrderTypes.s.sol/`.
 
+#### Updating `networks.json`
+
+[`networks.json`](./networks.json) lists the address and creation transaction of every deployed
+contract by chain id. It is generated, not edited by hand. After deploying, regenerate it with:
+
+```bash
+bash dev/generate-networks-file.sh > networks.json
+```
+
+The script reads the deployment artifacts in `broadcast/`. Re-running it on an unchanged repository
+must leave the file untouched, so `git diff --exit-code networks.json` is a quick way to check that
+the committed file is in sync with the artifacts.
+
+Some chains can't be deployed to with the scripts (see
+[#93](https://github.com/cowprotocol/composable-cow/issues/93)) and are deployed by hand, leaving no
+artifact behind. Record those in [`broadcast/networks-manual.json`](./broadcast/networks-manual.json),
+which has the same shape as `networks.json` and is merged on top of the generated result.
+
 #### Contract verification on block explorer
 
 There's a dedicated script to verify all contracts at the same time once they have been deployed on a new chain:
