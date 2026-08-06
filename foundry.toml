@@ -5,7 +5,6 @@ out = 'out'
 libs = ['lib']
 
 # Pinned so the compiled bytecode, and therefore every CREATE2 address, is reproducible.
-# See https://github.com/cowprotocol/composable-cow/issues/93 for what happens otherwise.
 solc_version = "0.8.19"
 auto_detect_solc = false
 evm_version = "paris"
