@@ -182,7 +182,7 @@ Because of the issue [#39](https://github.com/cowprotocol/composable-cow/issues/
 
 ### Script-based deployment
 
-⚠ This approach won't deploy the contracts to the official addresses.
+⚠️ This approach won't deploy the contracts to the official addresses.
 It's mainly useful for testing or when introducing a new contract type.
 
 Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
@@ -218,21 +218,25 @@ When the script is ran, the corresponding files can be found in the folder `broa
 
 #### Updating `networks.json`
 
-[`networks.json`](./networks.json) lists the address and creation transaction of every deployed
-contract by chain id. It is generated, not edited by hand. After deploying, regenerate it with:
+[`networks.json`](./networks.json) lists the address and creation transaction of the latest official deployments by chain. 
+
+It is generated automatically. After deploying, regenerate it with:
 
 ```bash
 bash dev/generate-networks-file.sh > networks.json
 ```
 
-The script reads the deployment artifacts in `broadcast/`. Re-running it on an unchanged repository
-must leave the file untouched, so `git diff --exit-code networks.json` is a quick way to check that
-the committed file is in sync with the artifacts.
-
-Some chains can't be deployed to with the scripts (see
+The script figures out the official contract address from 2 sources:
+- `broadcast/**/*.json`: Reads the Foundry deployment artifacts. 
+- `broadcast/networks-manual.json`: Some chains can't be deployed to with the scripts (see
 [#93](https://github.com/cowprotocol/composable-cow/issues/93)) and are deployed by hand, leaving no
 artifact behind. Record those in [`broadcast/networks-manual.json`](./broadcast/networks-manual.json),
 which has the same shape as `networks.json` and is merged on top of the generated result.
+
+Re-running the script on an unchanged repository must leave the file untouched, so a quick way to check there´s no drift is to run:
+```bash
+bash dev/generate-networks-file.sh > networks.json && git diff --exit-code networks.json
+```
 
 #### Contract verification on block explorer
 
