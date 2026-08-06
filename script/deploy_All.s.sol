@@ -26,7 +26,7 @@ contract DeployAll is DeployScript {
 
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? existing() : deployLegacy(salt);
+        ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? existingComposableCoW() : deployLegacy(salt);
 
         // Not in `canonical/`, so deployed in both modes.
         new ComposableCowPoller{salt: salt}(composableCow);
@@ -35,7 +35,7 @@ contract DeployAll is DeployScript {
     }
 
     /// The `ComposableCoW` already on the chain, which `dev/deploy-canonical.sh` puts there.
-    function existing() private returns (ComposableCoW composableCow) {
+    function existingComposableCoW() private returns (ComposableCoW composableCow) {
         composableCow = ComposableCoW(vm.envOr("COMPOSABLE_COW", CANONICAL_COMPOSABLE_COW));
         require(
             address(composableCow).code.length > 0,
