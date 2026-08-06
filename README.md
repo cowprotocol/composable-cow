@@ -188,14 +188,18 @@ See [`canonical/`](./canonical) for how it works and what it covers.
 
 ### Deploy newer contracts
 
-Everything contract not listed in the legacy section, is deployed using the official foundry scripts:
+Every contract not listed in the legacy section is deployed using the official foundry scripts.
 
 To deploy all newer contracts in a single run:
 
 ```bash
 source .env
-forge script script/deploy_ProdStack.s.sol:DeployProdStack --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+forge script script/deploy_All.s.sol:DeployAll --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
+
+By default it skips the legacy contracts and binds to their canonical addresses, deploying
+everything else. Pass `CANONICAL=false` to deploy them from source too: those addresses won't match
+the canonical ones, but they are still deterministic.
 
 To deploy individual contracts:
 
