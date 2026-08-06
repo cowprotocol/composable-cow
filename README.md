@@ -170,11 +170,15 @@ forge test -vvv # Unit, fuzz, and fork testing
 forge coverage -vvv --no-match-test "fork" --report summary
 ```
 
-### Deploying the older contracts (legacy)
+### Deploy the older contracts (legacy)
 
-The older contracts, like `ComposableCoW`, can no longer be deployed to their official addresses by
-compiling this repository (see [#93](https://github.com/cowprotocol/composable-cow/issues/93)).
-Deploy those with:
+These eight can no longer be deployed to their official addresses by compiling this repository (see
+[#93](https://github.com/cowprotocol/composable-cow/issues/93)):
+
+`ComposableCoW`, `CurrentBlockTimestampFactory`, `ExtensibleFallbackHandler`, `GoodAfterTime`,
+`PerpetualStableSwap`, `StopLoss`, `TWAP`, `TradeAboveThreshold`.
+
+Their recorded initcode is replayed instead:
 
 ```bash
 bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL                                # dry run
@@ -183,10 +187,11 @@ PRIVATE_KEY=... bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL --broadcast
 
 See [`canonical/`](./canonical) for how it works and what it covers.
 
-### Deploying a new contract type
+### Deploy newer contracts
 
-⚠️ This approach won't deploy the contracts to the official addresses.
-It's mainly useful for testing or when introducing a new contract type.
+Everything not listed above, `ComposableCowPoller` and anything added since, is deployed by
+compiling this repository. Running these scripts against one of the older contracts would put it at
+a different address than it has elsewhere, so use the legacy section for those.
 
 Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
 
