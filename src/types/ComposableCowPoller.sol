@@ -18,6 +18,9 @@ contract ComposableCowPoller is EIP712 {
         "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 deadline)"
     );
 
+    /// @dev EIP-712 Revoke struct typehash.
+    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32 id,address funder,uint256 deadline)");
+
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
 
@@ -166,8 +169,34 @@ contract ComposableCowPoller is EIP712 {
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
         if (address(schedule.handler) == address(0)) revert NoSchedule();
-        if (msg.sender != schedule.funder) revert OnlyFunder();
-        emit ScheduleRevoked(id, schedule.owner, schedule.funder);
+        address funder = schedule.funder;
+        if (msg.sender != funder) revert OnlyFunder();
+        _revoke(id, schedule, funder);
+    }
+
+    /// @notice Revoke a schedule authorized by the funder's EIP-712 signature.
+    /// @dev Any caller may submit the signature before its deadline. Revoking the schedule directly
+    ///      or with a signature invalidates every other revocation signature for the same ID.
+    /// @param id The deterministic key of the schedule to revoke.
+    /// @param deadline The last block timestamp at which the signature is valid.
+    /// @param signature The funder's EIP-712 signature.
+    function revokeWithSignature(bytes32 id, uint256 deadline, bytes calldata signature) external {
+        Schedule storage schedule = schedules[id];
+        if (address(schedule.handler) == address(0)) revert NoSchedule();
+        if (block.timestamp > deadline) revert SignatureExpired();
+        address funder = schedule.funder;
+
+        bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, id, funder, deadline));
+        if (!SignatureChecker.isValidSignatureNow(funder, _hashTypedDataV4(structHash), signature)) {
+            revert InvalidSignature();
+        }
+
+        _revoke(id, schedule, funder);
+    }
+
+    /// @dev Clears active schedule data while retaining the used-ID marker.
+    function _revoke(bytes32 id, Schedule storage schedule, address funder) internal {
+        emit ScheduleRevoked(id, schedule.owner, funder);
         delete schedule.handler;
         delete schedule.owner;
         delete schedule.salt;

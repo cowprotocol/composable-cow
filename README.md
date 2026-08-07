@@ -116,6 +116,14 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 **TODO**
 **NOTE:** For canceling a TWAP order, follow the instructions at [Conditional order cancellation](#Conditional-order-cancellation).
 
+## Just-in-time funding with `ComposableCowPoller`
+
+`ComposableCowPoller` enables an EOA to create a ComposableCoW conditional order, such as a TWAP, without moving the full sell amount into the order's smart account up front. The funds remain in the EOA until each part is ready to trade. A pre-hook then calls `pollFunds`, which verifies that the order is still active and transfers only that part's sell amount to the smart account. Each part can be funded only once.
+
+The funder can register or revoke a funding schedule directly. To avoid a separate transaction, the funder can instead sign an EIP-712 authorization that a relayer submits on-chain. The Poller validates EOA signatures directly and uses ERC-1271 when the funder is a contract. Signed actions include a deadline. Schedule IDs are permanently single-use, so executing a direct or signed revocation invalidates every other revocation signature for that ID without affecting other schedules.
+
+Removing the conditional order from ComposableCoW stops further funding. Revoking its funding schedule does too, but does not remove the funder's token allowance; revoke that allowance separately when it is no longer needed.
+
 ## Developers
 
 ### Requirements
