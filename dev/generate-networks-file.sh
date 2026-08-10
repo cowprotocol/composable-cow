@@ -16,9 +16,13 @@ generated=$(jq --slurp --sort-keys '
   [ .[]
     | ran_at as $ran_at
     | (.chain | tostring) as $chain
+    | (.receipts | INDEX(.transactionHash)) as $receipts
     | .transactions[]
     | select(.transactionType == "CREATE" or .transactionType == "CREATE2")
     | select(.hash != null)
+    # A run that reverted, or never landed, must not become the published deployment. Runs that
+    # predate the receipt log are listed in networks-manual.json instead.
+    | select($receipts[.hash].status == "0x1")
     | [$ran_at, {(.contractName): {($chain): {address: .contractAddress, transactionHash: .hash}}}]
   ]
   # `sort_by` is stable, so a run keeps its own transaction order and the later one wins.
