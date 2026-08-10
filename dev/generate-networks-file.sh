@@ -14,15 +14,18 @@ generated=$(for deployment in "$repo_root_dir/broadcast/"*"/"*"/"*".json"; do
   # Extract contract info per chain. `CREATE` is accepted alongside `CREATE2` because the
   # standalone `deploy_ComposableCowPoller.s.sol` omits the salt, so the existing Gnosis Chain
   # poller was deployed non-deterministically.
-  jq --arg chainId "$chain_id" '
-    .transactions[]
+  jq --compact-output --arg chainId "$chain_id" '
+    # Foundry recorded seconds in older runs and milliseconds in newer ones.
+    (.timestamp | if . > 100000000000 then . / 1000 else . end | floor) as $ran_at
+    | .transactions[]
     | select(.transactionType == "CREATE" or .transactionType == "CREATE2")
     | select(.hash != null)
-    | {(.contractName): {($chainId): {address: .contractAddress, transactionHash: .hash }}}
+    | [$ran_at, {(.contractName): {($chainId): {address: .contractAddress, transactionHash: .hash }}}]
   ' <"$deployment"
-  # When the same contract appears more than once, the last one wins: within a run, the latest
-  # deployment; across runs, the path that sorts last (so `run-latest.json` beats `run-<timestamp>.json`).
-done | jq --sort-keys --null-input 'reduce inputs as $item ({}; . *= $item)')
+  # When the same contract appears more than once the most recent run wins. Ordering by run
+  # timestamp keeps that true across scripts, whose file paths sort arbitrarily. `sort_by` is
+  # stable, so a run's own transactions stay in order and the later one wins.
+done | jq --sort-keys --slurp 'sort_by(.[0]) | map(.[1]) | reduce .[] as $item ({}; . *= $item)')
 
 # Merge with manual file if it exists
 if [[ -f "$manual_file" ]]; then
