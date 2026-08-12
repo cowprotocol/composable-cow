@@ -19,7 +19,8 @@ contract ComposableCowPoller is EIP712 {
     );
 
     /// @dev EIP-712 Revoke struct typehash.
-    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32 id,address funder,uint256 deadline)");
+    bytes32 private constant REVOKE_TYPEHASH =
+        keccak256("Revoke(address handler,address funder,address owner,bytes32 salt,uint256 deadline)");
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
@@ -47,12 +48,14 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @dev Keyed by `id == scheduleId(schedule)`, which excludes the order's `appData`.
+    ///      A nonzero `funder` permanently marks the ID as used. A nonzero `handler` marks the
+    ///      schedule as active; revocation clears it but retains `funder` as a tombstone.
     mapping(bytes32 => Schedule) public schedules;
 
     /// @dev `id => orderDigest => funded`.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
-    /// @notice Thrown when someone other than the schedule funder registers or revokes a schedule.
+    /// @notice Thrown when someone other than the schedule funder registers a schedule.
     error OnlyFunder();
 
     /// @notice Thrown when registering a schedule whose key has already been used.
@@ -107,7 +110,7 @@ contract ComposableCowPoller is EIP712 {
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
-        return keccak256(abi.encode(schedule.funder, schedule.handler, schedule.owner, schedule.salt));
+        return _scheduleId(schedule.funder, schedule.handler, schedule.owner, schedule.salt);
     }
 
     /// @notice Registers a schedule.
@@ -164,43 +167,70 @@ contract ComposableCowPoller is EIP712 {
         );
     }
 
-    /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
-    ///         should be revoked separately to fully close the surface.
-    function revoke(bytes32 id) external {
-        Schedule storage schedule = schedules[id];
-        if (address(schedule.handler) == address(0)) revert NoSchedule();
-        address funder = schedule.funder;
-        if (msg.sender != funder) revert OnlyFunder();
-        _revoke(id, schedule, funder);
+    /// @notice Revoke a schedule or permanently cancel it before registration. A standing ERC-20
+    ///         allowance should be revoked separately to fully close the surface.
+    /// @dev The ID is derived with `msg.sender` as funder, so one funder cannot cancel another's
+    ///      schedule. Since `staticInput` is not part of the ID, revocation invalidates every
+    ///      registration signature for the same funder, handler, owner, and salt.
+    function revoke(IConditionalOrderGenerator handler, address owner, bytes32 salt) external returns (bytes32 id) {
+        if (address(handler) == address(0)) revert InvalidHandler();
+        id = _scheduleId(msg.sender, handler, owner, salt);
+        _revoke(id, msg.sender, owner);
     }
 
-    /// @notice Revoke a schedule authorized by the funder's EIP-712 signature.
-    /// @dev Any caller may submit the signature before its deadline. Revoking the schedule directly
-    ///      or with a signature invalidates every other revocation signature for the same ID.
-    /// @param id The deterministic key of the schedule to revoke.
-    /// @param deadline The last block timestamp at which the signature is valid.
-    /// @param signature The funder's EIP-712 signature.
-    function revokeWithSignature(bytes32 id, uint256 deadline, bytes calldata signature) external {
-        Schedule storage schedule = schedules[id];
-        if (address(schedule.handler) == address(0)) revert NoSchedule();
+    /// @notice Revoke or pre-emptively cancel a schedule with the funder's EIP-712 signature.
+    /// @dev Any caller may submit the signature before its deadline. The signed identity fields
+    ///      prove that the derived ID belongs to `funder`, preventing cancellation of another
+    ///      funder's schedule.
+    function revokeWithSignature(
+        IConditionalOrderGenerator handler,
+        address funder,
+        address owner,
+        bytes32 salt,
+        uint256 deadline,
+        bytes calldata signature
+    ) external returns (bytes32 id) {
+        if (address(handler) == address(0)) revert InvalidHandler();
         if (block.timestamp > deadline) revert SignatureExpired();
-        address funder = schedule.funder;
 
-        bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, id, funder, deadline));
+        bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, handler, funder, owner, salt, deadline));
         if (!SignatureChecker.isValidSignatureNow(funder, _hashTypedDataV4(structHash), signature)) {
             revert InvalidSignature();
         }
 
-        _revoke(id, schedule, funder);
+        id = _scheduleId(funder, handler, owner, salt);
+        _revoke(id, funder, owner);
     }
 
-    /// @dev Clears active schedule data while retaining the used-ID marker.
-    function _revoke(bytes32 id, Schedule storage schedule, address funder) internal {
-        emit ScheduleRevoked(id, schedule.owner, funder);
+    /// @dev Creates a used-ID tombstone or clears active data while retaining the existing one.
+    function _revoke(bytes32 id, address funder, address owner) internal {
+        Schedule storage schedule = schedules[id];
+        if (schedule.funder == address(0)) {
+            // The ID is unused: create the tombstone before a pending registration can land.
+            schedule.funder = funder;
+        } else if (address(schedule.handler) == address(0)) {
+            // The ID is already tombstoned: reject a repeated direct or signed revocation.
+            revert NoSchedule();
+        } else {
+            // The schedule is active: use its stored owner in the event before clearing it.
+            owner = schedule.owner;
+        }
+
+        emit ScheduleRevoked(id, owner, funder);
         delete schedule.handler;
         delete schedule.owner;
         delete schedule.salt;
         delete schedule.staticInput;
+    }
+
+    /// @dev Derives the funder-namespaced ID used by registration and both revocation paths.
+    ///      `staticInput` is deliberately excluded.
+    function _scheduleId(address funder, IConditionalOrderGenerator handler, address owner, bytes32 salt)
+        internal
+        pure
+        returns (bytes32 id)
+    {
+        return keccak256(abi.encode(funder, handler, owner, salt));
     }
 
     /// @notice Hashes a schedule's `ConditionalOrderParams`, which is the order key it funds.
@@ -240,8 +270,9 @@ contract ComposableCowPoller is EIP712 {
         if (!COMPOSABLE_COW.singleOrders(schedule.owner, paramsHash)) revert OrderNotLive();
 
         // The handler yields the current order and reverts outside its window.
-        GPv2Order.Data memory order = schedule.handler
-            .getTradeableOrder(schedule.owner, address(this), paramsHash, schedule.staticInput, bytes(""));
+        GPv2Order.Data memory order = schedule.handler.getTradeableOrder(
+            schedule.owner, address(this), paramsHash, schedule.staticInput, bytes("")
+        );
 
         // `ComposableCoW` exposes the settlement domain separator it received at deployment.
         bytes32 orderDigest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());
