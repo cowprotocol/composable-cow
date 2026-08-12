@@ -81,18 +81,7 @@ echo "Deterministic deployment proxy: present"
 # Fail closed on a corrupted or hand-edited `canonical/` before touching the chain.
 echo
 echo "Verifying recorded initcode..."
-while read -r name; do
-  salt=$(jq -r --arg n "$name" '.[$n].salt' "$manifest")
-  expected=$(jq -r --arg n "$name" '.[$n].address' "$manifest")
-  initcode=$(cat "$initcode_dir/$name.initcode")
-  computed=$(cast create2 --deployer "$deployer" --salt "$salt" --init-code "$initcode" | tail -1)
-  if [[ "$(tr 'A-Z' 'a-z' <<<"$computed")" != "$(tr 'A-Z' 'a-z' <<<"$expected")" ]]; then
-    echo "Error: $name initcode does not produce its canonical address." >&2
-    echo "       expected $expected, computed $computed" >&2
-    exit 1
-  fi
-done < <(jq -r 'keys[]' "$manifest")
-echo "All recorded initcode matches the canonical addresses."
+bash "$repo_root_dir/dev/verify-canonical.sh"
 
 echo
 deployed=0
