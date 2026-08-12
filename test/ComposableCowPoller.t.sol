@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import {IConditionalOrder, IValueFactory, BaseComposableCoWTest} from "test/ComposableCoW.base.t.sol";
 
@@ -33,7 +34,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     bytes32 constant EIP712_DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
     bytes32 constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 deadline)"
+        "Register(address handler,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
     uint256 constant TWAP_PART_AMOUNT = 100e18;
     uint256 constant LIMIT = 1e18;
@@ -305,6 +306,25 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         (, address storedFunder,,,) = poller.schedules(id);
         assertEq(storedFunder, address(signer), "contract-funded schedule stored");
+    }
+
+    /// @dev The signature was generated independently with `cast wallet sign --data` from typed
+    ///      data that declares `staticInput` as `bytes`.
+    function test_registerWithSignature_matchesEIP712ReferenceVector() public {
+        ComposableCowPoller.Schedule memory schedule = ComposableCowPoller.Schedule({
+            handler: IConditionalOrderGenerator(address(0x2222222222222222222222222222222222222222)),
+            funder: address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266),
+            owner: address(0x3333333333333333333333333333333333333333),
+            salt: 0x4444444444444444444444444444444444444444444444444444444444444444,
+            staticInput: hex"deadbeef"
+        });
+        bytes memory signature =
+            hex"c3924db920a1f5d2894df4e5db336fd8fd51e0c84e0e2371482fa9daf4e7b0574415070999401e04df6d6a7dae2e283676523ed6f14ec4f3feac246440eca0081c";
+
+        bytes32 digest =
+            _registerDigest(schedule, 1_234_567_890, 1, address(0x1111111111111111111111111111111111111111));
+
+        assertEq(ECDSA.recover(digest, signature), schedule.funder, "matches reference signer");
     }
 
     function test_registerWithSignature_RevertWhen_replayed() public {

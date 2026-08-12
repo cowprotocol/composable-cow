@@ -15,7 +15,7 @@ contract ComposableCowPoller is EIP712 {
 
     /// @dev EIP-712 Register struct typehash.
     bytes32 private constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 deadline)"
+        "Register(address handler,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
@@ -44,6 +44,8 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @dev Keyed by `id == scheduleId(schedule)`, which excludes the order's `appData`.
+    ///      A nonzero `funder` permanently marks the ID as used. A nonzero `handler` marks the
+    ///      schedule as active; revocation clears it but retains `funder` as a tombstone.
     mapping(bytes32 => Schedule) public schedules;
 
     /// @dev `id => orderDigest => funded`.
@@ -163,6 +165,8 @@ contract ComposableCowPoller is EIP712 {
 
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
     ///         should be revoked separately to fully close the surface.
+    /// @dev Clears the active schedule fields but retains `funder` as the permanently-used ID
+    ///      tombstone, preventing an old registration signature from restoring the schedule.
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
         if (address(schedule.handler) == address(0)) revert NoSchedule();
