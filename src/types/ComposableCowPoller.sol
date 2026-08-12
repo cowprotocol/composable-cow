@@ -15,7 +15,7 @@ contract ComposableCowPoller is EIP712 {
 
     /// @dev EIP-712 Register struct typehash.
     bytes32 private constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,address funder,address owner,bytes32 salt,bytes32 staticInputHash,uint256 deadline)"
+        "Register(address handler,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
 
     /// @dev EIP-712 Revoke struct typehash.
