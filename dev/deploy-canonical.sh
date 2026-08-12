@@ -78,6 +78,20 @@ EOF
 fi
 echo "Deterministic deployment proxy: present"
 
+# Ensure the settlement is deployed, because `ComposableCoW`'s reads from it in the constructor
+# The settlement address is read from the initcode (to avoid hardcoding)
+composable_cow_initcode=$(cat "$initcode_dir/ComposableCoW.initcode")
+settlement="0x${composable_cow_initcode: -40}"
+if [[ "$(code_at "$settlement")" == "0x" ]]; then
+  cat >&2 <<EOF
+Error: GPv2Settlement is not present at $settlement on chain $chain_id.
+
+ComposableCoW's constructor calls domainSeparator(), so it must be deployed first.
+EOF
+  exit 1
+fi
+echo "GPv2Settlement: present"
+
 # Fail closed on a corrupted or hand-edited `canonical/` before touching the chain.
 echo
 echo "Verifying recorded initcode..."
