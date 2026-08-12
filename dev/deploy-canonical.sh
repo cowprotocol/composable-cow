@@ -100,6 +100,9 @@ bash "$repo_root_dir/dev/verify-canonical.sh"
 echo
 deployed=0
 skipped=0
+records=""
+deployment_dir="$repo_root_dir/broadcast/canonical/$chain_id"
+deployment_file="$deployment_dir/deployment.json"
 while read -r name; do
   salt=$(jq -r --arg n "$name" '.[$n].salt' "$manifest")
   address=$(jq -r --arg n "$name" '.[$n].address' "$manifest")
@@ -117,8 +120,8 @@ while read -r name; do
   fi
 
   printf '%-30s %s  deploying...\n' "$name" "$address"
-  cast send "$deployer" "0x${salt#0x}${initcode#0x}" \
-    --rpc-url "$rpc_url" --private-key "$PRIVATE_KEY" >/dev/null
+  receipt=$(cast send "$deployer" "0x${salt#0x}${initcode#0x}" \
+    --rpc-url "$rpc_url" --private-key "$PRIVATE_KEY" --json)
 
   # The proxy does not revert on every failure mode, so check rather than trust the receipt.
   if [[ "$(code_at "$address")" == "0x" ]]; then
@@ -127,12 +130,33 @@ while read -r name; do
   fi
   printf '%-30s %s  deployed\n' "$name" "$address"
   deployed=$((deployed + 1))
+
+  # Leave some deployment records, so `networks.json` can be regenerated from it.
+  records="${records}$(jq -nc --arg name "$name" --arg address "$address" \
+    --arg hash "$(jq -r '.transactionHash' <<<"$receipt")" \
+    '{name: $name, address: $address, transactionHash: $hash}')
+"
 done < <(jq -r 'keys[]' "$manifest")
+
+# Write the deployment records in `networks.json` format (so it can be merged straight)
+if [[ -n "$records" ]]; then
+  mkdir -p "$deployment_dir"
+  existing='{}'
+  if [[ -f "$deployment_file" ]]; then
+    existing=$(cat "$deployment_file")
+  fi
+  printf '%s' "$records" | jq --slurp --sort-keys --arg chain "$chain_id" --argjson existing "$existing" '
+    map({(.name): {($chain): {address: .address, transactionHash: .transactionHash}}})
+    | reduce .[] as $record ($existing; . * $record)
+  ' > "$deployment_file"
+fi
 
 echo
 if [[ "$broadcast" != true ]]; then
   echo "Dry run. Re-run with --broadcast to send the transactions."
 else
   echo "Deployed $deployed contract(s), skipped $skipped already present."
-  echo "Record the new addresses by regenerating networks.json (see the readme)."
+  if [[ -n "$records" ]]; then
+    echo "Transactions recorded in ${deployment_file#"$repo_root_dir/"}; merge them into networks.json."
+  fi
 fi
