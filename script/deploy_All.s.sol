@@ -19,8 +19,6 @@ import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockT
 /// Deploy every contract, reusing the ones in `canonical/` unless `CANONICAL=false`.
 /// See "Deploy newer contracts" in the readme.
 contract DeployAll is DeployScript {
-    address private constant CANONICAL_COMPOSABLE_COW = 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74;
-
     function run() external {
         bytes32 salt = deploymentSalt();
 
@@ -36,7 +34,7 @@ contract DeployAll is DeployScript {
 
     /// The `ComposableCoW` already on the chain, which `dev/deploy-canonical.sh` puts there.
     function existingComposableCoW() private returns (ComposableCoW composableCow) {
-        composableCow = ComposableCoW(vm.envOr("COMPOSABLE_COW", CANONICAL_COMPOSABLE_COW));
+        composableCow = ComposableCoW(vm.envAddress("COMPOSABLE_COW"));
         require(
             address(composableCow).code.length > 0,
             "ComposableCoW is not deployed on this chain: run dev/deploy-canonical.sh first, or set CANONICAL=false"
