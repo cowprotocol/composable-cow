@@ -101,8 +101,10 @@ echo
 deployed=0
 skipped=0
 records=""
-deployment_dir="$repo_root_dir/broadcast/canonical/$chain_id"
-deployment_file="$deployment_dir/deployment.json"
+# One level shallower than Foundry's `broadcast/<script>/<chain>/run-*.json`, because
+# `generate-networks-file.sh` globs `broadcast/*/*/*.json` and reads every match as a run artifact.
+deployment_dir="$repo_root_dir/broadcast/canonical"
+deployment_file="$deployment_dir/$chain_id.json"
 while read -r name; do
   salt=$(jq -r --arg n "$name" '.[$n].salt' "$manifest")
   address=$(jq -r --arg n "$name" '.[$n].address' "$manifest")
