@@ -5,10 +5,16 @@ import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import {IConditionalOrder, IValueFactory, BaseComposableCoWTest} from "test/ComposableCoW.base.t.sol";
+import {
+    MockCowShed,
+    MockCowShedExecutorFactory,
+    MockCowShedFactory,
+    MockShedCall
+} from "test/helpers/CowShed.t.sol";
 
 import {TWAP} from "src/types/twap/TWAP.sol";
 import {TWAPOrder} from "src/types/twap/libraries/TWAPOrder.sol";
-import {ComposableCowPoller} from "src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "src/types/ComposableCowPoller.sol";
 import {CurrentBlockTimestampFactory} from "src/value_factories/CurrentBlockTimestampFactory.sol";
 import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
@@ -47,9 +53,12 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     ComposableCowPoller poller;
     IValueFactory currentBlockTimestampFactory;
+    MockCowShedFactory shedFactory;
 
     address funder;
     uint256 funderPrivateKey;
+    /// @dev `funder`'s shed, the only address allowed on the `FromShed` paths.
+    address funderShed;
 
     event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
@@ -60,10 +69,13 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
-        poller = new ComposableCowPoller(composableCow);
+        shedFactory = new MockCowShedFactory();
+        poller = new ComposableCowPoller(composableCow, ICowShedFactory(address(shedFactory)));
         funderPrivateKey = uint256(keccak256("funder"));
         funder = vm.addr(funderPrivateKey);
         vm.label(funder, "funder");
+        funderShed = shedFactory.proxyOf(funder);
+        vm.label(funderShed, "funderShed");
 
         // The owner (safe1) starts with no sell token: funds arrive just-in-time.
         deal(address(token0), address(safe1), 0);
@@ -457,7 +469,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     function test_registerWithSignature_RevertWhen_signedForDifferentPoller() public {
-        ComposableCowPoller otherPoller = new ComposableCowPoller(composableCow);
+        ComposableCowPoller otherPoller = new ComposableCowPoller(composableCow, ICowShedFactory(address(shedFactory)));
         ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
         uint256 deadline = block.timestamp + 1 hours;
         bytes32 digest = _registerDigest(schedule, deadline, block.chainid, address(otherPoller));
@@ -828,5 +840,342 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.expectRevert(ComposableCowPoller.OrderNotLive.selector);
         poller.pollFunds(id);
+    }
+
+    // --- registering from the funder's CowShed -----------------------------------------------
+
+    /// @dev A shed may only register schedules that fund itself, so its schedules name it as owner.
+    function _shedSchedule(bytes32 salt, bytes memory staticInput)
+        internal
+        view
+        returns (ComposableCowPoller.Schedule memory)
+    {
+        return ComposableCowPoller.Schedule({
+            handler: IConditionalOrderGenerator(address(twap)),
+            funder: funder,
+            owner: funderShed,
+            salt: salt,
+            staticInput: staticInput
+        });
+    }
+
+    function _registerFromShed(ComposableCowPoller.Schedule memory schedule) internal returns (bytes32 id) {
+        vm.prank(funderShed);
+        return poller.registerFromShed(schedule);
+    }
+
+    /// @dev Signs a hook bundle as the funder, deploying the shed first so its digest can be read.
+    ///      The real factory deploys on first use in exactly the same way.
+    function _signShedCalls(MockShedCall[] memory calls, bytes32 nonce) internal returns (bytes memory) {
+        shedFactory.initializeProxy(funder);
+        return _sign(funderPrivateKey, MockCowShed(payable(funderShed)).hashToSign(calls, nonce));
+    }
+
+    function _call(address target, bytes memory callData) internal pure returns (MockShedCall memory) {
+        return MockShedCall({target: target, value: 0, callData: callData});
+    }
+
+    /// @dev The load-bearing invariant: the shed registers, but the ID belongs to the funder's
+    ///      namespace. Nothing is keyed by the shed, so the funder keeps control of the key.
+    function test_registerFromShed_storesScheduleNamespacedByFunder() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 expectedId = poller.scheduleId(schedule);
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(
+            expectedId, funderShed, funder, _expectedParamsHash(SALT, abi.encode(_bundle()))
+        );
+        assertEq(_registerFromShed(schedule), expectedId, "returns the funder-namespaced id");
+
+        (IConditionalOrderGenerator handler, address storedFunder, address storedOwner, bytes32 storedSalt,) =
+            poller.schedules(expectedId);
+        assertEq(address(handler), address(twap), "handler stored");
+        assertEq(storedFunder, funder, "funder stored, not the shed");
+        assertEq(storedOwner, funderShed, "shed stored as owner");
+        assertEq(storedSalt, SALT, "salt stored");
+
+        // The same fields keyed by the shed as funder are a different, untouched ID.
+        ComposableCowPoller.Schedule memory shedAsFunder = schedule;
+        shedAsFunder.funder = funderShed;
+        (, address strayFunder,,,) = poller.schedules(poller.scheduleId(shedAsFunder));
+        assertEq(strayFunder, address(0), "nothing written under the shed's own namespace");
+    }
+
+    function test_registerFromShed_RevertWhen_callerIsRandomAddress() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+
+        vm.prank(makeAddr("randomCaller"));
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev A shed can only act for its own owner, so it cannot spend another funder's allowance.
+    ///      The schedule names the caller as owner, so only the shed check can reject it.
+    function test_registerFromShed_RevertWhen_callerIsAnotherFundersShed() public {
+        address otherShed = shedFactory.proxyOf(makeAddr("otherFunder"));
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        schedule.owner = otherShed;
+
+        vm.prank(otherShed);
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev `proxyOf(0)` is a real derivable address, and a zero funder is the unused-ID sentinel.
+    function test_registerFromShed_RevertWhen_funderIsZero() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        schedule.funder = address(0);
+
+        vm.prank(shedFactory.proxyOf(address(0)));
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev The shed may only fund itself: it cannot route the funder's tokens to a third party.
+    function test_registerFromShed_RevertWhen_ownerIsNotCaller() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        schedule.owner = makeAddr("attacker");
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    function test_registerFromShed_RevertWhen_handlerIsZero() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        schedule.handler = IConditionalOrderGenerator(address(0));
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.InvalidHandler.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev Shares `_register`, so single-use IDs apply to the shed path too.
+    function test_registerFromShed_RevertWhen_alreadyRegistered() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        _registerFromShed(schedule);
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev A tombstone left by the funder's own revocation also blocks the shed.
+    function test_registerFromShed_RevertWhen_tombstoned() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        vm.prank(funder);
+        poller.revoke(schedule.handler, schedule.owner, schedule.salt);
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    function testFuzz_registerFromShed_RevertWhen_callerIsNotFunderShed(address caller) public {
+        vm.assume(caller != funderShed);
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+
+        vm.prank(caller);
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    /// @dev The direct path is untouched: it still rejects non-funders and still allows any owner.
+    function test_register_directPathUnchangedByShedPath() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        schedule.owner = makeAddr("someSafe");
+        assertEq(_register(schedule), poller.scheduleId(schedule), "arbitrary owner still allowed");
+
+        ComposableCowPoller.Schedule memory second = _schedule(SECOND_SALT, abi.encode(_bundle()));
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
+        poller.register(second);
+    }
+
+    // --- the attack the pinned factory rules out --------------------------------------------
+
+    /// @dev `COWShedExecutorFactory`'s deployment path is permissionless and lets the *caller* pick
+    ///      the trusted executor, who can then drive the shed with no signature at all. A shed it
+    ///      deploys therefore proves nothing about its owner, so the poller must not accept one —
+    ///      and must not trust `ownerOf`, which that factory happily populates.
+    function test_registerFromShed_RevertWhen_shedCameFromExecutorFactory() public {
+        MockCowShedExecutorFactory executorFactory = new MockCowShedExecutorFactory();
+        address attacker = makeAddr("attacker");
+
+        address hostileShed = executorFactory.initializeProxy(funder, attacker, bytes32(0));
+        assertTrue(hostileShed != funderShed, "executor path derives a different address");
+        assertEq(executorFactory.ownerOf(hostileShed), funder, "ownerOf claims the victim: why it is unused");
+        assertEq(MockCowShed(payable(hostileShed)).trustedExecutor(), attacker, "attacker drives the shed");
+
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        schedule.owner = hostileShed;
+
+        // The precise rejection: this shed is not `proxyOf(funder)`, whatever `ownerOf` says.
+        vm.prank(hostileShed);
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.registerFromShed(schedule);
+
+        // And via the route that needs no signature at all, which is what makes it dangerous.
+        MockShedCall[] memory calls = new MockShedCall[](1);
+        calls[0] = _call(address(poller), abi.encodeCall(poller.registerFromShed, (schedule)));
+
+        vm.prank(attacker);
+        vm.expectRevert(abi.encodeWithSelector(MockCowShed.CallReverted.selector, 0));
+        MockCowShed(payable(hostileShed)).trustedExecuteHooks(calls);
+    }
+
+    function test_constructor_RevertWhen_shedFactoryIsZero() public {
+        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
+        new ComposableCowPoller(composableCow, ICowShedFactory(address(0)));
+    }
+
+    function test_constructor_RevertWhen_shedFactoryHasNoCode() public {
+        vm.expectRevert(ComposableCowPoller.InvalidCowShedFactory.selector);
+        new ComposableCowPoller(composableCow, ICowShedFactory(makeAddr("notAFactory")));
+    }
+
+    // --- revoking from the funder's CowShed -------------------------------------------------
+
+    function test_revokeFromShed_clearsScheduleNamespacedByFunder() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 id = _registerFromShed(schedule);
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRevoked(id, funderShed, funder);
+        vm.prank(funderShed);
+        assertEq(
+            poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt),
+            id,
+            "revokes the funder-namespaced id"
+        );
+
+        (IConditionalOrderGenerator handler, address storedFunder,,,) = poller.schedules(id);
+        assertEq(address(handler), address(0), "schedule cleared");
+        assertEq(storedFunder, funder, "used-id tombstone retained");
+    }
+
+    /// @dev Documents why `revokeFromShed` exists: `revoke` derives the ID from `msg.sender`, so a
+    ///      shed calling it tombstones an unrelated key and leaves the real schedule live.
+    function test_revoke_fromShedHitsTheWrongNamespace() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 id = _registerFromShed(schedule);
+
+        vm.prank(funderShed);
+        bytes32 strayId = poller.revoke(schedule.handler, schedule.owner, schedule.salt);
+
+        assertTrue(strayId != id, "the shed's own namespace is a different key");
+        (IConditionalOrderGenerator handler,,,,) = poller.schedules(id);
+        assertEq(address(handler), address(twap), "the real schedule is untouched");
+    }
+
+    /// @dev Containment: whatever the shed registered, the funder can revoke unilaterally.
+    function test_revoke_funderCanRevokeShedRegisteredSchedule() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 id = _registerFromShed(schedule);
+
+        vm.prank(funder);
+        assertEq(poller.revoke(schedule.handler, schedule.owner, schedule.salt), id, "funder owns the key");
+
+        (IConditionalOrderGenerator handler,,,,) = poller.schedules(id);
+        assertEq(address(handler), address(0), "schedule cleared without the shed");
+    }
+
+    function test_revokeFromShed_RevertWhen_callerIsNotFunderShed() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        _registerFromShed(schedule);
+
+        vm.prank(makeAddr("randomCaller"));
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+    }
+
+    function test_revokeFromShed_RevertWhen_funderIsZero() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+
+        vm.prank(shedFactory.proxyOf(address(0)));
+        vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
+        poller.revokeFromShed(schedule.handler, address(0), schedule.owner, schedule.salt);
+    }
+
+    function test_revokeFromShed_RevertWhen_handlerIsZero() public {
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.InvalidHandler.selector);
+        poller.revokeFromShed(IConditionalOrderGenerator(address(0)), funder, funderShed, SALT);
+    }
+
+    function test_revokeFromShed_RevertWhen_replayed() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        _registerFromShed(schedule);
+
+        vm.prank(funderShed);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+    }
+
+    /// @dev The shed can pre-emptively burn a key before any registration lands, same as the funder.
+    function test_revokeFromShed_blocksPendingRegistration() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+
+        vm.prank(funderShed);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
+        poller.registerFromShed(schedule);
+    }
+
+    // --- end to end -------------------------------------------------------------------------
+
+    /// @dev The flow this change exists for: one funder signature over a shed bundle that both
+    ///      creates the TWAP and registers the schedule, then just-in-time funding per part with no
+    ///      further signature. No ERC-1271 is needed here because the shed creates the order itself.
+    function test_registerFromShed_endToEndSignedBundle() public {
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(twap, SALT, abi.encode(_bundle()));
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 paramsHash = composableCow.hash(params);
+        bytes32 id = poller.scheduleId(schedule);
+
+        MockShedCall[] memory calls = new MockShedCall[](2);
+        calls[0] = _call(
+            address(composableCow),
+            abi.encodeCall(
+                composableCow.createWithContext, (params, currentBlockTimestampFactory, bytes(""), false)
+            )
+        );
+        calls[1] = _call(address(poller), abi.encodeCall(poller.registerFromShed, (schedule)));
+
+        bytes32 nonce = keccak256("jit-twap-setup");
+        bytes memory signature = _signShedCalls(calls, nonce);
+
+        // Anyone may relay the funder's signed bundle: a solver hook, a relayer, a keeper.
+        vm.prank(makeAddr("relayer"));
+        shedFactory.executeHooks(calls, nonce, funder, signature);
+
+        assertTrue(composableCow.singleOrders(funderShed, paramsHash), "shed owns the order");
+        (, address storedFunder, address storedOwner,,) = poller.schedules(id);
+        assertEq(storedFunder, funder, "funder pays");
+        assertEq(storedOwner, funderShed, "shed receives");
+
+        // Capital stays with the funder until each part needs it.
+        deal(address(token0), funder, TWAP_PART_AMOUNT * N);
+        deal(address(token0), funderShed, 0);
+        vm.prank(funder);
+        token0.approve(address(poller), TWAP_PART_AMOUNT * N);
+
+        uint256 t0 = uint256(composableCow.cabinet(funderShed, paramsHash));
+        for (uint256 part; part < N; ++part) {
+            vm.warp(t0 + part * FREQ);
+            assertTrue(poller.pollFunds(id), "part funded");
+            assertEq(
+                token0.balanceOf(funderShed), TWAP_PART_AMOUNT * (part + 1), "one part pulled per window"
+            );
+            // A second call inside the same window is a no-op, so a repeated hook cannot double-pull.
+            assertFalse(poller.pollFunds(id), "already funded this part");
+        }
+        assertEq(token0.balanceOf(funder), 0, "funder fully drawn down across the schedule");
     }
 }

@@ -9,6 +9,14 @@ import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/Signa
 import {ComposableCoW} from "src/ComposableCoW.sol";
 import {IConditionalOrder, IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
+/// @notice The subset of the CowShed factory this contract relies on.
+/// @dev `proxyOf` is a pure `CREATE2` derivation over the factory's own immutables, so it cannot be
+///      poisoned. The factory's `ownerOf` registry is deliberately not used: it is mutable, and
+///      factory subclasses that deploy proxies with a caller-chosen trusted executor write to it.
+interface ICowShedFactory {
+    function proxyOf(address owner) external view returns (address);
+}
+
 /// @title ComposableCowPoller - Just-in-time funding for composable conditional orders.
 contract ComposableCowPoller is EIP712 {
     using GPv2SafeERC20 for IERC20;
@@ -24,6 +32,12 @@ contract ComposableCowPoller is EIP712 {
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
+
+    /// @notice The one CowShed factory whose proxies may manage schedules for their own owner.
+    /// @dev Pinned at deployment. It must be a factory whose only deployment path derives the proxy
+    ///      from the owner alone, so that a call from `proxyOf(funder)` proves `funder` authorised
+    ///      it. See `registerForFunder`.
+    ICowShedFactory public immutable COW_SHED_FACTORY;
 
     /// @notice Parameters for a JIT funding schedule.
     /// @dev `handler`, `salt` and `staticInput` are the order's `ConditionalOrderParams` and must
@@ -57,6 +71,13 @@ contract ComposableCowPoller is EIP712 {
 
     /// @notice Thrown when someone other than the schedule funder registers a schedule.
     error OnlyFunder();
+
+    /// @notice Thrown when a `ForFunder` action does not come from the funder's own CowShed, or when
+    ///         that shed tries to register a schedule that funds somebody else.
+    error UnauthorizedShed();
+
+    /// @notice Thrown when the CowShed factory supplied at deployment has no code.
+    error InvalidCowShedFactory();
 
     /// @notice Thrown when registering a schedule whose key has already been used.
     error AlreadyRegistered();
@@ -94,8 +115,13 @@ contract ComposableCowPoller is EIP712 {
     /// @param amount The `sellAmount` moved from the funder to the owner.
     event Pulled(bytes32 indexed id, bytes32 indexed orderDigest, uint256 amount);
 
-    constructor(ComposableCoW _composableCow) EIP712("ComposableCowPoller", "1") {
+    constructor(ComposableCoW _composableCow, ICowShedFactory _cowShedFactory)
+        EIP712("ComposableCowPoller", "1")
+    {
+        // A code-less factory would make every `ForFunder` call revert without saying why.
+        if (address(_cowShedFactory).code.length == 0) revert InvalidCowShedFactory();
         COMPOSABLE_COW = _composableCow;
+        COW_SHED_FACTORY = _cowShedFactory;
     }
 
     /// @notice Emitted when a schedule is revoked.
@@ -156,6 +182,24 @@ contract ComposableCowPoller is EIP712 {
         return _register(schedule);
     }
 
+    /// @notice Registers a schedule for a funder, called by that funder's own CowShed.
+    /// @dev Saves the funder a signature: a shed only executes calls its owner authorized, so a call
+    ///      from `COW_SHED_FACTORY.proxyOf(funder)` already carries the funder's authorization. The
+    ///      ID stays namespaced by `funder`, never by the shed, so the funder keeps unilateral
+    ///      `revoke` over whatever its shed registered.
+    ///
+    ///      `owner` is pinned to the calling shed, so a shed can only fund itself. That is defence in
+    ///      depth rather than a boundary — the same signed bundle could name a hostile `receiver`
+    ///      inside `staticInput` — but it stops a mis-signed bundle from moving the funder's tokens
+    ///      straight to an arbitrary address.
+    /// @param schedule The schedule to store. Its `owner` must be the calling shed.
+    /// @return id The deterministic key of the stored schedule.
+    function registerFromShed(Schedule calldata schedule) external returns (bytes32 id) {
+        _requireFunderShed(schedule.funder);
+        if (schedule.owner != msg.sender) revert UnauthorizedShed();
+        return _register(schedule);
+    }
+
     /// @dev Stores a schedule and permanently marks its ID as used.
     function _register(ComposableCowPoller.Schedule calldata schedule) internal returns (bytes32 id) {
         if (address(schedule.handler) == address(0)) revert InvalidHandler();
@@ -200,6 +244,30 @@ contract ComposableCowPoller is EIP712 {
 
         id = _scheduleId(funder, handler, owner, salt);
         _revoke(id, funder, owner);
+    }
+
+    /// @notice Revoke or pre-emptively cancel a funder's schedule, called by that funder's own
+    ///         CowShed.
+    /// @dev `funder` is explicit rather than taken from `msg.sender`: the shed is the caller, but the
+    ///      ID is namespaced by the funder. Deriving it from `msg.sender` as `revoke` does would
+    ///      tombstone an unrelated ID in the shed's own namespace and leave the real schedule live.
+    function revokeFromShed(IConditionalOrderGenerator handler, address funder, address owner, bytes32 salt)
+        external
+        returns (bytes32 id)
+    {
+        if (address(handler) == address(0)) revert InvalidHandler();
+        _requireFunderShed(funder);
+
+        id = _scheduleId(funder, handler, owner, salt);
+        _revoke(id, funder, owner);
+    }
+
+    /// @dev Requires the caller to be `funder`'s CowShed, which implies `funder` authorized the call.
+    ///      The zero check short-circuits before the external call, and is required regardless:
+    ///      `address(0)` is the unused-ID sentinel, and `proxyOf(address(0))` is a real derivable
+    ///      address that anyone may deploy a shed to.
+    function _requireFunderShed(address funder) internal view {
+        if (funder == address(0) || msg.sender != COW_SHED_FACTORY.proxyOf(funder)) revert UnauthorizedShed();
     }
 
     /// @dev Creates a used-ID tombstone or clears active data while retaining the existing one.
