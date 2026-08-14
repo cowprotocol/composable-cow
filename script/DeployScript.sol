@@ -4,6 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Script, console} from "forge-std/Script.sol";
 
 import {ComposableCoW} from "../src/ComposableCoW.sol";
+import {ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
 import {CoWSettlement} from "../src/vendored/CoWSettlement.sol";
 
 abstract contract DeployScript is Script {
@@ -89,6 +90,22 @@ abstract contract DeployScript is Script {
         );
 
         composableCow = ComposableCoW(addr);
+    }
+
+    /// The CowShed factory from `COW_SHED_FACTORY`. `ComposableCowPoller` pins this immutably.
+    function cowShedFactoryAddress() internal returns (ICowShedFactory factory) {
+        address addr = vm.envOr("COW_SHED_FACTORY", address(0));
+        require(addr != address(0), "COW_SHED_FACTORY is not set: see .env.example");
+
+        // The poller's constructor only checks for code. Probe `proxyOf` so a wrong address is named
+        // here rather than surfacing later as an `UnauthorizedShed` on every `FromShed` call.
+        (bool ok, bytes memory data) = addr.staticcall(abi.encodeCall(ICowShedFactory.proxyOf, (address(0))));
+        require(
+            ok && data.length == 32 && abi.decode(data, (address)) != address(0),
+            "COW_SHED_FACTORY is not a CowShed factory here"
+        );
+
+        factory = ICowShedFactory(addr);
     }
 
     /// The separator a `GPv2Settlement` at `settlement` must have on this chain.

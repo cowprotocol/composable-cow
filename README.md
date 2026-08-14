@@ -122,6 +122,8 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 
 The funder can register or revoke a funding schedule directly. To avoid a separate transaction, the funder can instead sign an EIP-712 authorization that a relayer submits on-chain. The Poller validates EOA signatures directly and uses ERC-1271 when the funder is a contract. Signed actions include a deadline and the current authorization epoch. Revocation derives the schedule ID from its funder, handler, owner, and salt, so it works before or after registration without allowing one funder to cancel another's schedule. It advances the authorization epoch, invalidating pending signatures from prior epochs while allowing the same schedule ID to be reused.
 
+A funder that drives its orders through its [CowShed](https://github.com/cowprotocol/cow-shed) can skip the signature entirely: `registerFromShed` and `revokeFromShed` accept calls from `proxyOf(funder)` on the factory pinned at deployment, which already proves the funder authorized them. The schedule ID stays namespaced by the funder, so the funder keeps unilateral `revoke` over whatever its shed registered.
+
 Removing the conditional order from ComposableCoW stops further funding. Revoking its funding schedule does too, but does not remove the funder's token allowance; revoke that allowance separately when it is no longer needed.
 
 ## Developers
@@ -227,6 +229,7 @@ forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $
 ```bash
 SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
   COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
+  COW_SHED_FACTORY=0x00E989b87700514118Fa55326CD1cCE82faebEF6 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
