@@ -180,7 +180,7 @@ contract ComposableCowPoller is EIP712 {
     /// @dev Uses `msg.sender` as funder, then clears the schedule and increments its `authEpoch`.
     function revoke(IConditionalOrderGenerator handler, address owner, bytes32 salt) external returns (bytes32 id) {
         id = _scheduleId(msg.sender, handler, owner, salt);
-        _revoke(id, msg.sender, owner);
+        _revoke(id, msg.sender, owner, schedules[id].authEpoch);
     }
 
     /// @notice Revokes a schedule or cancels its current authorization epoch with a funder signature.
@@ -209,15 +209,14 @@ contract ComposableCowPoller is EIP712 {
             revert InvalidSignature();
         }
 
-        _revoke(id, funder, owner);
+        _revoke(id, funder, owner, authEpoch);
     }
 
     /// @dev Clears the schedule and increments its `authEpoch`, whether registered or not.
-    function _revoke(bytes32 id, address funder, address owner) internal {
+    function _revoke(bytes32 id, address funder, address owner, uint96 authEpoch) internal {
         emit ScheduleRevoked(id, owner, funder);
-        uint96 nextAuthEpoch = schedules[id].authEpoch + 1;
         delete schedules[id];
-        schedules[id].authEpoch = nextAuthEpoch;
+        schedules[id].authEpoch = authEpoch + 1;
     }
 
     /// @dev Derives the funder-namespaced ID, excluding `authEpoch` and `staticInput`.
