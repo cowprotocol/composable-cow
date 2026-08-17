@@ -4,7 +4,12 @@ test = 'test'
 out = 'out'
 libs = ['lib']
 
+# Pinned so the compiled bytecode, and therefore every CREATE2 address, is reproducible.
 solc_version = "0.8.19"
+auto_detect_solc = false
+evm_version = "paris"
+bytecode_hash = "none"
+cbor_metadata = false
 optimizer = true
 optimizer_runs = 20000
 

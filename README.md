@@ -134,7 +134,7 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 | `TradeAboveThreshold`          | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://gnosisscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://sepolia.etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://arbiscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://basescan.org/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://bscscan.com/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://snowscan.xyz/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://optimistic.etherscan.io/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://polygonscan.com/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6) | [0x812308712a6d1367f437e1c1e4af85c854e1e9f6](https://explorer.lens.xyz/address/0x812308712a6d1367f437e1c1e4af85c854e1e9f6)                                                                                                           |
 | `StopLoss`                     | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://gnosisscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://sepolia.etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://arbiscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://basescan.org/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://bscscan.com/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://snowscan.xyz/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://optimistic.etherscan.io/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://polygonscan.com/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7) | [0x412c36e5011cd2517016d243a2dfb37f73a242e7](https://explorer.lens.xyz/address/0x412c36e5011cd2517016d243a2dfb37f73a242e7)                                                                                                           |
 | `CurrentBlockTimestampFactory` | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://gnosisscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://sepolia.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://arbiscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://basescan.org/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://bscscan.com/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://snowscan.xyz/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://optimistic.etherscan.io/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://polygonscan.com/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc) | [0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc](https://explorer.lens.xyz/address/0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc)                                                                                                                            |
-| `ComposableCowPoller`          | -                                                                                                                     | [0x5Eda08425781c2C39A28fAAf963C79487dc91bb1](https://gnosisscan.io/address/0x5Eda08425781c2C39A28fAAf963C79487dc91bb1) | -                                                                                                                             | -                                                                                                                    | -                                                                                                                     | -                                                                                                                    | -                                                                                                                     | -                                                                                                                                | -                                                                                                                        | -                                                                                                                                                                                                                                    |
+| `ComposableCowPoller`          | -                                                                                                                     | [0xd079E188b3936405080E8bfCc359dB75Faf25631](https://gnosisscan.io/address/0xd079E188b3936405080E8bfCc359dB75Faf25631) | -                                                                                                                             | -                                                                                                                    | -                                                                                                                     | -                                                                                                                    | -                                                                                                                     | -                                                                                                                                | -                                                                                                                        | -                                                                                                                                                                                                                                    |
 
 #### Audits
 
@@ -188,38 +188,38 @@ See [`canonical/`](./canonical) for how it works and what it covers.
 
 ### Deploy newer contracts
 
-Everything contract not listed in the legacy section, is deployed using the official foundry scripts:
+Every contract not listed in the legacy section is deployed using the official foundry scripts.
 
 To deploy all newer contracts in a single run:
 
 ```bash
 source .env
-forge script script/deploy_ProdStack.s.sol:DeployProdStack --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+forge script script/deploy_All.s.sol:DeployAll --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-To deploy individual contracts:
+By default it skips the legacy contracts and binds to their canonical addresses, deploying
+everything else. Pass `CANONICAL=false` to deploy them from source too: those addresses won't match
+the canonical ones, but they are still deterministic.
+
+### Deploy a single contract
+
+Each contract also has its own script, for when only one of them needs deploying:
 
 ```bash
-# Deploy ComposableCoW
 forge script script/deploy_ComposableCoW.s.sol:DeployComposableCoW --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
-# Deploy order types
-forge script script/deploy_OrderTypes.s.sol:DeployOrderTypes --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+forge script script/deploy_ExtensibleFallbackHandler.s.sol:DeployExtensibleFallbackHandler --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
+forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-The `ComposableCowPoller` is not part of `deploy_OrderTypes.s.sol` because it needs the address of the
-`ComposableCoW` instance to bind to. Deploy it on its own with the standalone script, which requires the
-`COMPOSABLE_COW` environment variable (also listed in `.env.example`) to be set — it reverts if unset:
+`ComposableCowPoller` binds to a `ComposableCoW` instance, so it requires `COMPOSABLE_COW` to be set
+and reverts if it is not:
 
 ```bash
-# Deploy the just-in-time funding poller, binding it to the canonical ComposableCoW deployment
 COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-The `broadcast` directory collects the latest run of the deployment script by network and is updated manually.
-When the script is ran, the corresponding files can be found in the folder `broadcast/deploy_OrderTypes.s.sol/`.
-
-#### Updating `networks.json`
+### Updating `networks.json`
 
 [`networks.json`](./networks.json) lists the address and creation transaction of the latest official deployments by chain. 
 
@@ -241,7 +241,7 @@ Re-running the script on an unchanged repository must reproduce the committed fi
 diff -u networks.json <(bash dev/generate-networks-file.sh)
 ```
 
-#### Contract verification on block explorer
+### Contract verification on block explorer
 
 There's a dedicated script to verify all contracts at the same time once they have been deployed on a new chain:
 
@@ -253,7 +253,7 @@ dev/verify-contracts.sh "$chain_id"
 
 If this doesn't work, check out [broadcast/StandardJsonInput/README.md](./broadcast/StandardJsonInput/README.md).
 
-#### Local deployment
+### Local deployment
 
 For local integration testing, including the use of [Watch Tower](https://github.com/cowprotocol/tenderly-watch-tower), it may be useful deploying to a _forked_ mainnet environment. This can be done with `anvil`.
 
