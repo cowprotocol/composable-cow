@@ -2,7 +2,7 @@
 // easier to maintain.
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  // Disable every built-in manager (npm, dockerfile, ...) except github-actions.
+  // Enable only the package managers used by this repository.
   enabledManagers: ["github-actions"],
   // PR titles use Conventional Commits: `deps(<action>): ...`
   semanticCommits: "enabled",
@@ -16,7 +16,7 @@
     // (typically major) instead of a separate minor PR.
     {
       matchManagers: ["github-actions"],
-      schedule: ["* 0-3 1 * *"],
+      schedule: ["* 0-3 1 * *"], // 00:00-03:59 UTC on the first day of each month
       minimumReleaseAge: "14 days",
       // Track upgrades by semver tag, but pin the resolved version to its full
       // commit SHA (semver tag kept as a trailing comment). Use the coerced
@@ -25,6 +25,8 @@
       versioning: "semver-coerced",
       pinDigests: true,
       separateMajorMinor: false,
+      groupName: "GitHub Actions",
+      groupSlug: "github-actions",
       semanticCommitScope: "{{depName}}",
       commitMessageTopic: "{{depName}}",
     },
