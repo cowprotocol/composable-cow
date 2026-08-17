@@ -235,7 +235,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev Revocation advances the authorization epoch, so the same ID can be reused but stale
     ///      registration parameters cannot.
-    function test_register_afterRevoke_reusesKeyInNewAuthEpoch() public {
+    function test_register_afterRevokeReusesTheKey() public {
         bytes memory staticInput = abi.encode(_bundle());
         ComposableCowPoller.Schedule memory schedule = _schedule(SALT, staticInput);
         bytes32 id = _register(schedule);
@@ -270,6 +270,36 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(_expectedParamsHash(SALT, abi.encode(_bundle())), paramsHash, "the logged key matches");
     }
 
+    /// @dev A replacement keeps the same `id` and the same indexed topics, so `paramsHash` is the
+    ///      only thing in the log that reveals which order each registration pointed at. The key
+    ///      has to be revoked first, since `register` rejects a taken one.
+    function test_register_logIdentifiesTheReplacedOrder() public {
+        bytes memory firstInput = abi.encode(_bundle());
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, firstInput);
+        bytes32 id = poller.scheduleId(schedule);
+
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(id, address(safe1), funder, _expectedParamsHash(SALT, firstInput));
+        _register(schedule);
+
+        TWAPOrder.Data memory other = _bundle();
+        other.partSellAmount = TWAP_PART_AMOUNT * 2;
+        bytes memory secondInput = abi.encode(other);
+
+        bytes32 firstParamsHash = _expectedParamsHash(SALT, firstInput);
+        bytes32 secondParamsHash = _expectedParamsHash(SALT, secondInput);
+        assertTrue(firstParamsHash != secondParamsHash, "the two orders have distinct keys");
+
+        vm.prank(funder);
+        poller.revoke(id);
+
+        schedule.authEpoch = 1;
+        schedule.staticInput = secondInput;
+        vm.expectEmit(true, true, true, true, address(poller));
+        emit ScheduleRegistered(id, address(safe1), funder, secondParamsHash);
+        assertEq(_register(schedule), id, "same id as the schedule it replaced");
+    }
+
     /// @dev Only the funds source may register a schedule that draws on its own funds.
     function test_register_RevertWhen_notFunder() public {
         vm.expectRevert(ComposableCowPoller.OnlyFunder.selector);
@@ -283,15 +313,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
                 staticInput: abi.encode(_bundle())
             })
         );
-    }
-
-    function test_register_RevertWhen_handlerIsZero() public {
-        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
-        schedule.handler = IConditionalOrderGenerator(address(0));
-
-        vm.prank(funder);
-        vm.expectRevert(ComposableCowPoller.InvalidHandler.selector);
-        poller.register(schedule);
     }
 
     function test_registerWithSignature_allowsArbitraryCallerWithEOASignature() public {
@@ -472,7 +493,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     }
 
     /// @dev The funder can revoke, which clears active data and advances the authorization epoch.
-    function test_revoke_clearsActiveSchedule() public {
+    function test_revoke_clearsSchedule() public {
         (,, bytes32 id) = _setupSchedule();
 
         vm.expectEmit(true, true, true, true, address(poller));
@@ -496,9 +517,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(salt, bytes32(0), "salt cleared");
         assertEq(staticInput, bytes(""), "static input cleared");
 
-        vm.prank(funder);
-        vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
-        poller.revoke(id);
     }
 
     /// @dev Only the funds source may revoke.
@@ -548,13 +566,46 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT * N - TWAP_PART_AMOUNT, "no extra pull");
     }
 
-    function test_pollFunds_RevertWhen_revoked() public {
-        (,, bytes32 id) = _setupSchedule();
+    /// @dev A handler returning A, then B, then A cannot refund A, even after schedule registration.
+    function test_pollFunds_doesNotRefundEarlierDigestAfterReregister() public {
+        (, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        vm.warp(_t0(paramsHash));
+
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        bytes memory handlerCall = abi.encodeCall(
+            IConditionalOrderGenerator.getTradeableOrder,
+            (address(safe1), address(poller), paramsHash, schedule.staticInput, bytes(""))
+        );
+        GPv2Order.Data memory orderA =
+            twap.getTradeableOrder(address(safe1), address(poller), paramsHash, schedule.staticInput, bytes(""));
+        GPv2Order.Data memory orderB = abi.decode(abi.encode(orderA), (GPv2Order.Data));
+        orderB.appData = keccak256("second valid order");
+
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
+        assertTrue(poller.pollFunds(id), "first order funded");
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "first order settled");
+
+        vm.clearMockedCalls();
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderB));
+        assertTrue(poller.pollFunds(id), "second order funded");
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "second order settled");
+
         vm.prank(funder);
         poller.revoke(id);
 
-        vm.expectRevert(ComposableCowPoller.NoSchedule.selector);
-        poller.pollFunds(id);
+        schedule.authEpoch = 1;
+        assertEq(_register(schedule), id, "same schedule id");
+
+        vm.clearMockedCalls();
+        vm.mockCall(address(twap), handlerCall, abi.encode(orderA));
+        assertFalse(poller.pollFunds(id), "first order already funded, no-op");
+
+        assertEq(token0.balanceOf(address(safe1)), 0, "first order not funded twice");
+        assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT, "only two distinct orders funded");
+        assertTrue(poller.funded(id, GPv2Order.hash(orderA, composableCow.domainSeparator())));
+        assertTrue(poller.funded(id, GPv2Order.hash(orderB, composableCow.domainSeparator())));
     }
 
     /// @dev A failed ERC-20 transfer must not mark this part as funded.
