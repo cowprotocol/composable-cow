@@ -120,7 +120,7 @@ contract ComposableCowPoller is EIP712 {
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
-        return keccak256(abi.encode(schedule.funder, schedule.handler, schedule.owner, schedule.salt));
+        return _scheduleId(schedule.funder, schedule.handler, schedule.owner, schedule.salt);
     }
 
     /// @notice Registers a schedule.
