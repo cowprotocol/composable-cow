@@ -36,9 +36,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     bytes32 constant REGISTER_TYPEHASH = keccak256(
         "Register(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
-    bytes32 constant REVOKE_TYPEHASH = keccak256(
-        "Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
-    );
+    bytes32 constant REVOKE_TYPEHASH =
+        keccak256("Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,uint256 deadline)");
     uint256 constant TWAP_PART_AMOUNT = 100e18;
     uint256 constant LIMIT = 1e18;
     uint256 constant N = 3;
@@ -197,7 +196,6 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
                 schedule.funder,
                 schedule.owner,
                 schedule.salt,
-                keccak256(schedule.staticInput),
                 deadline
             )
         );
@@ -222,7 +220,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         uint256 deadline,
         bytes memory signature
     ) internal returns (bytes32 id) {
-        return poller.revokeWithSignature(schedule, deadline, signature);
+        return poller.revokeWithSignature(
+            schedule.handler, schedule.funder, schedule.owner, schedule.salt, deadline, signature
+        );
     }
 
     /// @dev The order's resolved start time `t0`, read back from the cabinet where
@@ -654,9 +654,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         uint256 deadline = block.timestamp + 1 hours;
         bytes memory signature = _signRevoke(signedSchedule, deadline);
         ComposableCowPoller.Schedule memory changedSchedule = signedSchedule;
-        TWAPOrder.Data memory changedBundle = _bundle();
-        changedBundle.partSellAmount = TWAP_PART_AMOUNT * 2;
-        changedSchedule.staticInput = abi.encode(changedBundle);
+        changedSchedule.salt = SECOND_SALT;
 
         vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
         _revokeWithSignature(changedSchedule, deadline, signature);
@@ -689,7 +687,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         recreatedSchedule.authEpoch = 1;
         _register(recreatedSchedule);
 
-        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
         _revokeWithSignature(schedule, deadline, signature);
 
         (IConditionalOrderGenerator handler, uint96 authEpoch,,,,) = poller.schedules(id);

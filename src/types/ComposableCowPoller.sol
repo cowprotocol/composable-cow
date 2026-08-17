@@ -19,9 +19,8 @@ contract ComposableCowPoller is EIP712 {
     );
 
     /// @dev EIP-712 Revoke struct typehash.
-    bytes32 private constant REVOKE_TYPEHASH = keccak256(
-        "Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
-    );
+    bytes32 private constant REVOKE_TYPEHASH =
+        keccak256("Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,uint256 deadline)");
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
@@ -185,35 +184,32 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Revokes a schedule or cancels its current authorization epoch with a funder signature.
-    /// @dev Any caller may submit a valid signature for the current `authEpoch` before its deadline.
-    /// @param schedule The signed schedule to revoke.
+    /// @dev Any caller may submit a valid signature before its deadline. The current `authEpoch` is
+    ///      read from storage so signatures from earlier epochs cannot be reused.
+    /// @param handler The conditional-order handler identifying the schedule.
+    /// @param funder The schedule funder whose signature authorizes the revocation.
+    /// @param owner The conditional-order owner identifying the schedule.
+    /// @param salt The conditional order's salt identifying the schedule.
     /// @param deadline The last block timestamp at which the signature is valid.
     /// @param signature The funder's EIP-712 signature.
-    function revokeWithSignature(Schedule calldata schedule, uint256 deadline, bytes calldata signature)
-        external
-        returns (bytes32 id)
-    {
+    function revokeWithSignature(
+        IConditionalOrderGenerator handler,
+        address funder,
+        address owner,
+        bytes32 salt,
+        uint256 deadline,
+        bytes calldata signature
+    ) external returns (bytes32 id) {
         if (block.timestamp > deadline) revert SignatureExpired();
 
-        id = _scheduleId(schedule.funder, schedule.handler, schedule.owner, schedule.salt);
-        if (schedule.authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
-        bytes32 structHash = keccak256(
-            abi.encode(
-                REVOKE_TYPEHASH,
-                schedule.handler,
-                schedule.authEpoch,
-                schedule.funder,
-                schedule.owner,
-                schedule.salt,
-                keccak256(schedule.staticInput),
-                deadline
-            )
-        );
-        if (!SignatureChecker.isValidSignatureNow(schedule.funder, _hashTypedDataV4(structHash), signature)) {
+        id = _scheduleId(funder, handler, owner, salt);
+        uint96 authEpoch = schedules[id].authEpoch;
+        bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, handler, authEpoch, funder, owner, salt, deadline));
+        if (!SignatureChecker.isValidSignatureNow(funder, _hashTypedDataV4(structHash), signature)) {
             revert InvalidSignature();
         }
 
-        _revoke(id, schedule.funder, schedule.owner);
+        _revoke(id, funder, owner);
     }
 
     /// @dev Clears the schedule and increments its `authEpoch`, whether registered or not.
