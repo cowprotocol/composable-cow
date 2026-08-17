@@ -15,7 +15,7 @@ contract ComposableCowPoller is EIP712 {
 
     /// @dev EIP-712 Register struct typehash.
     bytes32 private constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
+        "Register(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
@@ -28,6 +28,10 @@ contract ComposableCowPoller is EIP712 {
     struct Schedule {
         /// @notice The conditional-order handler to poll, such as the TWAP type.
         IConditionalOrderGenerator handler;
+        /// @notice The authorization epoch for this schedule ID.
+        /// @dev Starts at zero and must match the stored value. Revocation increments it, allowing
+        ///      the same ID to be reused while invalidating signatures from prior epochs.
+        uint96 authEpoch;
         /// @notice The address allowed to register this schedule and later debited for sell tokens.
         /// @dev It can be an EOA or contract and may be the same address as `owner`.
         address funder;
@@ -43,9 +47,9 @@ contract ComposableCowPoller is EIP712 {
         bytes staticInput;
     }
 
-    /// @dev Keyed by `id == scheduleId(schedule)`, which excludes the order's `appData`.
-    ///      A nonzero `funder` permanently marks the ID as used. A nonzero `handler` marks the
-    ///      schedule as active; revocation clears it but retains `funder` as a tombstone.
+    /// @dev Keyed by `id == scheduleId(schedule)`. The key excludes `authEpoch` and `staticInput`,
+    ///      so it remains stable when a revoked ID is reused. `authEpoch` starts at zero and increments
+    ///      on revocation to invalidate authorizations from an earlier epoch.
     mapping(bytes32 => Schedule) public schedules;
 
     /// @dev `id => orderDigest => funded`.
@@ -54,8 +58,11 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Thrown when someone other than the schedule funder registers or revokes a schedule.
     error OnlyFunder();
 
-    /// @notice Thrown when registering a schedule whose key has already been used.
+    /// @notice Thrown when registering an active schedule.
     error AlreadyRegistered();
+
+    /// @notice Thrown when a schedule's authorization epoch does not match the stored epoch.
+    error InvalidAuthEpoch();
 
     /// @notice Thrown when registering a schedule with a zero handler.
     error InvalidHandler();
@@ -101,8 +108,9 @@ contract ComposableCowPoller is EIP712 {
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
     /// @notice Computes the deterministic, appData-independent schedule key.
-    /// @dev `staticInput` is excluded because its appData can depend on this key, which is why a
-    ///      fresh `salt` per order is what keeps distinct orders on distinct keys.
+    /// @dev `authEpoch` is excluded so the same key survives revocation. `staticInput` is excluded
+    ///      because its appData can depend on this key, which is why a fresh `salt` per order is
+    ///      what keeps distinct orders on distinct keys.
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
@@ -110,8 +118,9 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Registers a schedule.
-    /// @dev Reverts if the key has ever been used. The key ignores `staticInput`, so a fresh `salt`
-    ///      is required to register another order, including after revocation.
+    /// @dev Reverts if the key is active or `schedule.authEpoch` does not match its current
+    ///      authorization epoch. After revocation, the same key can be registered with the
+    ///      incremented epoch. The key ignores `staticInput`, so concurrent orders need fresh salts.
     ///      Only the funds source may register, and the ID is namespaced by the funder.
     ///      A zero `owner` needs no check: `pollFunds` requires `singleOrders[owner][paramsHash]`,
     ///      which it can never satisfy.
@@ -123,7 +132,8 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Registers a schedule authorized by the funder's EIP-712 signature.
-    /// @dev Any caller may submit the signature before its deadline.
+    /// @dev Any caller may submit the signature before its deadline. The signed `authEpoch` must
+    ///      match storage, so revocation invalidates signatures from prior epochs.
     /// @param schedule The schedule to store.
     /// @param deadline The last block timestamp at which the signature is valid.
     /// @param signature The funder's EIP-712 signature.
@@ -138,6 +148,7 @@ contract ComposableCowPoller is EIP712 {
             abi.encode(
                 REGISTER_TYPEHASH,
                 schedule.handler,
+                schedule.authEpoch,
                 schedule.funder,
                 schedule.owner,
                 schedule.salt,
@@ -152,11 +163,12 @@ contract ComposableCowPoller is EIP712 {
         return _register(schedule);
     }
 
-    /// @dev Stores a schedule and permanently marks its ID as used.
+    /// @dev Stores a schedule only in its current authorization epoch.
     function _register(ComposableCowPoller.Schedule calldata schedule) internal returns (bytes32 id) {
         if (address(schedule.handler) == address(0)) revert InvalidHandler();
         id = scheduleId(schedule);
         if (schedules[id].funder != address(0)) revert AlreadyRegistered();
+        if (schedule.authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
         schedules[id] = schedule;
         emit ScheduleRegistered(
             id, schedule.owner, schedule.funder, _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
@@ -165,17 +177,16 @@ contract ComposableCowPoller is EIP712 {
 
     /// @notice Revoke a schedule. Only the funds source may do so. A standing ERC-20 allowance
     ///         should be revoked separately to fully close the surface.
-    /// @dev Clears the active schedule fields but retains `funder` as the permanently-used ID
-    ///      tombstone, preventing an old registration signature from restoring the schedule.
+    /// @dev Clears the active schedule but retains `authEpoch + 1`, allowing the same ID to be
+    ///      registered again while preventing old registration signatures from restoring it.
     function revoke(bytes32 id) external {
         Schedule storage schedule = schedules[id];
         if (address(schedule.handler) == address(0)) revert NoSchedule();
         if (msg.sender != schedule.funder) revert OnlyFunder();
         emit ScheduleRevoked(id, schedule.owner, schedule.funder);
-        delete schedule.handler;
-        delete schedule.owner;
-        delete schedule.salt;
-        delete schedule.staticInput;
+        uint96 nextAuthEpoch = schedule.authEpoch + 1;
+        delete schedules[id];
+        schedules[id].authEpoch = nextAuthEpoch;
     }
 
     /// @notice Hashes a schedule's `ConditionalOrderParams`, which is the order key it funds.

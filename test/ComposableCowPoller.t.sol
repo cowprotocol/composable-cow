@@ -34,7 +34,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     bytes32 constant EIP712_DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
     bytes32 constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
+        "Register(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
     uint256 constant TWAP_PART_AMOUNT = 100e18;
     uint256 constant LIMIT = 1e18;
@@ -120,6 +120,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     {
         return ComposableCowPoller.Schedule({
             handler: IConditionalOrderGenerator(address(twap)),
+            authEpoch: 0,
             funder: funder,
             owner: address(safe1),
             salt: salt,
@@ -156,6 +157,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             abi.encode(
                 REGISTER_TYPEHASH,
                 schedule.handler,
+                schedule.authEpoch,
                 schedule.funder,
                 schedule.owner,
                 schedule.salt,
@@ -191,12 +193,14 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         (
             IConditionalOrderGenerator handler,
+            uint96 authEpoch,
             address scheduleFunder,
             address owner,
             bytes32 salt,
             bytes memory staticInput
         ) = poller.schedules(id);
         assertEq(address(handler), address(twap), "handler stored");
+        assertEq(authEpoch, 0, "initial authorization epoch stored");
         assertEq(scheduleFunder, funder, "funder stored");
         assertEq(owner, address(safe1), "owner stored");
         assertEq(salt, SALT, "salt stored");
@@ -211,8 +215,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         assertTrue(firstId != secondId, "different salts create different ids");
 
-        (,,, bytes32 firstSalt,) = poller.schedules(firstId);
-        (,,, bytes32 secondSalt,) = poller.schedules(secondId);
+        (,,,, bytes32 firstSalt,) = poller.schedules(firstId);
+        (,,,, bytes32 secondSalt,) = poller.schedules(secondId);
         assertEq(firstSalt, SALT, "first schedule remains stored");
         assertEq(secondSalt, SECOND_SALT, "second schedule stored");
     }
@@ -229,20 +233,30 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         poller.register(_schedule(SALT, abi.encode(other)));
     }
 
-    /// @dev Revoked keys remain occupied so an old registration signature can never restore them.
-    function test_register_RevertWhen_previouslyRevoked() public {
+    /// @dev Revocation advances the authorization epoch, so the same ID can be reused but stale
+    ///      registration parameters cannot.
+    function test_register_afterRevoke_reusesKeyInNewAuthEpoch() public {
         bytes memory staticInput = abi.encode(_bundle());
-        bytes32 id = _register(_schedule(SALT, staticInput));
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, staticInput);
+        bytes32 id = _register(schedule);
 
         vm.prank(funder);
         poller.revoke(id);
 
         TWAPOrder.Data memory other = _bundle();
         other.partSellAmount = TWAP_PART_AMOUNT * 2;
+        schedule.staticInput = abi.encode(other);
 
         vm.prank(funder);
-        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
-        poller.register(_schedule(SALT, abi.encode(other)));
+        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
+        poller.register(schedule);
+
+        schedule.authEpoch = 1;
+        bytes32 reusedId = _register(schedule);
+        (, uint96 authEpoch, address storedFunder,,,) = poller.schedules(reusedId);
+        assertEq(reusedId, id, "same ID reused");
+        assertEq(authEpoch, 1, "authorization epoch advanced");
+        assertEq(storedFunder, funder, "new schedule stored");
     }
 
     /// @dev The hash the poller derives internally must equal `ComposableCoW.hash(params)`, since
@@ -262,6 +276,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         poller.register(
             ComposableCowPoller.Schedule({
                 handler: IConditionalOrderGenerator(address(twap)),
+                authEpoch: 0,
                 funder: funder, // attacker points at someone else's funds
                 owner: address(safe1),
                 salt: SALT,
@@ -288,7 +303,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes32 id = poller.registerWithSignature(schedule, deadline, signature);
 
         assertEq(id, poller.scheduleId(schedule));
-        (, address storedFunder,,,) = poller.schedules(id);
+        (,, address storedFunder,,,) = poller.schedules(id);
         assertEq(storedFunder, funder, "schedule stored");
     }
 
@@ -304,22 +319,23 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.prank(bob.addr);
         bytes32 id = poller.registerWithSignature(schedule, deadline, signature);
 
-        (, address storedFunder,,,) = poller.schedules(id);
+        (,, address storedFunder,,,) = poller.schedules(id);
         assertEq(storedFunder, address(signer), "contract-funded schedule stored");
     }
 
     /// @dev The signature was generated independently with `cast wallet sign --data` from typed
-    ///      data that declares `staticInput` as `bytes`.
+    ///      data that declares `staticInput` as `bytes` and `authEpoch` as `uint96(0)`.
     function test_registerWithSignature_matchesEIP712ReferenceVector() public {
         ComposableCowPoller.Schedule memory schedule = ComposableCowPoller.Schedule({
             handler: IConditionalOrderGenerator(address(0x2222222222222222222222222222222222222222)),
+            authEpoch: 0,
             funder: address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266),
             owner: address(0x3333333333333333333333333333333333333333),
             salt: 0x4444444444444444444444444444444444444444444444444444444444444444,
             staticInput: hex"deadbeef"
         });
         bytes memory signature =
-            hex"c3924db920a1f5d2894df4e5db336fd8fd51e0c84e0e2371482fa9daf4e7b0574415070999401e04df6d6a7dae2e283676523ed6f14ec4f3feac246440eca0081c";
+            hex"8ffc99f91a4e8f67698909e8fb834d80df372b8cc74536272ac3e11236f3e25f6a68eb41cfd3e059dd1a382c1909b651308975e100531c5ee8e6b383ac195aff1b";
 
         bytes32 digest =
             _registerDigest(schedule, 1_234_567_890, 1, address(0x1111111111111111111111111111111111111111));
@@ -336,7 +352,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
         poller.registerWithSignature(schedule, deadline, signature);
 
-        (, address storedFunder,,,) = poller.schedules(id);
+        (,, address storedFunder,,,) = poller.schedules(id);
         assertEq(storedFunder, funder, "replay does not change schedule");
     }
 
@@ -410,6 +426,10 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
         poller.registerWithSignature(changed, deadline, signature);
 
+        changed = signedSchedule;
+        changed.authEpoch = 1;
+        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        poller.registerWithSignature(changed, deadline, signature);
     }
 
     function test_registerWithSignature_RevertWhen_signedForDifferentChain() public {
@@ -440,11 +460,18 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         vm.prank(funder);
         poller.revoke(id);
 
-        vm.expectRevert(ComposableCowPoller.AlreadyRegistered.selector);
+        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
         poller.registerWithSignature(schedule, deadline, signature);
+
+        schedule.authEpoch = 1;
+        assertEq(
+            poller.registerWithSignature(schedule, deadline, _signRegister(schedule, deadline)),
+            id,
+            "fresh signature reuses ID"
+        );
     }
 
-    /// @dev The funder can revoke, which clears active data but retains the used-ID marker.
+    /// @dev The funder can revoke, which clears active data and advances the authorization epoch.
     function test_revoke_clearsActiveSchedule() public {
         (,, bytes32 id) = _setupSchedule();
 
@@ -456,13 +483,15 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         (
             IConditionalOrderGenerator handler,
+            uint96 authEpoch,
             address scheduleFunder,
             address owner,
             bytes32 salt,
             bytes memory staticInput
         ) = poller.schedules(id);
         assertEq(address(handler), address(0), "handler cleared");
-        assertEq(scheduleFunder, funder, "used-id marker retained");
+        assertEq(authEpoch, 1, "authorization epoch advanced");
+        assertEq(scheduleFunder, address(0), "funder cleared");
         assertEq(owner, address(0), "owner cleared");
         assertEq(salt, bytes32(0), "salt cleared");
         assertEq(staticInput, bytes(""), "static input cleared");
