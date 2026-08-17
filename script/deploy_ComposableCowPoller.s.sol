@@ -10,11 +10,11 @@ import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
 contract DeployComposableCowPoller is DeployScript {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address composableCow = vm.envAddress("COMPOSABLE_COW");
+        ComposableCoW composableCow = composableCoWAddress();
 
         vm.startBroadcast(deployerPrivateKey);
 
-        ComposableCowPoller poller = new ComposableCowPoller{salt: deploymentSalt()}(ComposableCoW(composableCow));
+        ComposableCowPoller poller = new ComposableCowPoller{salt: deploymentSalt()}(composableCow);
 
         vm.stopBroadcast();
 

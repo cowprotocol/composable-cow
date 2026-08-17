@@ -24,7 +24,8 @@ contract DeployAll is DeployScript {
 
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? existingComposableCoW() : deployLegacy(salt);
+        // `composableCoWAddress()` is the one `dev/deploy-canonical.sh` puts on the chain.
+        ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? composableCoWAddress() : deployLegacy(salt);
 
         // Not in `canonical/`, so deployed in both modes.
         new ComposableCowPoller{salt: salt}(composableCow);
@@ -32,18 +33,9 @@ contract DeployAll is DeployScript {
         vm.stopBroadcast();
     }
 
-    /// The `ComposableCoW` already on the chain, which `dev/deploy-canonical.sh` puts there.
-    function existingComposableCoW() private returns (ComposableCoW composableCow) {
-        composableCow = ComposableCoW(vm.envAddress("COMPOSABLE_COW"));
-        require(
-            address(composableCow).code.length > 0,
-            "ComposableCoW is not deployed on this chain: run dev/deploy-canonical.sh first, or set CANONICAL=false"
-        );
-    }
-
     /// Compiles the contracts in `canonical/` from source, landing on different addresses.
     function deployLegacy(bytes32 salt) private returns (ComposableCoW composableCow) {
-        address settlement = vm.envAddress("SETTLEMENT");
+        address settlement = settlementAddress();
 
         new ExtensibleFallbackHandler{salt: salt}();
         composableCow = new ComposableCoW{salt: salt}(settlement);
