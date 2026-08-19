@@ -18,6 +18,10 @@ contract ComposableCowPoller is EIP712 {
         "ScheduleRegistration(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
 
+    /// @dev EIP-712 Revoke struct typehash.
+    bytes32 public constant REVOKE_TYPEHASH =
+        keccak256("Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,uint256 deadline)");
+
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
     ComposableCoW public immutable COMPOSABLE_COW;
 
@@ -122,7 +126,7 @@ contract ComposableCowPoller is EIP712 {
     /// @param schedule The schedule whose identity fields determine the key.
     /// @return The schedule key.
     function scheduleId(Schedule memory schedule) public pure returns (bytes32) {
-        return keccak256(abi.encode(schedule.funder, schedule.handler, schedule.owner, schedule.salt));
+        return _scheduleId(schedule.funder, schedule.handler, schedule.owner, schedule.salt);
     }
 
     /// @notice Registers a schedule.
@@ -178,16 +182,56 @@ contract ComposableCowPoller is EIP712 {
         );
     }
 
-    /// @notice Revokes an active schedule.
-    /// @dev Only the funder may revoke. Clearing the schedule and incrementing `authEpoch` allows
-    ///      the same ID to be reused without allowing prior registration signatures to be replayed.
-    function revoke(bytes32 id) external {
-        Schedule storage schedule = schedules[id];
-        if (msg.sender != schedule.funder) revert OnlyFunder();
-        emit ScheduleRevoked(id, schedule.owner, schedule.funder);
-        uint96 nextAuthEpoch = schedule.authEpoch + 1;
+    /// @notice Revokes a schedule or cancels its current authorization epoch before registration.
+    /// @dev Uses `msg.sender` as funder, then clears the schedule and increments its `authEpoch`.
+    function revoke(IConditionalOrderGenerator handler, address owner, bytes32 salt) external returns (bytes32 id) {
+        id = _scheduleId(msg.sender, handler, owner, salt);
+        _revoke(id, msg.sender, owner, schedules[id].authEpoch);
+    }
+
+    /// @notice Revokes a schedule or cancels its current authorization epoch with a funder signature.
+    /// @dev Any caller may submit a valid signature before its deadline. The current `authEpoch` is
+    ///      read from storage so signatures from earlier epochs cannot be reused.
+    /// @param handler The conditional-order handler identifying the schedule.
+    /// @param funder The schedule funder whose signature authorizes the revocation.
+    /// @param owner The conditional-order owner identifying the schedule.
+    /// @param salt The conditional order's salt identifying the schedule.
+    /// @param deadline The last block timestamp at which the signature is valid.
+    /// @param signature The funder's EIP-712 signature.
+    function revokeWithSignature(
+        IConditionalOrderGenerator handler,
+        address funder,
+        address owner,
+        bytes32 salt,
+        uint256 deadline,
+        bytes calldata signature
+    ) external returns (bytes32 id) {
+        if (block.timestamp > deadline) revert SignatureExpired();
+
+        id = _scheduleId(funder, handler, owner, salt);
+        uint96 authEpoch = schedules[id].authEpoch;
+        bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, handler, authEpoch, funder, owner, salt, deadline));
+        if (!SignatureChecker.isValidSignatureNow(funder, _hashTypedDataV4(structHash), signature)) {
+            revert InvalidSignature();
+        }
+
+        _revoke(id, funder, owner, authEpoch);
+    }
+
+    /// @dev Clears the schedule and increments its `authEpoch`, whether registered or not.
+    function _revoke(bytes32 id, address funder, address owner, uint96 authEpoch) internal {
+        emit ScheduleRevoked(id, owner, funder);
         delete schedules[id];
-        schedules[id].authEpoch = nextAuthEpoch;
+        schedules[id].authEpoch = authEpoch + 1;
+    }
+
+    /// @dev Derives the funder-namespaced ID, excluding `authEpoch` and `staticInput`.
+    function _scheduleId(address funder, IConditionalOrderGenerator handler, address owner, bytes32 salt)
+        internal
+        pure
+        returns (bytes32 id)
+    {
+        return keccak256(abi.encode(funder, handler, owner, salt));
     }
 
     /// @notice Hashes a schedule's `ConditionalOrderParams`, which is the order key it funds.
