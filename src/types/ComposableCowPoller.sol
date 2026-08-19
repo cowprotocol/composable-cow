@@ -13,13 +13,13 @@ import {IConditionalOrder, IConditionalOrderGenerator} from "src/interfaces/ICon
 contract ComposableCowPoller is EIP712 {
     using GPv2SafeERC20 for IERC20;
 
-    /// @dev EIP-712 Register struct typehash.
-    bytes32 private constant REGISTER_TYPEHASH = keccak256(
-        "Register(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
+    /// @dev EIP-712 ScheduleRegistration struct typehash.
+    bytes32 public constant SCHEDULE_REGISTRATION_TYPEHASH = keccak256(
+        "ScheduleRegistration(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,bytes staticInput,uint256 deadline)"
     );
 
     /// @dev EIP-712 Revoke struct typehash.
-    bytes32 private constant REVOKE_TYPEHASH =
+    bytes32 public constant REVOKE_TYPEHASH =
         keccak256("Revoke(address handler,uint96 authEpoch,address funder,address owner,bytes32 salt,uint256 deadline)");
 
     /// @dev `ComposableCoW` stores the settlement domain separator supplied at deployment.
@@ -33,8 +33,9 @@ contract ComposableCowPoller is EIP712 {
         /// @notice The conditional-order handler to poll, such as the TWAP type.
         IConditionalOrderGenerator handler;
         /// @notice The authorization epoch for this schedule ID.
-        /// @dev Starts at zero and must match the stored value. Revocation increments it, allowing
-        ///      the same ID to be reused while invalidating signatures from prior epochs.
+        /// @dev Starts at zero. When registering, the supplied epoch must match the epoch stored for
+        ///      the schedule ID. Revocation increments it, allowing the same ID to be reused while
+        ///      invalidating signatures from prior epochs.
         uint96 authEpoch;
         /// @notice The address allowed to register this schedule and later debited for sell tokens.
         /// @dev It can be an EOA or contract and may be the same address as `owner`.
@@ -113,6 +114,11 @@ contract ComposableCowPoller is EIP712 {
     /// @param funder The token source that revoked the schedule.
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
 
+    /// @notice Returns the EIP-712 domain separator used to authorize registrations.
+    function domainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
+    }
+
     /// @notice Computes the deterministic, appData-independent schedule key.
     /// @dev `authEpoch` is excluded so the same key survives revocation. `staticInput` is excluded
     ///      because its appData can depend on this key, which is why a fresh `salt` per order keeps
@@ -148,7 +154,7 @@ contract ComposableCowPoller is EIP712 {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                REGISTER_TYPEHASH,
+                SCHEDULE_REGISTRATION_TYPEHASH,
                 schedule.handler,
                 schedule.authEpoch,
                 schedule.funder,
@@ -265,8 +271,9 @@ contract ComposableCowPoller is EIP712 {
         if (!COMPOSABLE_COW.singleOrders(schedule.owner, paramsHash)) revert OrderNotLive();
 
         // The handler yields the current order and reverts outside its window.
-        GPv2Order.Data memory order = schedule.handler
-            .getTradeableOrder(schedule.owner, address(this), paramsHash, schedule.staticInput, bytes(""));
+        GPv2Order.Data memory order = schedule.handler.getTradeableOrder(
+            schedule.owner, address(this), paramsHash, schedule.staticInput, bytes("")
+        );
 
         // `ComposableCoW` exposes the settlement domain separator it received at deployment.
         bytes32 orderDigest = GPv2Order.hash(order, COMPOSABLE_COW.domainSeparator());

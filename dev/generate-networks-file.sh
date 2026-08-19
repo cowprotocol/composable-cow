@@ -7,6 +7,8 @@ manual_file="$repo_root_dir/broadcast/networks-manual.json"
 
 # One record per deployed contract, oldest first, so the newest run wins the merge below. Ordering
 # by run rather than by file path matters because several scripts deploy the same contract.
+# Matched on Foundry's `run-` prefix rather than every nested `.json`, so an unrelated file under
+# `broadcast/` is skipped instead of being read as a run and failing on its missing fields.
 # `CREATE` is accepted alongside `CREATE2` because `deploy_ComposableCowPoller.s.sol` omits the
 # salt, so the existing Gnosis Chain poller was deployed non-deterministically.
 generated=$(jq --slurp --sort-keys '
@@ -27,7 +29,7 @@ generated=$(jq --slurp --sort-keys '
   ]
   # `sort_by` is stable, so a run keeps its own transaction order and the later one wins.
   | sort_by(.[0]) | map(.[1]) | reduce .[] as $item ({}; . *= $item)
-' "$repo_root_dir/broadcast/"*"/"*"/"*".json")
+' "$repo_root_dir/broadcast/"*"/"*"/run-"*".json")
 
 # Merge with manual file if it exists
 if [[ -f "$manual_file" ]]; then
