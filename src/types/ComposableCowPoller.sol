@@ -89,11 +89,14 @@ contract ComposableCowPoller is EIP712 {
     /// @param id The deterministic key of the schedule.
     /// @param owner The conditional-order owner and pull destination.
     /// @param funder The token source that registered the schedule.
+    /// @param authEpoch The schedule's authorization epoch.
     /// @param paramsHash The ComposableCoW order key this schedule funds. `id` deliberately excludes
     ///        `staticInput`, so re-registering the same funder, handler, owner, and salt replaces
     ///        the stored schedule. Logging the hash names the order each registration points at,
     ///        which is what makes such a replacement visible off-chain.
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
+    event ScheduleRegistered(
+        bytes32 indexed id, address indexed owner, address indexed funder, uint96 authEpoch, bytes32 paramsHash
+    );
 
     /// @notice Emitted when a part's funds are moved.
     /// @dev `orderDigest` is indexed so a single leg can be looked up directly, rather than only
@@ -180,7 +183,11 @@ contract ComposableCowPoller is EIP712 {
         if (schedule.authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
         schedules[id] = schedule;
         emit ScheduleRegistered(
-            id, schedule.owner, schedule.funder, _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
+            id,
+            schedule.owner,
+            schedule.funder,
+            schedule.authEpoch,
+            _paramsHash(schedule.handler, schedule.salt, schedule.staticInput)
         );
     }
 

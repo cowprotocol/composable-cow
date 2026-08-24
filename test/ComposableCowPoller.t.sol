@@ -43,7 +43,9 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     address funder;
     uint256 funderPrivateKey;
 
-    event ScheduleRegistered(bytes32 indexed id, address indexed owner, address indexed funder, bytes32 paramsHash);
+    event ScheduleRegistered(
+        bytes32 indexed id, address indexed owner, address indexed funder, uint96 authEpoch, bytes32 paramsHash
+    );
     event ScheduleRevoked(bytes32 indexed id, address indexed owner, address indexed funder);
     event Pulled(bytes32 indexed id, bytes32 indexed orderDigest, uint256 amount);
 
@@ -282,7 +284,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes32 id = poller.scheduleId(schedule);
 
         vm.expectEmit(true, true, true, true, address(poller));
-        emit ScheduleRegistered(id, address(safe1), funder, _expectedParamsHash(SALT, firstInput));
+        emit ScheduleRegistered(id, address(safe1), funder, 0, _expectedParamsHash(SALT, firstInput));
         _register(schedule);
 
         TWAPOrder.Data memory other = _bundle();
@@ -298,7 +300,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         schedule.authEpoch = 1;
         schedule.staticInput = secondInput;
         vm.expectEmit(true, true, true, true, address(poller));
-        emit ScheduleRegistered(id, address(safe1), funder, secondParamsHash);
+        emit ScheduleRegistered(id, address(safe1), funder, 1, secondParamsHash);
         assertEq(_register(schedule), id, "same id as the schedule it replaced");
     }
 
