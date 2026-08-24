@@ -171,7 +171,8 @@ contract ComposableCowPoller is EIP712 {
         return _register(schedule);
     }
 
-    /// @dev Stores a schedule only in its current authorization epoch.
+    /// @dev Rejects overwriting an active schedule because it would make the previous order unfundable.
+    ///      Revoke first; funding history is retained to prevent replay.
     function _register(ComposableCowPoller.Schedule calldata schedule) internal returns (bytes32 id) {
         id = scheduleId(schedule);
         if (schedules[id].funder != address(0)) revert AlreadyRegistered();
