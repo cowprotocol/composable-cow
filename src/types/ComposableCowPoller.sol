@@ -173,6 +173,7 @@ contract ComposableCowPoller is EIP712 {
 
     /// @dev Rejects overwriting an active schedule because it would make the previous order unfundable.
     ///      Revoke first; funding history is retained to prevent replay.
+    ///      A zero owner or handler cannot satisfy `pollFunds`'s `singleOrders` check.
     function _register(ComposableCowPoller.Schedule calldata schedule) internal returns (bytes32 id) {
         id = scheduleId(schedule);
         if (schedules[id].funder != address(0)) revert AlreadyRegistered();
