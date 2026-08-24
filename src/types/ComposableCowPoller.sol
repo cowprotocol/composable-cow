@@ -199,12 +199,13 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Revokes a schedule or cancels its current authorization epoch with a funder signature.
-    /// @dev Any caller may submit a valid signature before its deadline. The current `authEpoch` is
-    ///      read from storage so signatures from earlier epochs cannot be reused.
+    /// @dev Any caller may submit a valid signature before its deadline. The supplied `authEpoch`
+    ///      must match storage so signatures from earlier epochs cannot be reused.
     /// @param handler The conditional-order handler identifying the schedule.
     /// @param funder The schedule funder whose signature authorizes the revocation.
     /// @param owner The conditional-order owner identifying the schedule.
     /// @param salt The conditional order's salt identifying the schedule.
+    /// @param authEpoch The schedule's authorization epoch signed by the funder.
     /// @param deadline The last block timestamp at which the signature is valid.
     /// @param signature The funder's EIP-712 signature.
     function revokeWithSignature(
@@ -212,13 +213,14 @@ contract ComposableCowPoller is EIP712 {
         address funder,
         address owner,
         bytes32 salt,
+        uint96 authEpoch,
         uint256 deadline,
         bytes calldata signature
     ) external returns (bytes32 id) {
         if (block.timestamp > deadline) revert SignatureExpired();
 
         id = _scheduleId(funder, handler, owner, salt);
-        uint96 authEpoch = schedules[id].authEpoch;
+        if (authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
         bytes32 structHash = keccak256(abi.encode(REVOKE_TYPEHASH, handler, authEpoch, funder, owner, salt, deadline));
         if (!SignatureChecker.isValidSignatureNow(funder, _hashTypedDataV4(structHash), signature)) {
             revert InvalidSignature();

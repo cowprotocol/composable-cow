@@ -208,7 +208,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes memory signature
     ) internal returns (bytes32 id) {
         return poller.revokeWithSignature(
-            schedule.handler, schedule.funder, schedule.owner, schedule.salt, deadline, signature
+            schedule.handler, schedule.funder, schedule.owner, schedule.salt, schedule.authEpoch, deadline, signature
         );
     }
 
@@ -654,7 +654,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         recreatedSchedule.authEpoch = 1;
         _register(recreatedSchedule);
 
-        vm.expectRevert(ComposableCowPoller.InvalidSignature.selector);
+        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
         _revokeWithSignature(schedule, deadline, signature);
 
         (IConditionalOrderGenerator handler, uint96 authEpoch,,,,) = poller.schedules(id);
