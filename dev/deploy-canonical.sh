@@ -90,7 +90,37 @@ ComposableCoW's constructor calls domainSeparator(), so it must be deployed firs
 EOF
   exit 1
 fi
-echo "GPv2Settlement: present"
+
+# Code at the address is not enough: `ComposableCoW` stores the separator forever, so a wrong one
+# (settlement deployed for another chain id, or a different contract entirely) is unrecoverable.
+# GPv2Signing computes it as the EIP-712 domain of ("Gnosis Protocol", "v2", chain id, settlement).
+expected_domain_separator=$(cast keccak "$(cast abi-encode \
+  'f(bytes32,bytes32,bytes32,uint256,address)' \
+  "$(cast keccak 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')" \
+  "$(cast keccak 'Gnosis Protocol')" \
+  "$(cast keccak 'v2')" \
+  "$chain_id" \
+  "$settlement")")
+if ! domain_separator=$(cast call "$settlement" 'domainSeparator()(bytes32)' --rpc-url "$rpc_url" 2>&1); then
+  cat >&2 <<EOF
+Error: the contract at $settlement does not answer domainSeparator().
+       $domain_separator
+
+It is not a GPv2Settlement, so ComposableCoW's constructor would revert.
+EOF
+  exit 1
+fi
+if [[ "$domain_separator" != "$expected_domain_separator" ]]; then
+  cat >&2 <<EOF
+Error: unexpected domain separator at $settlement on chain $chain_id.
+  expected $expected_domain_separator
+  got      $domain_separator
+
+Deploying against it would bake the wrong separator into ComposableCoW.
+EOF
+  exit 1
+fi
+echo "GPv2Settlement: present at $settlement, domain separator matches chain $chain_id"
 
 # Fail closed on a corrupted or hand-edited `canonical/` before touching the chain.
 echo

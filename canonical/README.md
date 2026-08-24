@@ -14,10 +14,16 @@ transactions: one file per contract under `initcode/`, plus `manifest.json` reco
 resulting address.
 
 Deploy it with [`dev/deploy-canonical.sh`](../dev/deploy-canonical.sh), which checks every file
-against `manifest.json` before sending anything. The target chain needs the
-[deterministic deployment proxy](https://github.com/Arachnid/deterministic-deployment-proxy) at
-`0x4e59b44847b379578588920cA78FbF26c0B4956C`, since its address is part of the `CREATE2` preimage;
-the script stops if it is missing.
+against `manifest.json` before sending anything. The target chain needs two contracts already in
+place, and the script stops if either is missing:
+
+- The [deterministic deployment proxy](https://github.com/Arachnid/deterministic-deployment-proxy)
+  at `0x4e59b44847b379578588920cA78FbF26c0B4956C`, since its address is part of the `CREATE2`
+  preimage.
+- `GPv2Settlement` at `0x9008D19f58AAbD9eD0D60971565AA8510560ab41`, the address baked into
+  `ComposableCoW`'s recorded initcode. Its constructor reads `domainSeparator()` from it, so the
+  script also checks that the separator is the EIP-712 one for this chain id, not just that code is
+  there.
 
 Don't edit these files. The salts are deliberately not uniform: `GoodAfterTime`, `StopLoss` and
 `TradeAboveThreshold` were deployed with a zero salt, the rest with `v1.0.0`.
