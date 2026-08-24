@@ -317,6 +317,14 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         );
     }
 
+    function test_register_RevertWhen_staleAuthEpochAfterPreRegistrationRevoke() public {
+        ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
+        _revoke(schedule);
+
+        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
+        _register(schedule);
+    }
+
     function test_registerWithSignature_allowsArbitraryCallerWithEOASignature() public {
         ComposableCowPoller.Schedule memory schedule = _schedule(SALT, abi.encode(_bundle()));
         uint256 deadline = block.timestamp + 1 hours;
