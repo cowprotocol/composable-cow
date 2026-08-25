@@ -8,9 +8,13 @@ import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.
 contract DeployExtensibleFallbackHandler is DeployScript {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        bytes32 salt = deploymentSalt();
+
         vm.startBroadcast(deployerPrivateKey);
 
-        new ExtensibleFallbackHandler{salt: deploymentSalt()}();
+        if (pending("ExtensibleFallbackHandler", salt, type(ExtensibleFallbackHandler).creationCode)) {
+            new ExtensibleFallbackHandler{salt: salt}();
+        }
 
         vm.stopBroadcast();
     }

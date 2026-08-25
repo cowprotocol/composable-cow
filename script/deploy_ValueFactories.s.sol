@@ -8,9 +8,13 @@ import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockT
 contract DeployValueFactories is DeployScript {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        bytes32 salt = deploymentSalt();
+
         vm.startBroadcast(deployerPrivateKey);
 
-        new CurrentBlockTimestampFactory{salt: deploymentSalt()}();
+        if (pending("CurrentBlockTimestampFactory", salt, type(CurrentBlockTimestampFactory).creationCode)) {
+            new CurrentBlockTimestampFactory{salt: salt}();
+        }
 
         vm.stopBroadcast();
     }
