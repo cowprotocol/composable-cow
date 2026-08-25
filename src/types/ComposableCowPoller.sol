@@ -279,14 +279,26 @@ contract ComposableCowPoller is EIP712 {
     ///      ID is namespaced by the funder. Deriving it from `msg.sender` as `revoke` does would
     ///      bump the epoch of an unrelated ID in the shed's own namespace and leave the real
     ///      schedule live.
-    function revokeFromShed(IConditionalOrderGenerator handler, address funder, address owner, bytes32 salt)
-        external
-        returns (bytes32 id)
-    {
+    ///
+    ///      `authEpoch` is pinned like `revokeWithSignature` rather than read from storage like
+    ///      `revoke`, because a shed executes a bundle its owner signed earlier: the funder chooses
+    ///      neither the block nor the state it lands on. Without the check, a bundle signed against
+    ///      one schedule revokes whatever replaced it. Passing it as a parameter signs it — the
+    ///      shed digest covers the call's calldata — so no separate typehash is needed. A mismatch
+    ///      reverts, which is the case where the target is already revoked: only `_revoke` advances
+    ///      the epoch.
+    function revokeFromShed(
+        IConditionalOrderGenerator handler,
+        address funder,
+        address owner,
+        bytes32 salt,
+        uint96 authEpoch
+    ) external returns (bytes32 id) {
         _requireFunderShed(funder);
 
         id = _scheduleId(funder, handler, owner, salt);
-        _revoke(id, funder, owner, schedules[id].authEpoch);
+        if (authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
+        _revoke(id, funder, owner, authEpoch);
     }
 
     /// @dev Requires the caller to be `funder`'s CowShed, which implies `funder` authorized the call.

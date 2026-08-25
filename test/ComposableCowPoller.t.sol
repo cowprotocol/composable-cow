@@ -1022,7 +1022,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         emit ScheduleRevoked(id, funderShed, funder);
         vm.prank(funderShed);
         assertEq(
-            poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt),
+            poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 0),
             id,
             "revokes the funder-namespaced id"
         );
@@ -1065,7 +1065,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.prank(makeAddr("randomCaller"));
         vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
-        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 0);
     }
 
     function test_revokeFromShed_RevertWhen_funderIsZero() public {
@@ -1073,7 +1073,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         vm.prank(shedFactory.proxyOf(address(0)));
         vm.expectRevert(ComposableCowPoller.UnauthorizedShed.selector);
-        poller.revokeFromShed(schedule.handler, address(0), schedule.owner, schedule.salt);
+        poller.revokeFromShed(schedule.handler, address(0), schedule.owner, schedule.salt, 0);
     }
 
     /// @dev Revocation is idempotent in effect but not in epoch: repeating it advances the epoch
@@ -1083,10 +1083,10 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         bytes32 id = _registerFromShed(schedule);
 
         vm.prank(funderShed);
-        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 0);
 
         vm.prank(funderShed);
-        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 1);
 
         (, uint96 authEpoch,,,,) = poller.schedules(id);
         assertEq(authEpoch, 2, "each revocation advances the epoch");
@@ -1098,11 +1098,63 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
 
         vm.prank(funderShed);
-        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 0);
 
         vm.prank(funderShed);
         vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
         poller.registerFromShed(schedule);
+    }
+
+    /// @dev The funder's own revocation advances the epoch, so it also invalidates the shed's
+    ///      pending revocation. The shed can revoke in the new epoch.
+    function test_revokeFromShed_RevertWhen_staleAuthEpochAfterFunderRevoke() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        vm.prank(funder);
+        bytes32 id = poller.revoke(schedule.handler, schedule.owner, schedule.salt);
+
+        vm.prank(funderShed);
+        vm.expectRevert(ComposableCowPoller.InvalidAuthEpoch.selector);
+        poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 0);
+
+        vm.prank(funderShed);
+        assertEq(
+            poller.revokeFromShed(schedule.handler, funder, schedule.owner, schedule.salt, 1),
+            id,
+            "the shed revokes in the new epoch"
+        );
+    }
+
+    /// @dev Why the epoch is pinned rather than read from storage: a shed bundle is a signature the
+    ///      funder submits at a block it does not choose. Reading storage would let this stale
+    ///      bundle delete the replacement schedule it was never signed against.
+    function test_revokeFromShed_staleSignedBundleCannotRevokeReplacement() public {
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 id = _registerFromShed(schedule);
+
+        // The funder signs a revocation of the schedule as it stands, and the bundle sits unrelayed.
+        MockShedCall[] memory calls = new MockShedCall[](1);
+        calls[0] = _call(
+            address(poller),
+            abi.encodeCall(poller.revokeFromShed, (schedule.handler, funder, schedule.owner, schedule.salt, 0))
+        );
+        bytes32 nonce = keccak256("stale-revocation");
+        bytes memory signature = _signShedCalls(calls, nonce);
+
+        // Meanwhile the schedule is revoked and replaced on the same ID, in the next epoch.
+        vm.prank(funder);
+        poller.revoke(schedule.handler, schedule.owner, schedule.salt);
+        ComposableCowPoller.Schedule memory replacement = _shedSchedule(SALT, abi.encode(_bundle()));
+        replacement.authEpoch = 1;
+        assertEq(_registerFromShed(replacement), id, "the replacement takes the same ID");
+
+        // Only now does the bundle land. It targets an epoch that is gone, so it reverts whole.
+        vm.prank(makeAddr("relayer"));
+        vm.expectRevert(abi.encodeWithSelector(MockCowShed.CallReverted.selector, 0));
+        shedFactory.executeHooks(calls, nonce, funder, signature);
+
+        (IConditionalOrderGenerator handler, uint96 authEpoch,,,,) = poller.schedules(id);
+        assertEq(address(handler), address(twap), "the replacement survives the stale bundle");
+        assertEq(authEpoch, 1, "and its epoch is untouched");
     }
 
     // --- end to end -------------------------------------------------------------------------
