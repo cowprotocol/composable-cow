@@ -512,7 +512,7 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
                 // only count this second if we didn't revert
                 numSecsProcessed++;
             } catch (bytes memory lowLevelData) {
-                bytes4 receivedSelector = bytes4(lowLevelData);
+                bytes4 receivedSelector = _selector(lowLevelData);
 
                 // Should have reverted if the `numSecsProcessed` > `frequency * numParts`
                 if (block.timestamp == endTime && receivedSelector == IConditionalOrder.OrderNotValid.selector) {
@@ -671,4 +671,11 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
             appData: keccak256("test.twap")
         });
     }
+
+    /// @dev Leading selector of revert data. Widening casts only, so no truncation.
+    function _selector(bytes memory data) private pure returns (bytes4) {
+        require(data.length >= 4, "revert data has no selector");
+        return bytes4(data[0]) | (bytes4(data[1]) >> 8) | (bytes4(data[2]) >> 16) | (bytes4(data[3]) >> 24);
+    }
+
 }
