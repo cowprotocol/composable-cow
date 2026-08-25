@@ -209,9 +209,7 @@ By default it skips the legacy contracts and binds to their canonical addresses,
 everything else. Pass `CANONICAL=false` to deploy them from source too: those addresses won't match
 the canonical ones, but they are still deterministic.
 
-Every deployment is `CREATE2` through the deterministic proxy, so a contract that is already on the
-chain is reported and skipped rather than reverting the run. Repeating the command after a partial
-run picks up where it left off.
+Contracts already on the chain are reported and skipped, so an interrupted run can be repeated.
 
 ### Deploy a single contract
 
@@ -223,9 +221,8 @@ forge script script/deploy_ExtensibleFallbackHandler.s.sol:DeployExtensibleFallb
 forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-`ComposableCowPoller` binds to a `ComposableCoW` instance, so on top of `SETTLEMENT` it requires
-`COMPOSABLE_COW`, and checks that the contract there really is a `ComposableCoW` built against that
-settlement. It reverts if either is unset:
+`ComposableCowPoller` binds to a `ComposableCoW`, so it needs `COMPOSABLE_COW` alongside
+`SETTLEMENT`, and checks that the contract at that address was built against that settlement:
 
 ```bash
 SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
@@ -255,13 +252,9 @@ Re-running the script on an unchanged repository must reproduce the committed fi
 diff -u networks.json <(bash dev/generate-networks-file.sh)
 ```
 
-The generator reads every `broadcast/*/*/run-*.json`, newest wins, and only `31337` is gitignored.
-Broadcasting to a local node that impersonates a real chain id therefore leaves artifacts that
-silently replace the published addresses. Test on anvil's default `31337` against a settlement
-deployed by [`deploy_AnvilStack.s.sol`](./script/deploy_AnvilStack.s.sol): a `GPv2Settlement` copied
-from another chain will not do, because its domain separator is immutable and commits to the chain
-it was built on, which is exactly what the scripts check. If you do fork a real chain id, delete the
-runs it produced, and run the `diff` above before committing anything under `broadcast/`.
+Only chain `31337` is gitignored under `broadcast/`, so broadcasting to a local node that
+impersonates a real chain id leaves artifacts that override the published addresses. Keep anvil on
+its default chain id, and run the `diff` above before committing anything under `broadcast/`.
 
 ### Contract verification on block explorer
 
@@ -275,9 +268,8 @@ dev/verify-contracts.sh "$chain_id"
 
 If this doesn't work, check out [broadcast/StandardJsonInput/README.md](./broadcast/StandardJsonInput/README.md).
 
-`foundry.toml` sets `bytecode_hash = "none"` and `cbor_metadata = false` so that an import path or a
-toolchain default can no longer move a deployed address. The trade-off is that the deployed bytecode
-carries no metadata, so explorers verify it but Sourcify cannot record a full match.
+`foundry.toml` sets `bytecode_hash = "none"`, so the deployed bytecode carries no metadata:
+explorers still verify it, but Sourcify cannot record a full match.
 
 ### Local deployment
 
