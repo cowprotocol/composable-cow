@@ -12,7 +12,7 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 import {StopLoss} from "../src/types/StopLoss.sol";
-import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
 
 import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
 
@@ -29,9 +29,11 @@ contract DeployAll is DeployScript {
         ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? composableCoWAddress() : deployLegacy(salt);
 
         // Not in `canonical/`, so deployed in both modes.
-        bytes memory poller = abi.encodePacked(type(ComposableCowPoller).creationCode, abi.encode(composableCow));
+        ICowShedFactory cowShedFactory = cowShedFactoryAddress();
+        bytes memory poller =
+            abi.encodePacked(type(ComposableCowPoller).creationCode, abi.encode(composableCow, cowShedFactory));
         if (pending("ComposableCowPoller", salt, poller)) {
-            new ComposableCowPoller{salt: salt}(composableCow);
+            new ComposableCowPoller{salt: salt}(composableCow, cowShedFactory);
         }
 
         vm.stopBroadcast();

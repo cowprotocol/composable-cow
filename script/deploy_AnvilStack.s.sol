@@ -16,6 +16,7 @@ import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SafeLib} from "../test/libraries/SafeLib.t.sol";
+import {MockCowShedFactory} from "../test/helpers/CowShed.t.sol";
 
 // Composable CoW
 import {ComposableCoW} from "../src/ComposableCoW.sol";
@@ -23,7 +24,7 @@ import {TWAP} from "../src/types/twap/TWAP.sol";
 import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
-import {ComposableCowPoller} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
 
 contract DeployAnvilStack is Script {
     // --- constants
@@ -45,6 +46,7 @@ contract DeployAnvilStack is Script {
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+
         vm.startBroadcast(deployerPrivateKey);
 
         // deploy the CoW Protocol stack
@@ -64,7 +66,11 @@ contract DeployAnvilStack is Script {
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
-        ComposableCowPoller poller = new ComposableCowPoller(composableCow);
+
+        // A fresh anvil has no cow-shed factory, and the poller rejects a code-less one.
+        MockCowShedFactory cowShedFactory = new MockCowShedFactory(composableCow);
+        ComposableCowPoller poller =
+            new ComposableCowPoller(composableCow, ICowShedFactory(address(cowShedFactory)));
 
         vm.stopBroadcast();
 
@@ -72,6 +78,8 @@ contract DeployAnvilStack is Script {
         console.logAddress(address(proxy));
         console.log("ComposableCowPoller address");
         console.logAddress(address(poller));
+        console.log("MockCowShedFactory address");
+        console.logAddress(address(cowShedFactory));
     }
 
     function deploySafe(address owner) internal returns (SafeProxy proxy) {
