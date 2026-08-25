@@ -5,9 +5,6 @@ import {Enum} from "safe/common/Enum.sol";
 import {Safe} from "safe/Safe.sol";
 import {SafeProxy} from "safe/proxies/SafeProxy.sol";
 import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
-import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
-import {MultiSend} from "safe/libraries/MultiSend.sol";
-import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 
 import {TestAccount, TestAccountLib} from "../libraries/TestAccountLib.t.sol";
 

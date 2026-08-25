@@ -13,7 +13,6 @@ import {
     GPv2Signing
 } from "cowprotocol/contracts/GPv2Settlement.sol";
 import {GPv2AllowListAuthentication} from "cowprotocol/contracts/GPv2AllowListAuthentication.sol";
-import {GPv2Authentication} from "cowprotocol/contracts/interfaces/GPv2Authentication.sol";
 
 import {GPv2TradeEncoder} from "../vendored/GPv2TradeEncoder.sol";
 import {TestAccount, TestAccountLib} from "../libraries/TestAccountLib.t.sol";

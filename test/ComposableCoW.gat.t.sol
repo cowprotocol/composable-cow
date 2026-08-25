@@ -10,7 +10,6 @@ import {
     Safe,
     SafeLib,
     BaseComposableCoWTest,
-    ComposableCoW,
     ComposableCoWLib
 } from "./ComposableCoW.base.t.sol";
 

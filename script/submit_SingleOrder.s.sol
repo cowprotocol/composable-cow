@@ -8,11 +8,6 @@ import {IERC20} from "cowprotocol/contracts/interfaces/IERC20.sol";
 // Safe contracts
 import {Safe} from "safe/Safe.sol";
 import {Enum} from "safe/common/Enum.sol";
-import {SafeProxyFactory} from "safe/proxies/SafeProxyFactory.sol";
-import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
-import {MultiSend} from "safe/libraries/MultiSend.sol";
-import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
-import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SafeLib} from "../test/libraries/SafeLib.t.sol";
 
 // Composable CoW

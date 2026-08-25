@@ -7,11 +7,9 @@ import {Script, console} from "forge-std/Script.sol";
 import {IVault} from "cowprotocol/contracts/interfaces/IVault.sol";
 import {GPv2Settlement} from "cowprotocol/contracts/GPv2Settlement.sol";
 import {GPv2AllowListAuthentication} from "cowprotocol/contracts/GPv2AllowListAuthentication.sol";
-import {GPv2Authentication} from "cowprotocol/contracts/interfaces/GPv2Authentication.sol";
 
 // Safe contracts
 import {Safe} from "safe/Safe.sol";
-import {Enum} from "safe/common/Enum.sol";
 import {SafeProxyFactory, SafeProxy} from "safe/proxies/SafeProxyFactory.sol";
 import {CompatibilityFallbackHandler} from "safe/handler/CompatibilityFallbackHandler.sol";
 import {MultiSend} from "safe/libraries/MultiSend.sol";
