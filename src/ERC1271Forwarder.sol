@@ -12,6 +12,7 @@ import {ComposableCoW} from "./ComposableCoW.sol";
  * @dev Designed to be extended from by a contract that wants to use ComposableCoW
  */
 abstract contract ERC1271Forwarder is ERC1271 {
+    // forge-lint: disable-next-line(screaming-snake-case-immutable) -- integration surface; renaming breaks contracts that inherit this
     ComposableCoW public immutable composableCoW;
 
     constructor(ComposableCoW _composableCoW) {

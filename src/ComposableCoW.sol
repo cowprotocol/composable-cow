@@ -53,6 +53,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
 
     // --- state
     // Domain separator is only used for generating signatures
+    // forge-lint: disable-next-line(screaming-snake-case-immutable) -- renaming desyncs the ABI from the deployed contract, see #151
     bytes32 public immutable domainSeparator;
     /// @dev Mapping of owner's merkle roots
     mapping(address => bytes32) public roots;
@@ -275,6 +276,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
      * @return hash of the conditional order parameters
      */
     function hash(IConditionalOrder.ConditionalOrderParams memory params) public pure returns (bytes32) {
+        // forge-lint: disable-next-line(asm-keccak256) -- src/ must keep matching the deployed runtime code, see #151
         return keccak256(abi.encode(params));
     }
 
@@ -294,6 +296,7 @@ contract ComposableCoW is ISafeSignatureVerifier {
     {
         if (proof.length != 0) {
             /// @dev Computing proof using leaf double hashing
+            // forge-lint: disable-next-line(asm-keccak256) -- src/ must keep matching the deployed runtime code, see #151
             bytes32 leaf = keccak256(bytes.concat(hash(params)));
 
             // Check if the proof is valid

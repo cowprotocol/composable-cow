@@ -13,6 +13,7 @@ library ConditionalOrdersUtilsLib {
      * @param validity The width of the validity bucket in seconds.
      */
     function validToBucket(uint32 validity) internal view returns (uint32 validTo) {
+        // forge-lint: disable-next-line(divide-before-multiply) -- flooring to the start of the bucket is the point
         validTo = ((uint32(block.timestamp) / validity) * validity) + validity;
     }
 

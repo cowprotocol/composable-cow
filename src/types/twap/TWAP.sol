@@ -25,6 +25,7 @@ string constant NOT_WITHIN_SPAN = "not within span";
  * @dev Designed to be used with the CoW Protocol Conditional Order Framework.
  */
 contract TWAP is BaseConditionalOrder {
+    // forge-lint: disable-next-line(screaming-snake-case-immutable) -- renaming desyncs the ABI from the deployed contract, see #151
     ComposableCoW public immutable composableCow;
 
     constructor(ComposableCoW _composableCow) {
