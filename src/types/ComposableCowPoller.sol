@@ -236,15 +236,11 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Registers a schedule for a funder, called by that funder's own CowShed.
-    /// @dev Saves the funder a signature: a shed only executes calls its owner authorized, so a call
-    ///      from `COW_SHED_FACTORY.proxyOf(funder)` already carries the funder's authorization. The
-    ///      ID stays namespaced by `funder`, never by the shed, so the funder keeps unilateral
-    ///      `revoke` over whatever its shed registered.
+    /// @dev Allows the `COW_SHED_FACTORY.proxyOf(funder)` to register on behalf of the owner.
+    ///      Saves the funder a second signature if the call to `registerFromShed` is made as part of a multicall signed by the funder.
     ///
-    ///      `owner` is pinned to the calling shed, so a shed can only fund itself. That is defence in
-    ///      depth rather than a boundary — the same signed bundle could name a hostile `receiver`
-    ///      inside `staticInput` — but it stops a mis-signed bundle from moving the funder's tokens
-    ///      straight to an arbitrary address.
+    ///      The ID is namespaced by `funder`, never by the shed, so the funder keeps unilateral
+    ///      `revoke` over whatever its shed registered.
     /// @param schedule The schedule to store. Its `owner` must be the calling shed.
     /// @return id The deterministic key of the stored schedule.
     function registerFromShed(
