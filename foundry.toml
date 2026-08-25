@@ -18,3 +18,7 @@ timeout = 100000
 
 [profile.ci]
 verbosity = 3
+
+[profile.ci.fuzz]
+# pinned so a fuzz failure in CI reproduces locally; unpinned outside CI to keep exploring
+seed = "672679878"
