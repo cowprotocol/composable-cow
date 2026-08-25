@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {GPv2Order, IERC20} from "cowprotocol/contracts/libraries/GPv2Order.sol";
+import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
 import {IERC165, IConditionalOrder, IConditionalOrderGenerator} from "./interfaces/IConditionalOrder.sol";
 
