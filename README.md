@@ -122,7 +122,7 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 
 The funder can register or revoke a funding schedule directly. To avoid a separate transaction, the funder can instead sign an EIP-712 authorization that a relayer submits on-chain. The Poller validates EOA signatures directly and uses ERC-1271 when the funder is a contract. Signed actions include a deadline and the current authorization epoch. Revocation derives the schedule ID from its funder, handler, owner, and salt, so it works before or after registration without allowing one funder to cancel another's schedule. It advances the authorization epoch, invalidating pending signatures from prior epochs while allowing the same schedule ID to be reused.
 
-A funder who already does some operations through a [CowShed](https://github.com/cowdao-grants/cow-shed) does not need a second signature to also include the registration. `registerFromShed` and `revokeFromShed` allow the `proxyOf(funder)` to register schedules on behalf of the funder. Without these methods, the funder would need to sign a second EIP-712 authorization or transaction for the schedule registration.
+A funder who already does some operations through a [CowShed](https://github.com/cowdao-grants/cow-shed) does not need a second signature to also include the registration. `registerFromShed` and `revokeFromShed` allow the funder's shed, `proxyOf(funder)`, to register and revoke schedules on behalf of the funder. Without these methods, the funder would need to sign a second EIP-712 authorization or transaction for the schedule registration.
 
 Removing the conditional order from ComposableCoW stops further funding. Revoking its funding schedule does too, but does not remove the funder's token allowance; revoke that allowance separately when it is no longer needed.
 
@@ -224,8 +224,8 @@ forge script script/deploy_ExtensibleFallbackHandler.s.sol:DeployExtensibleFallb
 forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-`ComposableCowPoller` binds to a `ComposableCoW`, so it needs `COMPOSABLE_COW` alongside
-`SETTLEMENT`, and checks that the contract at that address was built against that settlement:
+`ComposableCowPoller` pins a `ComposableCoW` and a CowShed factory, so it needs `COMPOSABLE_COW`
+and `COW_SHED_FACTORY` alongside `SETTLEMENT`, and checks each address holds the contract it claims:
 
 ```bash
 SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \

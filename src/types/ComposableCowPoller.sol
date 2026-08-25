@@ -236,8 +236,9 @@ contract ComposableCowPoller is EIP712 {
     }
 
     /// @notice Registers a schedule for a funder, called by that funder's own CowShed.
-    /// @dev Allows the `COW_SHED_FACTORY.proxyOf(funder)` to register on behalf of the owner.
-    ///      Saves the funder a second signature if the call to `registerFromShed` is made as part of a multicall signed by the funder.
+    /// @dev Allows `COW_SHED_FACTORY.proxyOf(funder)` to register on behalf of the funder. Saves
+    ///      the funder a second signature if the call to `registerFromShed` is made as part of a
+    ///      multicall signed by the funder.
     ///
     ///      The ID is namespaced by `funder`, never by the shed, so the funder keeps unilateral
     ///      `revoke` over whatever its shed registered.
