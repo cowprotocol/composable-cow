@@ -16,6 +16,7 @@ import {MultiSend} from "safe/libraries/MultiSend.sol";
 import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 import {ExtensibleFallbackHandler} from "safe/handler/ExtensibleFallbackHandler.sol";
 import {SafeLib} from "../test/libraries/SafeLib.t.sol";
+import {MockCowShedFactory} from "../test/helpers/CowShed.t.sol";
 
 // Composable CoW
 import {ComposableCoW} from "../src/ComposableCoW.sol";
@@ -45,7 +46,6 @@ contract DeployAnvilStack is Script {
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address cowShedFactory = vm.envAddress("COW_SHED_FACTORY");
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -66,7 +66,11 @@ contract DeployAnvilStack is Script {
         new GoodAfterTime();
         new PerpetualStableSwap();
         new TradeAboveThreshold();
-        ComposableCowPoller poller = new ComposableCowPoller(composableCow, ICowShedFactory(cowShedFactory));
+
+        // A fresh anvil has no cow-shed factory, and the poller rejects a code-less one.
+        MockCowShedFactory cowShedFactory = new MockCowShedFactory();
+        ComposableCowPoller poller =
+            new ComposableCowPoller(composableCow, ICowShedFactory(address(cowShedFactory)));
 
         vm.stopBroadcast();
 
@@ -74,6 +78,8 @@ contract DeployAnvilStack is Script {
         console.logAddress(address(proxy));
         console.log("ComposableCowPoller address");
         console.logAddress(address(poller));
+        console.log("MockCowShedFactory address");
+        console.logAddress(address(cowShedFactory));
     }
 
     function deploySafe(address owner) internal returns (SafeProxy proxy) {
