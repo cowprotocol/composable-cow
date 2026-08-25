@@ -210,6 +210,7 @@ contract ComposableCowPoller is EIP712 {
     ) external returns (bytes32 id) {
         if (block.timestamp > deadline) revert SignatureExpired();
 
+        // forge-lint: disable-next-item(asm-keccak256) -- gas only; plain Solidity is worth more here than the saving
         bytes32 structHash = keccak256(
             abi.encode(
                 SCHEDULE_REGISTRATION_TYPEHASH,
@@ -306,6 +307,7 @@ contract ComposableCowPoller is EIP712 {
 
         id = _scheduleId(funder, handler, owner, salt);
         if (authEpoch != schedules[id].authEpoch) revert InvalidAuthEpoch();
+        // forge-lint: disable-next-item(asm-keccak256) -- gas only; plain Solidity is worth more here than the saving
         bytes32 structHash = keccak256(
             abi.encode(
                 REVOKE_TYPEHASH,
@@ -388,6 +390,7 @@ contract ComposableCowPoller is EIP712 {
         address owner,
         bytes32 salt
     ) internal pure returns (bytes32 id) {
+        // forge-lint: disable-next-line(asm-keccak256) -- gas only; plain Solidity is worth more here than the saving
         return keccak256(abi.encode(funder, handler, owner, salt));
     }
 
@@ -404,6 +407,7 @@ contract ComposableCowPoller is EIP712 {
         bytes32 salt,
         bytes memory staticInput
     ) internal pure returns (bytes32) {
+        // forge-lint: disable-next-item(asm-keccak256) -- gas only; plain Solidity is worth more here than the saving
         return
             keccak256(
                 abi.encode(
