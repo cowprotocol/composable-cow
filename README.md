@@ -178,24 +178,27 @@ forge test -vvv # Unit, fuzz, and fork testing
 forge coverage -vvv --no-match-test "fork" --report summary
 ```
 
-#### Deterministic deployment
+### Deploy the older contracts (legacy)
+Older contract like `ComposableCoW can no longer be deployed to their official addresses by compiling this repository (see
+[#93](https://github.com/cowprotocol/composable-cow/issues/93)). These are all affected contracts: 
 
-Because of the issue [#39](https://github.com/cowprotocol/composable-cow/issues/93), in order to achieve deterministic deployment it is needed to:
+`ComposableCoW`, `CurrentBlockTimestampFactory`, `ExtensibleFallbackHandler`, `GoodAfterTime`,
+`PerpetualStableSwap`, `StopLoss`, `TWAP`, `TradeAboveThreshold`.
 
-- Go to a deployed contract in another network, open the creation TX (e.g. [ExtensibleFallbackHandler](https://etherscan.io/tx/0x33dcbc73a8797c69a5b3956539dd8d191cf3f190bcb27a4d4eca8556f030f574) in mainnet)
-- Go to `Click to show more` and copy the `Input Data` in Original format, also copy the `to` address
-- Use your favourite tool to make a transaction (e.g., [swiss-knife](https://transact.swiss-knife.xyz/send-tx?chainId=1))
-- Use the corresponding `Input Data` and `to` and send the tx
-- A new contract will be deployed using `CREATE2` to the same deterministic address
+Their recorded initcode is replayed instead:
 
-### Script-based deployment
+```bash
+bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL                                # dry run
+PRIVATE_KEY=... bash dev/deploy-canonical.sh --rpc-url $ETH_RPC_URL --broadcast
+```
 
-⚠️ This approach won't deploy the contracts to the official addresses.
-It's mainly useful for testing or when introducing a new contract type.
+See [`canonical/`](./canonical) for how it works and what it covers.
 
-Deployment is handled by solidity scripts in `forge`. The network being deployed to is dependent on the `ETH_RPC_URL`.
+### Deploy newer contracts
 
-To deploy all contracts in a single run, run:
+Everything contract not listed in the legacy section, is deployed using the official foundry scripts:
+
+To deploy all newer contracts in a single run:
 
 ```bash
 source .env
