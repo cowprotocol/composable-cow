@@ -459,12 +459,9 @@ contract ComposableCoWTwapTest is BaseComposableCoWTest {
         // guard against reversions
         numParts = uint32(bound(numParts, 2, type(uint32).max));
         frequency = uint32(bound(frequency, 120, type(uint32).max));
-        // provide some sane limits to avoid out of gas on test issues
-        vm.assume(
-            span == 0
-                ? uint256(numParts) * uint256(frequency) < 1 hours
-                : uint256(numParts) * uint256(span) + (uint256(numParts) * uint256(frequency - span) * 3) < 4 hours
-        );
+        // the simulation below steps one second at a time from `t0` to `t0 + numParts * frequency`,
+        // so bound that span directly to avoid running out of memory
+        vm.assume(uint256(numParts) * uint256(frequency) < 1 hours);
 
         // Assemble the TWAP bundle
         TWAPOrder.Data memory bundle = _twapTestBundle(block.timestamp);
