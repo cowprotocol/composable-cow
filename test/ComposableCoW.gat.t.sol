@@ -3,6 +3,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 import {
     IERC20,
     GPv2Order,
@@ -161,7 +163,7 @@ contract ComposableCoWGatTest is BaseComposableCoWTest {
             receiver: receiver,
             sellAmount: sellAmount,
             buyAmount: buyAmount,
-            validTo: uint32(endTime),
+            validTo: SafeCast.toUint32(endTime),
             appData: keccak256("GoodAfterTime"),
             feeAmount: 0, // zero fee for limit order
             kind: GPv2Order.KIND_SELL,

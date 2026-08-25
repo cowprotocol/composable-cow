@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import "forge-std/Test.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 struct TestAccount {
     address addr;
@@ -9,15 +9,15 @@ struct TestAccount {
 }
 
 library TestAccountLib {
-    Vm constant vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+    Vm constant VM = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
     /// @dev Creates a new TestAccount with the provided user name.
     ///      Logic borrows from `StdCheats.sol`.
     function createTestAccount(string memory user) internal returns (TestAccount memory) {
         uint256 pk = uint256(keccak256(abi.encodePacked(user)));
-        address addr = vm.addr(pk);
-        vm.label(addr, user);
-        return TestAccount(addr, pk);
+        address addr = VM.addr(pk);
+        VM.label(addr, user);
+        return TestAccount({addr: addr, pk: pk});
     }
 
     /// @dev Sign the provided hash with the provided TestAccount.
@@ -25,7 +25,7 @@ library TestAccountLib {
     /// @param hash The hash to sign.
     /// @return The signature.
     function signPacked(TestAccount memory account, bytes32 hash) internal pure returns (bytes memory) {
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(account.pk, hash);
+        (uint8 v, bytes32 r, bytes32 s) = VM.sign(account.pk, hash);
 
         bytes memory signature = new bytes(65);
         signature = abi.encodePacked(r, s, v);
