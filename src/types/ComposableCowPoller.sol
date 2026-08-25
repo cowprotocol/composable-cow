@@ -82,7 +82,7 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
     error OnlyFunder();
 
-    /// @notice Thrown when a `ForFunder` action does not come from the funder's own CowShed, or when
+    /// @notice Thrown when a `FromShed` action does not come from the funder's own CowShed, or when
     ///         that shed tries to register a schedule that funds somebody else.
     error UnauthorizedShed();
 
@@ -144,7 +144,7 @@ contract ComposableCowPoller is EIP712 {
         ComposableCoW _composableCow,
         ICowShedFactory _cowShedFactory
     ) EIP712("ComposableCowPoller", "1") {
-        // A code-less factory would make every `ForFunder` call revert without saying why.
+        // A code-less factory would make every `FromShed` call revert without saying why.
         if (address(_cowShedFactory).code.length == 0)
             revert InvalidCowShedFactory();
         COMPOSABLE_COW = _composableCow;
