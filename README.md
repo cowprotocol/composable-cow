@@ -209,6 +209,10 @@ By default it skips the legacy contracts and binds to their canonical addresses,
 everything else. Pass `CANONICAL=false` to deploy them from source too: those addresses won't match
 the canonical ones, but they are still deterministic.
 
+Every deployment is `CREATE2` through the deterministic proxy, so a contract that is already on the
+chain is reported and skipped rather than reverting the run. Repeating the command after a partial
+run picks up where it left off.
+
 ### Deploy a single contract
 
 Each contract also has its own script, for when only one of them needs deploying:
@@ -219,11 +223,13 @@ forge script script/deploy_ExtensibleFallbackHandler.s.sol:DeployExtensibleFallb
 forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-`ComposableCowPoller` binds to a `ComposableCoW` instance, so it requires `COMPOSABLE_COW` to be set
-and reverts if it is not:
+`ComposableCowPoller` binds to a `ComposableCoW` instance, so on top of `SETTLEMENT` it requires
+`COMPOSABLE_COW`, and checks that the contract there really is a `ComposableCoW` built against that
+settlement. It reverts if either is unset:
 
 ```bash
-COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
+SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
+  COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
@@ -249,6 +255,14 @@ Re-running the script on an unchanged repository must reproduce the committed fi
 diff -u networks.json <(bash dev/generate-networks-file.sh)
 ```
 
+The generator reads every `broadcast/*/*/run-*.json`, newest wins, and only `31337` is gitignored.
+Broadcasting to a local node that impersonates a real chain id therefore leaves artifacts that
+silently replace the published addresses. Test on anvil's default `31337` against a settlement
+deployed by [`deploy_AnvilStack.s.sol`](./script/deploy_AnvilStack.s.sol): a `GPv2Settlement` copied
+from another chain will not do, because its domain separator is immutable and commits to the chain
+it was built on, which is exactly what the scripts check. If you do fork a real chain id, delete the
+runs it produced, and run the `diff` above before committing anything under `broadcast/`.
+
 ### Contract verification on block explorer
 
 There's a dedicated script to verify all contracts at the same time once they have been deployed on a new chain:
@@ -260,6 +274,10 @@ dev/verify-contracts.sh "$chain_id"
 ```
 
 If this doesn't work, check out [broadcast/StandardJsonInput/README.md](./broadcast/StandardJsonInput/README.md).
+
+`foundry.toml` sets `bytecode_hash = "none"` and `cbor_metadata = false` so that an import path or a
+toolchain default can no longer move a deployed address. The trade-off is that the deployed bytecode
+carries no metadata, so explorers verify it but Sourcify cannot record a full match.
 
 ### Local deployment
 
