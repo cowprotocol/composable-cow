@@ -2,16 +2,16 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+import {IERC165} from "safe/interfaces/IERC165.sol";
+import {ReceiverLock} from "../src/guards/ReceiverLock.sol";
 
 import {
-    IERC165,
     IConditionalOrder,
     GPv2Order,
     ComposableCoW,
     BaseComposableCoWTest,
     ISwapGuard,
-    TestSwapGuard,
-    ReceiverLock
+    TestSwapGuard
 } from "./ComposableCoW.base.t.sol";
 
 contract ComposableCoWGuardsTest is BaseComposableCoWTest {

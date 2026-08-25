@@ -2,17 +2,19 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+import {INVALID_HASH} from "../src/BaseConditionalOrder.sol";
 
 import {
     IConditionalOrder,
     GPv2Order,
     ComposableCoW,
     ComposableCoWLib,
-    INVALID_HASH,
     BaseComposableCoWTest,
     Safe,
     TestNonSafeWallet
 } from "./ComposableCoW.base.t.sol";
+
+bytes32 constant TEST_VALUE = "testValue";
 
 contract ComposableCoWTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
@@ -94,7 +96,7 @@ contract ComposableCoWTest is BaseComposableCoWTest {
 
         // should set the root correctly
         ComposableCoW.Proof memory proofStruct = ComposableCoW.Proof({location: 0, data: ""});
-        _setRootWithContext(address(safe1), root, proofStruct, testContextValue, abi.encode(bytes32("testValue")));
+        _setRootWithContext(address(safe1), root, proofStruct, testContextValue, abi.encode(TEST_VALUE));
 
         // should pass with the root correctly set
         (GPv2Order.Data memory order, bytes memory signature) =

@@ -23,10 +23,6 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss = new StopLoss();
     }
 
-    function priceToAddress(int256 price) internal pure returns (address) {
-        return address(uint160(int160(price)));
-    }
-
     function mockOracle(address mock, int256 price, uint256 updatedAt, uint8 decimals)
         internal
         returns (IAggregatorV3Interface iface)

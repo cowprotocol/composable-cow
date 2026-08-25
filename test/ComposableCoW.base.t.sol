@@ -3,19 +3,18 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Merkle} from "murky/Merkle.sol";
 
-import {Safe, IERC165, Enum} from "safe/Safe.sol";
+import {Safe, Enum} from "safe/Safe.sol";
 
 // Testing Libraries
 import {Base} from "./Base.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {ComposableCoWLib} from "./libraries/ComposableCoWLib.t.sol";
 
-import {IConditionalOrder, IERC20, BaseConditionalOrder, INVALID_HASH} from "../src/BaseConditionalOrder.sol";
+import {IConditionalOrder, IERC20, BaseConditionalOrder} from "../src/BaseConditionalOrder.sol";
 import {BaseSwapGuard} from "../src/guards/BaseSwapGuard.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
 import {ERC1271Forwarder} from "../src/ERC1271Forwarder.sol";
-import {ReceiverLock} from "../src/guards/ReceiverLock.sol";
 
 import {IValueFactory} from "../src/interfaces/IValueFactory.sol";
 

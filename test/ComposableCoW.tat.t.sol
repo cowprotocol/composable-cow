@@ -2,9 +2,15 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 
-import "./ComposableCoW.base.t.sol";
-
-import "../src/types/TradeAboveThreshold.sol";
+import {
+    BaseComposableCoWTest,
+    ComposableCoWLib,
+    IConditionalOrder,
+    GPv2Order,
+    Safe,
+    SafeLib
+} from "./ComposableCoW.base.t.sol";
+import {TradeAboveThreshold, BALANCE_INSUFFICIENT} from "../src/types/TradeAboveThreshold.sol";
 
 contract ComposableCoWTatTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];
