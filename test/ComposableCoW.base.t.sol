@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import {IERC20} from "cowprotocol/contracts/interfaces/IERC20.sol";
+
 import {Merkle} from "murky/Merkle.sol";
 
 import {Safe, Enum} from "safe/Safe.sol";
@@ -10,7 +12,7 @@ import {Base} from "./Base.t.sol";
 import {SafeLib} from "./libraries/SafeLib.t.sol";
 import {ComposableCoWLib} from "./libraries/ComposableCoWLib.t.sol";
 
-import {IConditionalOrder, IERC20, BaseConditionalOrder} from "../src/BaseConditionalOrder.sol";
+import {IConditionalOrder, BaseConditionalOrder} from "../src/BaseConditionalOrder.sol";
 import {BaseSwapGuard} from "../src/guards/BaseSwapGuard.sol";
 
 import {TWAP, TWAPOrder} from "../src/types/twap/TWAP.sol";
