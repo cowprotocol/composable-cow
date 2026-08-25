@@ -5,9 +5,11 @@ out = 'out'
 libs = ['lib']
 
 # Pinned so the compiled bytecode, and therefore every CREATE2 address, is reproducible.
-solc_version = "0.8.19"
+solc_version = "0.8.30"
 auto_detect_solc = false
-evm_version = "paris"
+# `evm_version` also picks the EVM the scripts and tests simulate on, and CowShed is built for a
+# newer target: under `paris`, calling it dies on `MCOPY` with `NotActivated`.
+evm_version = "cancun"
 bytecode_hash = "none"
 cbor_metadata = false
 optimizer = true
@@ -20,6 +22,12 @@ targets = [
     'assert', 'underflow', 'overflow', 'divByZero', 'constantCondition', 'popEmptyArray', 'outOfBounds', 'balance'
 ]
 timeout = 100000
+
+# The contracts in `canonical/` were deployed from this repository at 0.8.19, targeting paris.
+# Build with this profile to reproduce, or verify, what is already on those addresses.
+[profile.legacy]
+solc_version = "0.8.19"
+evm_version = "paris"
 
 [profile.ci]
 verbosity = 3

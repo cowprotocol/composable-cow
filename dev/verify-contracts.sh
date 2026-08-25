@@ -32,6 +32,15 @@ address_by_contract_name() {
   printf "%s" "$(jq --raw-output ".${name}[\"$chain_id\"].address" "$networks_json")"
 }
 
+# The contracts in the canonical manifest were built with an older compiler; see foundry.toml.
+profile_for() {
+  if [[ "$(jq --raw-output --arg n "$1" 'has($n)' "$repo_root_dir/canonical/manifest.json")" == true ]]; then
+    printf legacy
+  else
+    printf default
+  fi
+}
+
 forge_verify() {
   local address=$1
   local contract=$2
@@ -74,7 +83,7 @@ for path in \
   contract="${filename%%.sol}"
   address="$(address_by_contract_name "$contract")"
   echo "Verifying contract $contract..."
-  forge_verify "$address" "$path:$contract"
+  FOUNDRY_PROFILE="$(profile_for "$contract")" forge_verify "$address" "$path:$contract"
 done
 
 echo "All done!"
