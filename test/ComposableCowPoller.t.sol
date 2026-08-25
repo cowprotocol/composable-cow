@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
+
 import {GPv2Order} from "cowprotocol/contracts/libraries/GPv2Order.sol";
 
-import {IConditionalOrder, IValueFactory, BaseComposableCoWTest} from "test/ComposableCoW.base.t.sol";
+import {
+    ComposableCoW,
+    IConditionalOrder,
+    IValueFactory,
+    BaseComposableCoWTest
+} from "test/ComposableCoW.base.t.sol";
 import {
     MockCowShed,
     MockCowShedExecutorFactory,
@@ -13,6 +20,7 @@ import {
 
 import {TWAP} from "src/types/twap/TWAP.sol";
 import {TWAPOrder} from "src/types/twap/libraries/TWAPOrder.sol";
+import {AFTER_TWAP_FINISH} from "src/types/twap/libraries/TWAPOrderMathLib.sol";
 import {ComposableCowPoller, ICowShedFactory} from "src/types/ComposableCowPoller.sol";
 import {CurrentBlockTimestampFactory} from "src/value_factories/CurrentBlockTimestampFactory.sol";
 import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
@@ -63,7 +71,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
         twap = new TWAP(composableCow);
         currentBlockTimestampFactory = new CurrentBlockTimestampFactory();
-        shedFactory = new MockCowShedFactory();
+        shedFactory = new MockCowShedFactory(composableCow);
         poller = new ComposableCowPoller(composableCow, ICowShedFactory(address(shedFactory)));
         (funder, funderPrivateKey) = makeAddrAndKey("funder");
         funderShed = shedFactory.proxyOf(funder);
@@ -977,7 +985,7 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
     ///      deploys therefore proves nothing about its owner, so the poller must not accept one —
     ///      and must not trust `ownerOf`, which that factory happily populates.
     function test_registerFromShed_RevertWhen_shedCameFromExecutorFactory() public {
-        MockCowShedExecutorFactory executorFactory = new MockCowShedExecutorFactory();
+        MockCowShedExecutorFactory executorFactory = new MockCowShedExecutorFactory(composableCow);
         address attacker = makeAddr("attacker");
 
         address hostileShed = executorFactory.initializeProxy(funder, attacker, bytes32(0));
@@ -1161,7 +1169,8 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
 
     /// @dev The flow this change exists for: one funder signature over a shed bundle that both
     ///      creates the TWAP and registers the schedule, then just-in-time funding per part with no
-    ///      further signature. No ERC-1271 is needed here because the shed creates the order itself.
+    ///      further signature. Funding only — `test_registerFromShed_endToEndSettlesEachPart` carries
+    ///      the same setup through settlement.
     function test_registerFromShed_endToEndSignedBundle() public {
         IConditionalOrder.ConditionalOrderParams memory params =
             super.createOrder(twap, SALT, abi.encode(_bundle()));
@@ -1207,5 +1216,120 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
             assertFalse(poller.pollFunds(id), "already funded this part");
         }
         assertEq(token0.balanceOf(funder), 0, "funder fully drawn down across the schedule");
+    }
+
+    /// @dev Builds the bundle the PoC signs: register the schedule, approve the vault relayer, and
+    ///      create the TWAP — all authorized by the one funder signature. The relayer approval is
+    ///      part of it because the shed, not the funder, is the party that sells.
+    function _setupBundleCalls(
+        IConditionalOrder.ConditionalOrderParams memory params,
+        ComposableCowPoller.Schedule memory schedule
+    ) internal view returns (MockShedCall[] memory calls) {
+        calls = new MockShedCall[](3);
+        calls[0] = _call(address(poller), abi.encodeCall(poller.registerFromShed, (schedule)));
+        calls[1] = _call(address(token0), abi.encodeCall(token0.approve, (relayer, TWAP_PART_AMOUNT * N)));
+        calls[2] = _call(
+            address(composableCow),
+            abi.encodeCall(
+                composableCow.createWithContext, (params, currentBlockTimestampFactory, bytes(""), false)
+            )
+        );
+    }
+
+    /// @dev What the poller ultimately has to produce: a part that a solver can settle. The shed is
+    ///      the order owner, so `GPv2Settlement` validates every part against the shed under
+    ///      ERC-1271, which the shed answers by forwarding to `ComposableCoW`. Funding a part is
+    ///      therefore only half the flow — this walks the other half, so a break in the signature
+    ///      path fails here instead of on-chain.
+    function test_registerFromShed_endToEndSettlesEachPart() public {
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(twap, SALT, abi.encode(_bundle()));
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 paramsHash = composableCow.hash(params);
+        bytes32 id = poller.scheduleId(schedule);
+
+        MockShedCall[] memory calls = _setupBundleCalls(params, schedule);
+        bytes32 nonce = keccak256("jit-twap-settled");
+        bytes memory signature = _signShedCalls(calls, nonce);
+
+        vm.prank(makeAddr("relayer"));
+        shedFactory.executeHooks(calls, nonce, funder, signature);
+
+        // Capital stays with the funder; the counterparty holds the buy token.
+        deal(address(token0), funder, TWAP_PART_AMOUNT * N);
+        deal(address(token1), bob.addr, LIMIT * N);
+        vm.prank(funder);
+        token0.approve(address(poller), TWAP_PART_AMOUNT * N);
+
+        uint256 t0 = uint256(composableCow.cabinet(funderShed, paramsHash));
+        for (uint256 part; part < N; ++part) {
+            vm.warp(t0 + part * FREQ);
+            assertTrue(poller.pollFunds(id), "part funded");
+
+            // The watchtower's view: ComposableCoW hands out the part and the bundle that signs it.
+            (GPv2Order.Data memory order, bytes memory bundleBytes) =
+                composableCow.getTradeableOrderWithSignature(funderShed, params, bytes(""), new bytes32[](0));
+            assertEq(order.sellAmount, TWAP_PART_AMOUNT, "the part sells exactly what was pulled");
+
+            // The check `GPv2Settlement` makes before it will touch the shed's tokens.
+            bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
+            assertEq(
+                ERC1271(funderShed).isValidSignature(orderDigest, bundleBytes),
+                ERC1271.isValidSignature.selector,
+                "the shed signs the part as its own order"
+            );
+
+            settle(funderShed, bob, order, bundleBytes, bytes4(0));
+            assertEq(token0.balanceOf(funderShed), 0, "the pulled part was sold, not parked");
+        }
+
+        assertEq(token0.balanceOf(funder), 0, "funder fully drawn down across the schedule");
+        assertEq(token0.balanceOf(bob.addr), TWAP_PART_AMOUNT * N, "the counterparty bought every part");
+        assertTrue(token1.balanceOf(funderShed) >= LIMIT * N, "the shed holds the proceeds");
+
+        // The schedule is spent: the TWAP has no further part to offer.
+        vm.warp(t0 + N * FREQ);
+        vm.expectRevert(
+            abi.encodeWithSelector(IConditionalOrder.OrderNotValid.selector, AFTER_TWAP_FINISH)
+        );
+        composableCow.getTradeableOrderWithSignature(funderShed, params, bytes(""), new bytes32[](0));
+    }
+
+    /// @dev The shed's ERC-1271 answer is exactly `ComposableCoW`'s authorization, not a rubber
+    ///      stamp of its own: revoking the order invalidates parts the shed was already funded for.
+    ///      This is the failure the poller cannot see — `pollFunds` moved real tokens, and only
+    ///      settlement rejects them.
+    function test_registerFromShed_shedValidatesOnlyAuthorizedOrders() public {
+        IConditionalOrder.ConditionalOrderParams memory params =
+            super.createOrder(twap, SALT, abi.encode(_bundle()));
+        ComposableCowPoller.Schedule memory schedule = _shedSchedule(SALT, abi.encode(_bundle()));
+        bytes32 paramsHash = composableCow.hash(params);
+        bytes32 id = poller.scheduleId(schedule);
+
+        MockShedCall[] memory calls = _setupBundleCalls(params, schedule);
+        bytes32 nonce = keccak256("jit-twap-revoked");
+        vm.prank(makeAddr("relayer"));
+        shedFactory.executeHooks(calls, nonce, funder, _signShedCalls(calls, nonce));
+
+        deal(address(token0), funder, TWAP_PART_AMOUNT * N);
+        vm.prank(funder);
+        token0.approve(address(poller), TWAP_PART_AMOUNT * N);
+
+        vm.warp(uint256(composableCow.cabinet(funderShed, paramsHash)));
+        assertTrue(poller.pollFunds(id), "part funded");
+        (GPv2Order.Data memory order, bytes memory bundleBytes) =
+            composableCow.getTradeableOrderWithSignature(funderShed, params, bytes(""), new bytes32[](0));
+        bytes32 orderDigest = GPv2Order.hash(order, settlement.domainSeparator());
+
+        // The shed drops the order it owns. The funds it was already sent stay put.
+        MockShedCall[] memory removal = new MockShedCall[](1);
+        removal[0] = _call(address(composableCow), abi.encodeCall(composableCow.remove, (paramsHash)));
+        bytes32 removalNonce = keccak256("drop-the-order");
+        vm.prank(makeAddr("relayer"));
+        shedFactory.executeHooks(removal, removalNonce, funder, _signShedCalls(removal, removalNonce));
+
+        assertEq(token0.balanceOf(funderShed), TWAP_PART_AMOUNT, "the funded part is still in the shed");
+        vm.expectRevert(ComposableCoW.SingleOrderNotAuthed.selector);
+        ERC1271(funderShed).isValidSignature(orderDigest, bundleBytes);
     }
 }

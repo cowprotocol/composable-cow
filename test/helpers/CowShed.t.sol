@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import {ComposableCoW} from "src/ComposableCoW.sol";
+import {ERC1271Forwarder} from "src/ERC1271Forwarder.sol";
+
 /// @dev A call a shed executes on its owner's behalf. Mirrors cow-shed's `Call` minus the
 ///      `allowFailure` / `isDelegateCall` flags, which nothing here exercises.
 struct MockShedCall {
@@ -9,19 +12,25 @@ struct MockShedCall {
     bytes callData;
 }
 
-/// @title MockCowShed - stand-in for a cow-shed proxy.
-/// @dev cow-shed is not a submodule here, so these mocks reproduce only the properties
-///      `ComposableCowPoller` depends on:
+/// @title MockCowShed - stand-in for a `COWShedForComposableCoW` proxy.
+/// @dev cow-shed cannot be a submodule here: it needs solc `^0.8.25`, and this repo pins 0.8.19 to
+///      keep every `CREATE2` address reproducible. So these mocks reproduce the properties
+///      `ComposableCowPoller` and settlement depend on:
 ///
-///      1. the shed lives at an address `CREATE2`-derived from its factory and its owner alone, and
+///      1. the shed lives at an address `CREATE2`-derived from its factory and its owner alone,
 ///      2. it executes owner-authorized calls (`executeHooks`) or, if one is set, calls from a
-///         trusted executor with no authorization at all (`trustedExecuteHooks`).
+///         trusted executor with no authorization at all (`trustedExecuteHooks`), and
+///      3. it validates CoW orders under ERC-1271 by forwarding to `ComposableCoW`.
+///
+///      Property 3 is the real thing, not a mock: upstream's `COWShedForComposableCoW` is `COWShed`
+///      plus this repo's own `ERC1271Forwarder`, which is inherited here.
 ///
 ///      The real thing splits proxy and implementation. That split is collapsed here because the
 ///      poller never derives an address itself — it asks `proxyOf` and compares — so the split adds
-///      no coverage. `owner` stays a constructor argument, so it is committed into the init code and
-///      therefore into the derived address, exactly as in cow-shed.
-contract MockCowShed {
+///      no coverage. Both constructor arguments land in the init code and so in the derived address,
+///      as upstream's `(implementation, owner)` does: a shed's address pins its `ComposableCoW`
+///      either way, since upstream holds that as an immutable of the implementation.
+contract MockCowShed is ERC1271Forwarder {
     /// @notice The shed's owner and admin. Immutable, as in `COWShedProxy`.
     address public immutable OWNER;
 
@@ -37,7 +46,7 @@ contract MockCowShed {
     error OnlyTrustedRole();
     error CallReverted(uint256 index);
 
-    constructor(address owner) {
+    constructor(ComposableCoW _composableCow, address owner) ERC1271Forwarder(_composableCow) {
         OWNER = owner;
     }
 
@@ -91,11 +100,22 @@ contract MockCowShed {
 /// @dev The property that matters: the only deployment path derives the shed from its owner alone
 ///      and initializes the trusted executor to the factory itself, which never calls
 ///      `trustedExecuteHooks`. So "the caller is `proxyOf(owner)`" implies "the owner authorized it".
+///
+///      `COMPOSABLE_COW` stands in for upstream's `implementation`: one factory deploys one flavour
+///      of shed, and the flavour decides whether its sheds can settle at all. Pinning a factory in
+///      the poller pins that too.
 contract MockCowShedFactory {
     bytes public constant PROXY_CREATION_CODE = type(MockCowShed).creationCode;
 
+    /// @notice The `ComposableCoW` this factory's sheds forward ERC-1271 validation to.
+    ComposableCoW public immutable COMPOSABLE_COW;
+
     /// @dev The mutable reverse registry the poller deliberately does not trust.
     mapping(address => address) public ownerOf;
+
+    constructor(ComposableCoW _composableCow) {
+        COMPOSABLE_COW = _composableCow;
+    }
 
     /// @notice The shed address for `owner`, whether or not it is deployed yet.
     function proxyOf(address owner) public view returns (address) {
@@ -106,7 +126,7 @@ contract MockCowShedFactory {
     function initializeProxy(address owner) public returns (address proxy) {
         proxy = proxyOf(owner);
         if (proxy.code.length == 0) {
-            new MockCowShed{salt: _ownerSalt(owner)}(owner);
+            new MockCowShed{salt: _ownerSalt(owner)}(COMPOSABLE_COW, owner);
             // Deploy and initialize are atomic: nobody else can choose the trusted executor.
             MockCowShed(payable(proxy)).initialize(address(this));
             ownerOf[proxy] = owner;
@@ -127,7 +147,8 @@ contract MockCowShedFactory {
     }
 
     function _derive(bytes32 salt, address owner) internal view returns (address) {
-        bytes32 initCodeHash = keccak256(abi.encodePacked(PROXY_CREATION_CODE, abi.encode(owner)));
+        bytes32 initCodeHash =
+            keccak256(abi.encodePacked(PROXY_CREATION_CODE, abi.encode(COMPOSABLE_COW, owner)));
         return address(uint160(uint256(keccak256(abi.encodePacked(hex"ff", address(this), salt, initCodeHash)))));
     }
 }
@@ -138,6 +159,8 @@ contract MockCowShedFactory {
 ///      authorized anything. It writes `ownerOf` all the same, which is why the poller derives with
 ///      `proxyOf` instead of reading that registry.
 contract MockCowShedExecutorFactory is MockCowShedFactory {
+    constructor(ComposableCoW _composableCow) MockCowShedFactory(_composableCow) {}
+
     function proxyOf(address owner, address trustedExecutor, bytes32 salt) public view returns (address) {
         return _derive(_executorSalt(owner, trustedExecutor, salt), owner);
     }
@@ -146,7 +169,7 @@ contract MockCowShedExecutorFactory is MockCowShedFactory {
         bytes32 create2Salt = _executorSalt(owner, trustedExecutor, salt);
         proxy = _derive(create2Salt, owner);
         if (proxy.code.length == 0) {
-            new MockCowShed{salt: create2Salt}(owner);
+            new MockCowShed{salt: create2Salt}(COMPOSABLE_COW, owner);
             MockCowShed(payable(proxy)).initialize(trustedExecutor);
             ownerOf[proxy] = owner;
         }

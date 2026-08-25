@@ -36,7 +36,8 @@ contract ComposableCowPoller is EIP712 {
     /// @notice The one CowShed factory whose proxies may manage schedules for their own owner.
     /// @dev Pinned at deployment. It must be a factory whose only deployment path derives the proxy
     ///      from the owner alone, so that a call from `proxyOf(funder)` proves `funder` authorised
-    ///      it. See `registerForFunder`.
+    ///      it. See `registerForFunder`. It must also deploy `COWShedForComposableCoW` sheds: a shed
+    ///      without ERC-1271 forwarding can be funded but can never settle what it was funded for.
     ICowShedFactory public immutable COW_SHED_FACTORY;
 
     /// @notice Parameters for a JIT funding schedule.

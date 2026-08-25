@@ -68,7 +68,7 @@ contract DeployAnvilStack is Script {
         new TradeAboveThreshold();
 
         // A fresh anvil has no cow-shed factory, and the poller rejects a code-less one.
-        MockCowShedFactory cowShedFactory = new MockCowShedFactory();
+        MockCowShedFactory cowShedFactory = new MockCowShedFactory(composableCow);
         ComposableCowPoller poller =
             new ComposableCowPoller(composableCow, ICowShedFactory(address(cowShedFactory)));
 
