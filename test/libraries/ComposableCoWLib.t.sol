@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Merkle} from "murky/Merkle.sol";
 import {IConditionalOrder} from "../../src/interfaces/IConditionalOrder.sol";
 
 library ComposableCoWLib {

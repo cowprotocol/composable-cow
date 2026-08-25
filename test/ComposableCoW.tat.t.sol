@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import {ERC1271} from "safe/handler/extensible/SignatureVerifierMuxer.sol";
 
 import "./ComposableCoW.base.t.sol";
 
 import "../src/types/TradeAboveThreshold.sol";
-import {ConditionalOrdersUtilsLib as Utils} from "../src/types/ConditionalOrdersUtilsLib.sol";
 
 contract ComposableCoWTatTest is BaseComposableCoWTest {
     using ComposableCoWLib for IConditionalOrder.ConditionalOrderParams[];

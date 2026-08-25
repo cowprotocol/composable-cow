@@ -10,7 +10,7 @@ import {SignMessageLib} from "safe/libraries/SignMessageLib.sol";
 import {ExtensibleFallbackHandler, FallbackHandler, MarshalLib} from "safe/handler/ExtensibleFallbackHandler.sol";
 
 import {SafeLib} from "../libraries/SafeLib.t.sol";
-import {TestAccount, TestAccountLib} from "../libraries/TestAccountLib.t.sol";
+import {TestAccount} from "../libraries/TestAccountLib.t.sol";
 
 /**
  * @title Safe - A helper contract for local integration testing with `Safe`.

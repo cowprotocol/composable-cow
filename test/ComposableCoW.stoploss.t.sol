@@ -23,7 +23,7 @@ contract ComposableCoWStopLossTest is BaseComposableCoWTest {
         stopLoss = new StopLoss();
     }
 
-    function priceToAddress(int256 price) internal returns (address) {
+    function priceToAddress(int256 price) internal pure returns (address) {
         return address(uint160(int160(price)));
     }
 
