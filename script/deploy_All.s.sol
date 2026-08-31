@@ -29,7 +29,7 @@ contract DeployAll is DeployScript {
         ComposableCoW composableCow = vm.envOr("CANONICAL", true) ? composableCoWAddress() : deployLegacy(salt);
 
         // Not in `canonical/`, so deployed in both modes.
-        ICowShedFactory cowShedFactory = cowShedFactoryAddress();
+        ICowShedFactory cowShedFactory = cowShedFactoryForComposableCoWAddress();
         bytes memory poller =
             abi.encodePacked(type(ComposableCowPoller).creationCode, abi.encode(composableCow, cowShedFactory));
         if (pending("ComposableCowPoller", salt, poller)) {

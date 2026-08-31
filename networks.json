@@ -34,9 +34,17 @@
     }
   },
   "ComposableCowPoller": {
+    "1": {
+      "address": "0xf1c5e22fb6f4b974ad12ca4bc461f9746f77bb7d",
+      "transactionHash": "0xdbca0324ae1eaf27cb60f3461c2b7e2440cd6845437816a1112657c960bda6bb"
+    },
     "100": {
-      "address": "0x5eda08425781c2c39a28faaf963c79487dc91bb1",
-      "transactionHash": "0x432c451276714eacd524e2578afa05917bb6efbfdba386f1fa644cd58ab56cc3"
+      "address": "0xf1c5e22fb6f4b974ad12ca4bc461f9746f77bb7d",
+      "transactionHash": "0xd5111bd7b0a77499006a8179f8a41a5d684690653f2525bc62985e9326a112cd"
+    },
+    "11155111": {
+      "address": "0xf1c5e22fb6f4b974ad12ca4bc461f9746f77bb7d",
+      "transactionHash": "0xa60a2c63e10451230180dc25be6d045451e1e15be8b8581c2f81aab10255014b"
     }
   },
   "CurrentBlockTimestampFactory": {

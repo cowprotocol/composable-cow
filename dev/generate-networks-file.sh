@@ -9,8 +9,6 @@ manual_file="$repo_root_dir/broadcast/networks-manual.json"
 # by run rather than by file path matters because several scripts deploy the same contract.
 # Matched on Foundry's `run-` prefix rather than every nested `.json`, so an unrelated file under
 # `broadcast/` is skipped instead of being read as a run and failing on its missing fields.
-# `CREATE` is accepted alongside `CREATE2` because `deploy_ComposableCowPoller.s.sol` omits the
-# salt, so the existing Gnosis Chain poller was deployed non-deterministically.
 generated=$(jq --slurp --sort-keys '
   # Foundry recorded seconds in older runs and milliseconds in newer ones.
   def ran_at: .timestamp | if . > 100000000000 then . / 1000 else . end;
@@ -20,7 +18,7 @@ generated=$(jq --slurp --sort-keys '
     | (.chain | tostring) as $chain
     | (.receipts | INDEX(.transactionHash)) as $receipts
     | .transactions[]
-    | select(.transactionType == "CREATE" or .transactionType == "CREATE2")
+    | select(.transactionType == "CREATE2")
     | select(.hash != null)
     # A run that reverted, or never landed, must not become the published deployment. Runs that
     # predate the receipt log are listed in networks-manual.json instead.
