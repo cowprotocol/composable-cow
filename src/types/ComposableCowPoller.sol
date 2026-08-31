@@ -59,7 +59,9 @@ contract ComposableCowPoller is EIP712 {
         /// @dev It can be an EOA or contract and may be the same address as `owner`.
         address funder;
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
-        /// @dev It can be an EOA or contract and may be the same address as `funder`.
+        /// @dev It can be an EOA or contract and may be the same address as `funder`, but the funder
+        ///      must control it: see the trust model on `pollFunds`. `registerFromShed` enforces
+        ///      that; `register` accepts any owner and leaves it to the funder.
         address owner;
         /// @notice The conditional order's own `salt`.
         /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
@@ -77,6 +79,7 @@ contract ComposableCowPoller is EIP712 {
     mapping(bytes32 => Schedule) public schedules;
 
     /// @dev `id => orderDigest => funded`. History survives schedule updates so an old order cannot be replayed.
+    ///      Being digest-keyed, it does not bound a schedule's total spend; see `pollFunds`.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
@@ -187,6 +190,7 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Registers a schedule.
     /// @dev Only the funder may register. Reverts if the schedule is active or its `authEpoch` does
     ///      not match storage. After revocation, the same ID can be registered in the next epoch.
+    ///      `schedule.owner` is unconstrained here; see the trust model on `pollFunds`.
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(
@@ -423,6 +427,13 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
+    /// @dev Trust model: the funder must control `owner`. Every leg moves without checking that the
+    ///      previous one settled, so the owner is trusted with the whole notional either way. Two
+    ///      consequences are benign only under that assumption. The allowance is per
+    ///      `(funder, sellToken)` and shared across that funder's schedules, so it is not a
+    ///      per-schedule cap. And `funded` is keyed by order digest, so an owner who re-runs
+    ///      `createWithContext` on a cabinet-resolved TWAP gets a fresh `t0`, hence fresh digests,
+    ///      and funding restarts from the first part.
     /// @return Whether funds moved. `false` means this order was already funded, which is the one
     ///         outcome a caller cannot otherwise tell apart from a transfer without diffing
     ///         balances; every other case reverts.
