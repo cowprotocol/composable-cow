@@ -11,7 +11,7 @@ contract DeployComposableCowPoller is DeployScript {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         bytes32 salt = deploymentSalt();
         ComposableCoW composableCow = composableCoWAddress();
-        ICowShedFactory cowShedFactory = cowShedFactoryAddress();
+        ICowShedFactory cowShedFactory = cowShedFactoryForComposableCoWAddress();
         bytes memory initcode =
             abi.encodePacked(type(ComposableCowPoller).creationCode, abi.encode(composableCow, cowShedFactory));
 

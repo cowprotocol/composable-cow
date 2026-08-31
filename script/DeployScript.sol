@@ -92,17 +92,18 @@ abstract contract DeployScript is Script {
         composableCow = ComposableCoW(addr);
     }
 
-    /// The CowShed factory from `COW_SHED_FACTORY`. `ComposableCowPoller` pins this immutably.
-    function cowShedFactoryAddress() internal returns (ICowShedFactory factory) {
-        address addr = vm.envOr("COW_SHED_FACTORY", address(0));
-        require(addr != address(0), "COW_SHED_FACTORY is not set: see .env.example");
+    /// The factory from `COW_SHED_FACTORY_FOR_COMPOSABLE_COW`. `ComposableCowPoller` pins this
+    /// immutably, so a poller only ever serves the factory it was deployed against.
+    function cowShedFactoryForComposableCoWAddress() internal returns (ICowShedFactory factory) {
+        address addr = vm.envOr("COW_SHED_FACTORY_FOR_COMPOSABLE_COW", address(0));
+        require(addr != address(0), "COW_SHED_FACTORY_FOR_COMPOSABLE_COW is not set: see .env.example");
 
         // The poller's constructor only checks for code. Probe `proxyOf` so a wrong address is named
         // here rather than surfacing later as an `UnauthorizedShed` on every `FromShed` call.
         (bool ok, bytes memory data) = addr.staticcall(abi.encodeCall(ICowShedFactory.proxyOf, (address(0))));
         require(
             ok && data.length == 32 && abi.decode(data, (address)) != address(0),
-            "COW_SHED_FACTORY is not a CowShed factory here"
+            "COW_SHED_FACTORY_FOR_COMPOSABLE_COW is not a CowShed factory here"
         );
 
         factory = ICowShedFactory(addr);
