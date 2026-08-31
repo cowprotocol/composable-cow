@@ -130,10 +130,10 @@ contract ComposableCowPoller is EIP712 {
         bytes32 paramsHash
     );
 
-    /// @notice Emitted when a part's funds are moved.
-    /// @dev `orderDigest` is indexed so a single leg can be looked up directly, rather than only
-    ///      by walking a schedule's history. It is the CoW order struct hash, so it joins to
-    ///      settlement data.
+    /// @notice Emitted when a discrete order's funds are moved.
+    /// @dev `orderDigest` is indexed so a single discrete order can be looked up directly, rather
+    ///      than only by walking a schedule's history. It is the CoW order struct hash, so it
+    ///      joins to settlement data.
     /// @param id The deterministic key of the schedule.
     /// @param orderDigest The digest of the order that was funded.
     /// @param amount The `sellAmount` moved from the funder to the owner.
@@ -427,13 +427,13 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
-    /// @dev Trust model: the funder must control `owner`. Every leg moves without checking that the
-    ///      previous one settled, so the owner is trusted with the whole notional either way. Two
-    ///      consequences are benign only under that assumption. The allowance is per
-    ///      `(funder, sellToken)` and shared across that funder's schedules, so it is not a
-    ///      per-schedule cap. And `funded` is keyed by order digest, so an owner who re-runs
-    ///      `createWithContext` on a cabinet-resolved TWAP gets a fresh `t0`, hence fresh digests,
-    ///      and funding restarts from the first part.
+    /// @dev Trust model: the funder must control `owner`. Each discrete order is funded without
+    ///      checking that the previous one settled, and the allowance is per `(funder, sellToken)`
+    ///      and shared across that funder's schedules rather than a per-schedule cap, so the owner
+    ///      is trusted with whatever the allowance permits. `funded` is keyed by order digest, so a
+    ///      handler resolving its start time from the cabinet - a TWAP with `t0 == 0` - yields fresh
+    ///      digests once the owner re-runs `createWithContext`, and funding restarts from the
+    ///      schedule's first discrete order.
     /// @return Whether funds moved. `false` means this order was already funded, which is the one
     ///         outcome a caller cannot otherwise tell apart from a transfer without diffing
     ///         balances; every other case reverts.
