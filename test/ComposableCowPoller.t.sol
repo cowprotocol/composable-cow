@@ -762,6 +762,39 @@ contract ComposableCowPollerTest is BaseComposableCoWTest {
         assertTrue(poller.funded(id, GPv2Order.hash(orderB, composableCow.domainSeparator())));
     }
 
+    /// @dev The counterpart: re-running `createWithContext` resets the cabinet `t0`, which shifts
+    ///      every digest, so the first part is funded a second time. Expected, and safe only because
+    ///      the funder controls the owner; see the trust model on `pollFunds`.
+    function test_pollFunds_refundsFirstPartAfterCabinetRestart() public {
+        (IConditionalOrder.ConditionalOrderParams memory params, bytes32 paramsHash, bytes32 id) = _setupSchedule();
+        uint256 t0 = _t0(paramsHash);
+        vm.warp(t0);
+
+        GPv2Order.Data memory first =
+            twap.getTradeableOrder(address(safe1), address(poller), paramsHash, abi.encode(_bundle()), bytes(""));
+        assertTrue(poller.pollFunds(id), "first part funded");
+        vm.prank(address(safe1));
+        assertTrue(token0.transfer(bob.addr, TWAP_PART_AMOUNT), "first part settled");
+
+        // The owner restarts the same order a second later: identical params, so the same
+        // `paramsHash` and the same schedule, but a cabinet `t0` one second on.
+        vm.warp(t0 + 1);
+        _createWithContext(address(safe1), params, currentBlockTimestampFactory, bytes(""), false);
+        assertEq(_t0(paramsHash), t0 + 1, "cabinet start time reset");
+
+        GPv2Order.Data memory restarted =
+            twap.getTradeableOrder(address(safe1), address(poller), paramsHash, abi.encode(_bundle()), bytes(""));
+        assertEq(restarted.sellAmount, first.sellAmount, "still the first part's amount");
+        assertTrue(restarted.validTo != first.validTo, "the restart shifts `validTo`, hence the digest");
+
+        assertTrue(poller.pollFunds(id), "first part funded again");
+
+        assertEq(token0.balanceOf(address(safe1)), TWAP_PART_AMOUNT, "the same part pulled twice");
+        assertEq(token0.balanceOf(funder), TWAP_PART_AMOUNT * (N - 2), "two parts spent inside one window");
+        assertTrue(poller.funded(id, GPv2Order.hash(first, composableCow.domainSeparator())));
+        assertTrue(poller.funded(id, GPv2Order.hash(restarted, composableCow.domainSeparator())));
+    }
+
     /// @dev A failed ERC-20 transfer must not mark this part as funded.
     function test_pollFunds_RevertWhen_transferFromReturnsFalse() public {
         (, bytes32 paramsHash, bytes32 id) = _setupSchedule();

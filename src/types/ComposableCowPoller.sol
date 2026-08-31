@@ -59,7 +59,9 @@ contract ComposableCowPoller is EIP712 {
         /// @dev It can be an EOA or contract and may be the same address as `owner`.
         address funder;
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
-        /// @dev It can be an EOA or contract and may be the same address as `funder`.
+        /// @dev It can be an EOA or contract and may be the same address as `funder`, but the funder
+        ///      must control it: see the trust model on `pollFunds`. `registerFromShed` enforces
+        ///      that; `register` accepts any owner and leaves it to the funder.
         address owner;
         /// @notice The conditional order's own `salt`.
         /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
@@ -77,6 +79,7 @@ contract ComposableCowPoller is EIP712 {
     mapping(bytes32 => Schedule) public schedules;
 
     /// @dev `id => orderDigest => funded`. History survives schedule updates so an old order cannot be replayed.
+    ///      Being digest-keyed, it does not bound a schedule's total spend; see `pollFunds`.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
     /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
@@ -127,10 +130,10 @@ contract ComposableCowPoller is EIP712 {
         bytes32 paramsHash
     );
 
-    /// @notice Emitted when a part's funds are moved.
-    /// @dev `orderDigest` is indexed so a single leg can be looked up directly, rather than only
-    ///      by walking a schedule's history. It is the CoW order struct hash, so it joins to
-    ///      settlement data.
+    /// @notice Emitted when a discrete order's funds are moved.
+    /// @dev `orderDigest` is indexed so a single discrete order can be looked up directly, rather
+    ///      than only by walking a schedule's history. It is the CoW order struct hash, so it
+    ///      joins to settlement data.
     /// @param id The deterministic key of the schedule.
     /// @param orderDigest The digest of the order that was funded.
     /// @param amount The `sellAmount` moved from the funder to the owner.
@@ -187,6 +190,7 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Registers a schedule.
     /// @dev Only the funder may register. Reverts if the schedule is active or its `authEpoch` does
     ///      not match storage. After revocation, the same ID can be registered in the next epoch.
+    ///      `schedule.owner` is unconstrained here; see the trust model on `pollFunds`.
     /// @param schedule The schedule to store.
     /// @return id The deterministic key of the stored schedule.
     function register(
@@ -423,6 +427,13 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
+    /// @dev Trust model: the funder must control `owner`. Each discrete order is funded without
+    ///      checking that the previous one settled, and the allowance is per `(funder, sellToken)`
+    ///      and shared across that funder's schedules rather than a per-schedule cap, so the owner
+    ///      is trusted with whatever the allowance permits. `funded` is keyed by order digest, so a
+    ///      handler resolving its start time from the cabinet - a TWAP with `t0 == 0` - yields fresh
+    ///      digests once the owner re-runs `createWithContext`, and funding restarts from the
+    ///      schedule's first discrete order.
     /// @return Whether funds moved. `false` means this order was already funded, which is the one
     ///         outcome a caller cannot otherwise tell apart from a transfer without diffing
     ///         balances; every other case reverts.
