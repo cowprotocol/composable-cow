@@ -82,6 +82,10 @@ for path in \
   filename="${path##*/}"
   contract="${filename%%.sol}"
   address="$(address_by_contract_name "$contract")"
+  if [[ "$address" == "null" ]]; then
+    echo "Skipping contract $contract: no deployment on chain $chain_id"
+    continue
+  fi
   echo "Verifying contract $contract..."
   FOUNDRY_PROFILE="$(profile_for "$contract")" forge_verify "$address" "$path:$contract"
 done
