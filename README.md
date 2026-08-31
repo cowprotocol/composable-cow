@@ -224,13 +224,14 @@ forge script script/deploy_ExtensibleFallbackHandler.s.sol:DeployExtensibleFallb
 forge script script/deploy_ValueFactories.s.sol:DeployValueFactories --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
-`ComposableCowPoller` pins a `ComposableCoW` and a CowShed factory, so it needs `COMPOSABLE_COW`
-and `COW_SHED_FACTORY` alongside `SETTLEMENT`, and checks each address holds the contract it claims:
+`ComposableCowPoller` pins a `ComposableCoW` and the `COWShedFactoryForComposableCoW`, so it needs
+`COMPOSABLE_COW` and `COW_SHED_FACTORY_FOR_COMPOSABLE_COW` alongside `SETTLEMENT`, and checks each
+address holds the contract it claims:
 
 ```bash
 SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
   COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
-  COW_SHED_FACTORY=0x00E989b87700514118Fa55326CD1cCE82faebEF6 \
+  COW_SHED_FACTORY_FOR_COMPOSABLE_COW=0x5e284e80f3bd6a7d80a8500d9c49878028110848 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
