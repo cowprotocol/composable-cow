@@ -15,7 +15,9 @@ cbor_metadata = false
 optimizer = true
 optimizer_runs = 20000
 
-[profile.default.model_checker]
+# Opt-in: needs z3, and every build without it warns once per compilation unit.
+# Run with `FOUNDRY_PROFILE=smt forge build`.
+[profile.smt.model_checker]
 contracts = { 'src/types/twap/libraries/TWAPOrderMathLib.sol' = [ 'TWAPOrderMathLib' ] }
 engine = 'chc'
 targets = [
