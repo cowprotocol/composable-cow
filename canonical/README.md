@@ -13,6 +13,11 @@ This folder keeps the initcode of the deployments that already exist, read back 
 transactions: one file per contract under `initcode/`, plus `manifest.json` recording each salt and
 resulting address.
 
+These addresses therefore do not depend on the compiler this repository is pinned to:
+[`dev/verify-canonical.sh`](../dev/verify-canonical.sh) recomputes every one of them from the
+recorded initcode, without compiling anything. To build these sources the way the deployments were
+built, use the `legacy` profile in [`foundry.toml`](../foundry.toml).
+
 Deploy it with [`dev/deploy-canonical.sh`](../dev/deploy-canonical.sh), which checks every file
 against `manifest.json` before sending anything. The target chain needs two contracts already in
 place, and the script stops if either is missing:
