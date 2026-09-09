@@ -118,13 +118,31 @@ Fortunately, when using Safe, it is possible to batch together all the above cal
 
 ## Just-in-time funding with `ComposableCowPoller`
 
-`ComposableCowPoller` enables an EOA to create a ComposableCoW conditional order, such as a TWAP, without moving the full sell amount into the order's smart account up front. The funds remain in the EOA until each part is ready to trade. A pre-hook then calls `pollFunds`, which verifies that the order is still active and transfers only that part's sell amount to the smart account. Each part can be funded only once.
+`ComposableCowPoller` enables an EOA to create a ComposableCoW conditional order, such as a TWAP, without moving the full sell amount into the order's smart account up front. The permissionless `pollFunds` function is normally called from a settlement pre-hook. It requires a registered schedule, checks that the same conditional-order parameters are currently authorized in `ComposableCoW.singleOrders`, then calls the handler with the stored `staticInput` and empty `offchainInput`.
+
+The handler chooses the sell token, amount, and trading window; the Poller does not validate them. It transfers the returned amount from the funder to the owner and records funding per `(schedule ID, order digest)`. Each pair can be funded once, but a new digest or different schedule ID can pull again.
 
 The funder can register or revoke a funding schedule directly. To avoid a separate transaction, the funder can instead sign an EIP-712 authorization that a relayer submits on-chain. The Poller validates EOA signatures directly and uses ERC-1271 when the funder is a contract. Signed actions include a deadline and the current authorization epoch. Revocation derives the schedule ID from its funder, handler, owner, and salt, so it works before or after registration without allowing one funder to cancel another's schedule. It advances the authorization epoch, invalidating pending signatures from prior epochs while allowing the same schedule ID to be reused.
 
 A funder who already does some operations through a [CowShed](https://github.com/cowdao-grants/cow-shed) does not need a second signature to also include the registration. `registerFromShed` and `revokeFromShed` allow the funder's shed, `proxyOf(funder)`, to register and revoke schedules on behalf of the funder. Without these methods, the funder would need to sign a second EIP-712 authorization or transaction for the schedule registration.
 
-Removing the conditional order from ComposableCoW stops further funding. Revoking its funding schedule does too, but does not remove the funder's token allowance; revoke that allowance separately when it is no longer needed.
+Removing the conditional order from ComposableCoW only pauses funding. The owner can reauthorize the same parameters and resume funding while the schedule and allowance remain active. Revoking the schedule stops it, but leaves the token allowance active; revoke that allowance separately when it is no longer needed.
+
+### Handler compatibility
+
+The five handlers below use `BaseConditionalOrder`. The pre-hook first calls `getTradeableOrder` with empty `offchainInput` and funds the owner. CoW then calls `verify` with the input stored in the submitted signature; `BaseConditionalOrder` regenerates the order and compares its hash. Compatibility requires the first call to succeed and funding not to change the regenerated order.
+
+The Poller has no handler allowlist. The funder must trust the handler, which can pull any token and amount covered by the allowance, and the owner, which receives the funds and controls the order authorization and cabinet context.
+
+| Handler | Poller compatibility | Reason |
+| ------- | -------------------- | ------ |
+| `TWAP` | Compatible | Each part has a fixed token and amount, accepts empty `offchainInput`, and enforces its time window. |
+| `StopLoss` | Compatible | Its token, amount, and expiry are configured; empty `offchainInput` works and oracle values only allow or reject trading. |
+| `TradeAboveThreshold` | Not compatible | `sellAmount` is the owner's balance, which funding changes before verification. |
+| `PerpetualStableSwap` | Not compatible | The sell token and amounts depend on the owner's balances, which funding changes before verification. |
+| `GoodAfterTime` | Not compatible | It gets `buyAmount` from the `offchainInput` passed to `getTradeableOrderWithSignature`, but the Poller passes empty bytes. |
+
+For a TWAP with `t0 == 0`, calling `createWithContext` again can change the start time and create new fundable digests.
 
 ## Developers
 

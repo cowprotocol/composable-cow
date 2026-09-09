@@ -60,8 +60,8 @@ contract ComposableCowPoller is EIP712 {
         address funder;
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
         /// @dev It can be an EOA or contract and may be the same address as `funder`, but the funder
-        ///      must control it: see the trust model on `pollFunds`. `registerFromShed` enforces
-        ///      that; `register` accepts any owner and leaves it to the funder.
+        ///      must trust it: see the trust model on `pollFunds`. `registerFromShed` requires the
+        ///      owner to be the funder's CowShed; `register` accepts any owner and leaves it to the funder.
         address owner;
         /// @notice The conditional order's own `salt`.
         /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
@@ -78,11 +78,11 @@ contract ComposableCowPoller is EIP712 {
     ///      from an earlier epoch.
     mapping(bytes32 => Schedule) public schedules;
 
-    /// @dev `id => orderDigest => funded`. History survives schedule updates so an old order cannot be replayed.
+    /// @dev `id => orderDigest => funded`. History survives revocation and re-registration, so the same pair cannot be replayed.
     ///      Being digest-keyed, it does not bound a schedule's total spend; see `pollFunds`.
     mapping(bytes32 => mapping(bytes32 => bool)) public funded;
 
-    /// @notice Thrown when someone other than the schedule funder registers, updates, or revokes a schedule.
+    /// @notice Thrown when someone other than the schedule funder directly registers a schedule.
     error OnlyFunder();
 
     /// @notice Thrown when a `FromShed` action does not come from the funder's own CowShed, or when
@@ -113,14 +113,14 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Thrown when a signed action cannot be authenticated by its funder.
     error InvalidSignature();
 
-    /// @notice Emitted when a schedule is registered or updated.
+    /// @notice Emitted when a schedule is registered.
     /// @param id The deterministic key of the schedule.
     /// @param owner The conditional-order owner and pull destination.
     /// @param funder The token source that registered the schedule.
     /// @param authEpoch The schedule's authorization epoch.
     /// @param paramsHash The ComposableCoW order key this schedule funds. `id` deliberately excludes
-    ///        `staticInput`, so re-registering the same funder, handler, owner, and salt replaces
-    ///        the stored schedule. Logging the hash names the order each registration points at,
+    ///        `staticInput`, but an active schedule cannot be updated. Revoke it before registering
+    ///        a replacement. Logging the hash names the order each registration points at,
     ///        which is what makes such a replacement visible off-chain.
     event ScheduleRegistered(
         bytes32 indexed id,
@@ -427,16 +427,16 @@ contract ComposableCowPoller is EIP712 {
     /// @notice Move the current order's `sellAmount` from the funder to the owner. Permissionless.
     ///         The full amount always moves (no balance check), so one owner can serve several
     ///         concurrent orders.
-    /// @dev Trust model: the funder must control `owner`. Each discrete order is funded without
+    /// @dev Trust model: the funder must trust `owner` and the handler. Each discrete order is funded without
     ///      checking that the previous one settled, and the allowance is per `(funder, sellToken)`
     ///      and shared across that funder's schedules rather than a per-schedule cap, so the owner
-    ///      is trusted with whatever the allowance permits. `funded` is keyed by order digest, so a
-    ///      handler resolving its start time from the cabinet - a TWAP with `t0 == 0` - yields fresh
-    ///      digests once the owner re-runs `createWithContext`, and funding restarts from the
+    ///      is trusted with whatever the allowance permits. `funded` is keyed by ID and order digest,
+    ///      so a handler resolving its start time from the cabinet - a TWAP with `t0 == 0` - can yield
+    ///      fresh digests when the owner re-runs `createWithContext`, allowing funding to restart from the
     ///      schedule's first discrete order.
-    /// @return Whether funds moved. `false` means this order was already funded, which is the one
-    ///         outcome a caller cannot otherwise tell apart from a transfer without diffing
-    ///         balances; every other case reverts.
+    /// @return Whether funds moved. `false` means this order digest was already funded under this
+    ///         schedule, which is the one outcome a caller cannot otherwise tell apart from a
+    ///         transfer without diffing balances; every other case reverts.
     function pollFunds(bytes32 id) external returns (bool) {
         Schedule memory schedule = schedules[id];
         if (schedule.funder == address(0)) revert NoSchedule();
@@ -448,11 +448,11 @@ contract ComposableCowPoller is EIP712 {
             schedule.staticInput
         );
 
-        // The order must still be authorised; `remove` disables the poller.
+        // The order must still be authorised; after `remove`, this fails until it is authorised again.
         if (!COMPOSABLE_COW.singleOrders(schedule.owner, paramsHash))
             revert OrderNotLive();
 
-        // The handler yields the current order and reverts outside its window.
+        // The handler yields the current order and is trusted to enforce its trading window.
         GPv2Order.Data memory order = schedule.handler.getTradeableOrder(
             schedule.owner,
             address(this),
