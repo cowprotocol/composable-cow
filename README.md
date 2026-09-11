@@ -138,13 +138,13 @@ The funder must trust the handler, which can pull any token and amount covered b
 
 | Handler               | Poller compatibility                    | Reason                                                                                                                      |
 | --------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `TWAP`                | Compatible                              | Each part has a fixed order for an unchanged start time, accepts empty `offchainInput`, and enforces its time window.      |
+| `TWAP`                | Compatible                              | Each part has a fixed order for an unchanged start time and enforces its time window.                                      |
 | `StopLoss`            | Compatible                              | Returns the same order whenever its checks pass and accepts empty `offchainInput`.                                        |
-| `TradeAboveThreshold` | Not supported by the current watchtower | `sellAmount` is the owner's balance, which funding changes before verification.                                             |
-| `PerpetualStableSwap` | Not supported by the current watchtower | The sell token and amounts depend on the owner's balances, which funding changes before verification.                       |
+| `TradeAboveThreshold` | Compatible with funding simulation      | `sellAmount` is the owner's balance; see below.                                                                             |
+| `PerpetualStableSwap` | Compatible with funding simulation      | Similar to `TradeAboveThreshold`: its sell token and amounts depend on the owner's balances.                                |
 | `GoodAfterTime`       | Not compatible                          | It gets `buyAmount` from the `offchainInput` passed to `getTradeableOrderWithSignature`, but the Poller passes empty bytes. |
 
-A modified watchtower could simulate funding first, then query balance-based handlers. `TradeAboveThreshold` cannot fund an empty owner.
+A watchtower must simulate funding first, then query balance-based handlers. `TradeAboveThreshold` cannot fund an empty owner.
 
 For a TWAP with `t0 == 0`, calling `createWithContext` again can change the start time and create new fundable digests.
 

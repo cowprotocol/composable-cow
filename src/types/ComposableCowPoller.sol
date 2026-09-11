@@ -60,8 +60,8 @@ contract ComposableCowPoller is EIP712 {
         address funder;
         /// @notice The address that owns the ComposableCoW conditional order and receives the pulled funds.
         /// @dev It can be an EOA or contract and may be the same address as `funder`, but the funder
-        ///      must trust it: see the trust model on `pollFunds`. `registerFromShed` requires the
-        ///      owner to be the funder's CowShed; `register` accepts any owner and leaves it to the funder.
+        ///      must trust it: see the trust model on `pollFunds`. If `owner` is the funder's CowShed,
+        ///      `registerFromShed` may be used; it verifies that the shed is `proxyOf(funder)`.
         address owner;
         /// @notice The conditional order's own `salt`.
         /// @dev It is what keeps two otherwise-identical orders distinct in ComposableCoW, so use
