@@ -130,17 +130,19 @@ Removing the conditional order from ComposableCoW only pauses funding. The owner
 
 ### Handler compatibility
 
-The five handlers below use `BaseConditionalOrder`. The pre-hook first calls `getTradeableOrder` with empty `offchainInput` and funds the owner. CoW then calls `verify` with the input stored in the submitted signature; `BaseConditionalOrder` regenerates the order and compares its hash. Compatibility requires the first call to succeed and funding not to change the regenerated order.
+The five handlers below use `BaseConditionalOrder`. The pre-hook first calls `getTradeableOrder` with empty `offchainInput` and funds the owner. CoW then calls `verify` with the input stored in the submitted signature; `BaseConditionalOrder` regenerates the order and compares its hash. Compatibility requires the first call to succeed and the submitted order to match the regenerated order.
 
 The Poller has no handler allowlist. The funder must trust the handler, which can pull any token and amount covered by the allowance, and the owner, which receives the funds and controls the order authorization and cabinet context.
 
-| Handler | Poller compatibility | Reason |
-| ------- | -------------------- | ------ |
-| `TWAP` | Compatible | Each part has a fixed token and amount, accepts empty `offchainInput`, and enforces its time window. |
-| `StopLoss` | Compatible | Its token, amount, and expiry are configured; empty `offchainInput` works and oracle values only allow or reject trading. |
-| `TradeAboveThreshold` | Not compatible | `sellAmount` is the owner's balance, which funding changes before verification. |
-| `PerpetualStableSwap` | Not compatible | The sell token and amounts depend on the owner's balances, which funding changes before verification. |
-| `GoodAfterTime` | Not compatible | It gets `buyAmount` from the `offchainInput` passed to `getTradeableOrderWithSignature`, but the Poller passes empty bytes. |
+| Handler               | Poller compatibility                    | Reason                                                                                                                      |
+| --------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `TWAP`                | Compatible                              | Each part has a fixed token and amount, accepts empty `offchainInput`, and enforces its time window.                        |
+| `StopLoss`            | Compatible                              | Its token, amount, and expiry are configured; empty `offchainInput` works and oracle values only allow or reject trading.   |
+| `TradeAboveThreshold` | Not supported by the current watchtower | `sellAmount` is the owner's balance, which funding changes before verification.                                             |
+| `PerpetualStableSwap` | Not supported by the current watchtower | The sell token and amounts depend on the owner's balances, which funding changes before verification.                       |
+| `GoodAfterTime`       | Not compatible                          | It gets `buyAmount` from the `offchainInput` passed to `getTradeableOrderWithSignature`, but the Poller passes empty bytes. |
+
+A modified watchtower could simulate funding first, then query balance-based handlers.
 
 For a TWAP with `t0 == 0`, calling `createWithContext` again can change the start time and create new fundable digests.
 
