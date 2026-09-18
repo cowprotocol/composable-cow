@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Script, console} from "forge-std/Script.sol";
 
 import {ComposableCoW} from "../src/ComposableCoW.sol";
-import {ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
+import {ICowShedFactory} from "../src/ComposableCowPoller.sol";
 import {CoWSettlement} from "../src/vendored/CoWSettlement.sol";
 
 abstract contract DeployScript is Script {
@@ -18,8 +18,8 @@ abstract contract DeployScript is Script {
     /// and the initcode, never on who runs the script.
     address private constant CREATE2_PROXY = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
 
-    /// `CREATE2` salt from `SALT`, laid out like a Solidity string literal so `SALT=v1.1.0` and
-    /// `{salt: "v1.1.0"}` agree. See `.env.example`.
+    /// `CREATE2` salt from `SALT`, laid out like a Solidity string literal so `SALT=v1.2.0` and
+    /// `{salt: "v1.2.0"}` agree. See `.env.example`.
     function deploymentSalt() internal returns (bytes32 salt) {
         string memory text = vm.envOr("SALT", string("v1.0.0"));
         uint256 length = bytes(text).length;

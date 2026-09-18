@@ -12,7 +12,7 @@ import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
 import {StopLoss} from "../src/types/StopLoss.sol";
-import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/ComposableCowPoller.sol";
 
 import {CurrentBlockTimestampFactory} from "../src/value_factories/CurrentBlockTimestampFactory.sol";
 

@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {DeployScript} from "./DeployScript.sol";
 
 import {ComposableCoW} from "../src/ComposableCoW.sol";
-import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/ComposableCowPoller.sol";
 
 contract DeployComposableCowPoller is DeployScript {
     function run() external {

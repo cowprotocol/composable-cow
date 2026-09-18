@@ -24,7 +24,7 @@ import {TWAP} from "../src/types/twap/TWAP.sol";
 import {GoodAfterTime} from "../src/types/GoodAfterTime.sol";
 import {PerpetualStableSwap} from "../src/types/PerpetualStableSwap.sol";
 import {TradeAboveThreshold} from "../src/types/TradeAboveThreshold.sol";
-import {ComposableCowPoller, ICowShedFactory} from "../src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "../src/ComposableCowPoller.sol";
 
 contract DeployAnvilStack is Script {
     // --- constants
