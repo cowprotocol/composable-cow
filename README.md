@@ -253,7 +253,8 @@ address holds the contract it claims:
 ```bash
 SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
   COMPOSABLE_COW=0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74 \
-  COW_SHED_FACTORY_FOR_COMPOSABLE_COW=0x5e284e80f3bd6a7d80a8500d9c49878028110848 \
+  COW_SHED_FACTORY_FOR_COMPOSABLE_COW=0x221c28ec177cf7da6f837dfd0052ba8f265fb4ca \
+  SALT=v1.2.0 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 

@@ -21,7 +21,7 @@ import {
 import {TWAP} from "src/types/twap/TWAP.sol";
 import {TWAPOrder} from "src/types/twap/libraries/TWAPOrder.sol";
 import {AFTER_TWAP_FINISH} from "src/types/twap/libraries/TWAPOrderMathLib.sol";
-import {ComposableCowPoller, ICowShedFactory} from "src/types/ComposableCowPoller.sol";
+import {ComposableCowPoller, ICowShedFactory} from "src/ComposableCowPoller.sol";
 import {CurrentBlockTimestampFactory} from "src/value_factories/CurrentBlockTimestampFactory.sol";
 import {IConditionalOrderGenerator} from "src/interfaces/IConditionalOrder.sol";
 
