@@ -170,15 +170,14 @@ For a TWAP with `t0 == 0`, calling `createWithContext` again can change the star
 
 #### Audits
 
-The core of the framework — `ComposableCoW` and `ExtensibleFallbackHandler` — has been audited by:
+The following audit reports cover the core framework (`ComposableCoW` and `ExtensibleFallbackHandler`) and `ComposableCowPoller`:
 
 - Ackee Blockchain: [CoW Protocol - `ComposableCoW` and `ExtensibleFallbackHandler`](./audits/ackee-blockchain-cow-protocol-composablecow-extensiblefallbackhandler-report-1.2.pdf)
 - Gnosis internal audit: [ComposableCoW - May/July 2023](./audits/gnosis-ComposableCoWMayJul2023.pdf)
 - Gnosis internal audit (August 2024): [ComposableCoW - Diff between May/July 2023 and August 2024](./audits/Composable_CoW_Diff.pdf)
+- ACK3 (September 2026): [CoW - `ComposableCowPoller`](./audits/ack3-cow-composable-poller-report.pdf)
 
-Not every contract in the table above is covered by these reports. Several order types, and
-`ComposableCowPoller`, were added after they were written and are therefore outside their scope. Refer to
-the scope section of each report to check whether a given contract was reviewed.
+Not every contract in the table above is covered by these reports. Refer to the scope section of each report to check whether a given contract was reviewed.
 
 ### Environment setup
 
