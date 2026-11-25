@@ -258,6 +258,28 @@ SETTLEMENT=0x9008D19f58AAbD9eD0D60971565AA8510560ab41 \
   forge script script/deploy_ComposableCowPoller.s.sol:DeployComposableCowPoller --rpc-url $ETH_RPC_URL --broadcast -vvvv --verify
 ```
 
+### Fee token swaps
+
+Deploy `FeeTokenSwap` with Foundry. Add `--broadcast --verify` after checking the dry run.
+Use the Watchtower version that sends compact quotes. If upgrading, stop the old Watchtower and wait for pending swaps to fill, expire, or be invalidated on Ethereum. Once that is final, authorize orders with the new handler and point the updated Watchtower at it. Keep the same database.
+
+```sh
+forge script script/deploy_FeeTokenSwap.s.sol:DeployFeeTokenSwap --rpc-url "$ETH_RPC_URL"
+```
+
+Use a CoWShed or a Safe that uses ComposableCoW to check Settlement signatures. For each token, send the first call below to the sell token and the second to ComposableCoW. Use a fresh `ORDER_SALT` (32 bytes) for each conditional order and match the signer and app data in [Watchtower](https://github.com/cowprotocol/watch-tower#fee-token-swaps). Amounts are in token base units. For 100 DAI, use `100000000000000000000`.
+
+```sh
+BUY_TOKEN=0xA27EC0006e59f245217Ff08CD52A7E8b169E62D2 # Ethereum AZTEC
+APP_DATA_HASH=$(cast keccak '{}')
+SETTINGS=$(cast abi-encode 'settings((address,address,address,address,uint256,bytes32,uint32))' \
+  "($SELL_TOKEN,$BUY_TOKEN,$RECEIVER,$PRICING_SIGNER,$MIN_SELL_AMOUNT,$APP_DATA_HASH,$MAX_QUOTE_LIFETIME)")
+cast calldata 'approve(address,uint256)' "$VAULT_RELAYER" "$SELL_ALLOWANCE"
+cast calldata 'create((address,bytes32,bytes),bool)' "($HANDLER,$ORDER_SALT,$SETTINGS)" true
+```
+
+`HANDLER` is the address from the deploy script. `true` tells ComposableCoW to emit the registration event. See [how to remove a rule](#conditional-order-cancellation).
+
 ### Updating `networks.json`
 
 [`networks.json`](./networks.json) lists the address and creation transaction of the latest official deployments by chain.
