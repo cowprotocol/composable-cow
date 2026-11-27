@@ -7,3 +7,5 @@ murky/=lib/murky/src/
 openzeppelin-contracts/=lib/murky/lib/openzeppelin-contracts/
 safe/=lib/safe/contracts/
 aave-v3-origin/=lib/aave-v3-origin/src/
+aave-v4/=lib/aave-v4/
+lib/aave-v4/:src/=lib/aave-v4/src/
