@@ -16,3 +16,6 @@
 	path = lib/safe
 	url = https://github.com/cowdao-grants/extensible-fallback-handler
 	branch = main
+[submodule "lib/flash-loan-router"]
+	path = lib/flash-loan-router
+	url = https://github.com/cowprotocol/flash-loan-router.git
