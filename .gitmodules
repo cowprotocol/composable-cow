@@ -19,3 +19,6 @@
 [submodule "lib/flash-loan-router"]
 	path = lib/flash-loan-router
 	url = https://github.com/cowprotocol/flash-loan-router.git
+[submodule "lib/aave-v3-origin"]
+	path = lib/aave-v3-origin
+	url = https://github.com/aave-dao/aave-v3-origin.git
